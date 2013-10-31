@@ -1,4 +1,4 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.os.Environment;
 

@@ -1,4 +1,4 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import eu.janmuller.application.SalesmenApp.model.Template;
+import eu.janmuller.application.salesmenapp.model.Template;
 
 /**
  * Created with IntelliJ IDEA.

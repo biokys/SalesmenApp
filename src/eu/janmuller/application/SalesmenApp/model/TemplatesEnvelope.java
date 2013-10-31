@@ -1,4 +1,4 @@
-package eu.janmuller.application.SalesmenApp.model;
+package eu.janmuller.application.salesmenapp.model;
 
 import com.google.gson.annotations.SerializedName;
 

@@ -1,9 +1,9 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import eu.janmuller.android.dao.api.SimpleDroidDao;
-import eu.janmuller.application.SalesmenApp.model.Page;
-import eu.janmuller.application.SalesmenApp.model.Tag;
-import eu.janmuller.application.SalesmenApp.model.Template;
+import eu.janmuller.application.salesmenapp.model.Page;
+import eu.janmuller.application.salesmenapp.model.Tag;
+import eu.janmuller.application.salesmenapp.model.Template;
 
 /**
  * Created with IntelliJ IDEA.

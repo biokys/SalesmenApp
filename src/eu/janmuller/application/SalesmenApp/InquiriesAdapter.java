@@ -1,4 +1,4 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
-import eu.janmuller.application.SalesmenApp.model.Inquiry;
+import eu.janmuller.application.salesmenapp.model.Inquiry;
 
 import java.text.SimpleDateFormat;
 

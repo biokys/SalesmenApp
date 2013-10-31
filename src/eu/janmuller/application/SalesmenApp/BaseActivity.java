@@ -1,9 +1,8 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.app.ActionBar;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.view.Window;
 import android.view.WindowManager;
 import roboguice.activity.RoboActivity;
 

@@ -1,10 +1,9 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import roboguice.activity.RoboSplashActivity;
-import roboguice.inject.ContentView;
 
 /**
  * Created with IntelliJ IDEA.

@@ -1,18 +1,17 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.*;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.*;
-import eu.janmuller.application.SalesmenApp.model.Inquiry;
-import eu.janmuller.application.SalesmenApp.model.Page;
-import eu.janmuller.application.SalesmenApp.model.Template;
+import eu.janmuller.application.salesmenapp.model.Inquiry;
+import eu.janmuller.application.salesmenapp.model.Page;
+import eu.janmuller.application.salesmenapp.model.Template;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 import roboguice.util.Ln;

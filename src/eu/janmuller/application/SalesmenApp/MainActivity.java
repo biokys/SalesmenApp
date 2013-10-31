@@ -1,4 +1,4 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,10 +8,10 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 import com.google.inject.Inject;
-import eu.janmuller.application.SalesmenApp.model.Inquiry;
-import eu.janmuller.application.SalesmenApp.model.Page;
-import eu.janmuller.application.SalesmenApp.model.Tag;
-import eu.janmuller.application.SalesmenApp.model.Template;
+import eu.janmuller.application.salesmenapp.model.Inquiry;
+import eu.janmuller.application.salesmenapp.model.Page;
+import eu.janmuller.application.salesmenapp.model.Tag;
+import eu.janmuller.application.salesmenapp.model.Template;
 import org.joda.time.DateTime;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;

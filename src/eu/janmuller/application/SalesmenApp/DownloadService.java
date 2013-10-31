@@ -1,24 +1,19 @@
-package eu.janmuller.application.SalesmenApp;
+package eu.janmuller.application.salesmenapp;
 
 import android.app.DownloadManager;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Environment;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import eu.janmuller.application.SalesmenApp.model.Page;
-import eu.janmuller.application.SalesmenApp.model.Tag;
-import eu.janmuller.application.SalesmenApp.model.Template;
-import eu.janmuller.application.SalesmenApp.model.TemplatesEnvelope;
+import eu.janmuller.application.salesmenapp.model.Page;
+import eu.janmuller.application.salesmenapp.model.Tag;
+import eu.janmuller.application.salesmenapp.model.Template;
+import eu.janmuller.application.salesmenapp.model.TemplatesEnvelope;
 import roboguice.util.Ln;
 
 import java.io.*;
-import java.math.BigInteger;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Created with IntelliJ IDEA.
