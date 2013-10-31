@@ -1,0 +1,44 @@
+{"Inquiries": [
+    {
+        "ID": "3216546",
+        "Created": "6.10.2013 13:15:49",
+        "Title": "EDU 2000",
+        "Description": "Poptávka na kávovar na školení",
+        "Company": "EDU 2000 s.r.o.",
+        "Street": "Oldřichova 49",
+        "City": "Praha 2",
+        "ZIP": "128 00",
+        "RegNo": "12345679",
+        "Contact": "Jan Novák",
+        "Tel": "604 123 456",
+        "Mail": "mail@edu2000.cz"
+    },
+    {
+        "ID": "2665546",
+        "Created": "9.10.2013 11:15:49",
+        "Title": "Brose CZ",
+        "Description": "paní Martina Vraštilová poptává kávovar, který by využívalo cca 100 zaměstnanců společnosti Brose CZ, spol. s r.o.",
+        "Company": "Brose CZ, spol. s r.o",
+        "Street": "Průmyslový park 302",
+        "City": "Kopřivnice-Vlčovice",
+        "ZIP": "742 21",
+        "RegNo": "698569215",
+        "Contact": "Nikola Ženíšková",
+        "Tel": "602 555 222",
+        "Mail": "mail@brose.cz"
+    },
+    {
+        "ID": "9588452",
+        "Created": "11.10.2013 15:15:49",
+        "Title": "ČT",
+        "Description": "Dodávka kávy na natáčení",
+        "Company": "ČESKÁ TELEVIZE",
+        "Street": "Jindřišská 16",
+        "City": "Praha 1",
+        "ZIP": "111 50",
+        "RegNo": "111222333",
+        "Contact": "Martina Kociánová",
+        "Tel": "602 111 222",
+        "Mail": "martina.kocianova@ct.cz"
+    }
+]}

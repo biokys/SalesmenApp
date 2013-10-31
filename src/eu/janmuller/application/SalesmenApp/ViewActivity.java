@@ -40,6 +40,7 @@ public class ViewActivity extends BaseActivity {
     private ScrollView mScrollView;
 
     private ScaleGestureDetector mScaleDetector;
+    private List<Template>       mTemplates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,10 +62,11 @@ public class ViewActivity extends BaseActivity {
 
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        List<Template> templates = Template.getAllObjects(Template.class);
-        Template template = templates.get(0);
+        mTemplates = Template.getAllObjects(Template.class);
+        Template template = mTemplates.get(0);
 
-        fillSideBar(template);
+        fillSideBar(mTemplates);
+        //fillSideBar(template);
     }
 
     private String getBaseUrl(Template template) {
@@ -78,6 +80,8 @@ public class ViewActivity extends BaseActivity {
     }
 
     private void fillSideBar(final Template template) {
+
+        mSideBarView.removeAllViews();
 
         List<Page> pages = Page.getByQuery(Page.class, "templateId=" + template.id.getId());
         if (pages.size() == 0) {
@@ -99,6 +103,8 @@ public class ViewActivity extends BaseActivity {
             Bitmap bitmap = BitmapFactory.decodeFile(getBaseUrl(template) + "/" + page.thumbnail);
             ImageView imageView = (ImageView) view.findViewById(R.id.image);
             imageView.setImageBitmap(bitmap);
+            TextView textView = (TextView) view.findViewById(R.id.text);
+            textView.setText(page.position + "");
             mSideBarView.addView(view);
         }
 
@@ -113,6 +119,30 @@ public class ViewActivity extends BaseActivity {
         });
     }
 
+    private void fillSideBar(final List<Template> templates) {
+
+        mSideBarView.removeAllViews();
+
+        for (final Template template : templates) {
+
+            View view = getLayoutInflater().inflate(R.layout.documentlistview, null);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    fillSideBar(template);
+                }
+            });
+            Bitmap bitmap = BitmapFactory.decodeFile(getBaseUrl(template) + "/" + template.thumbnail);
+            ImageView imageView = (ImageView) view.findViewById(R.id.image);
+            imageView.setImageBitmap(bitmap);
+            TextView textView = (TextView) view.findViewById(R.id.text);
+            textView.setText(template.name);
+            mSideBarView.addView(view);
+        }
+    }
+
+
     private void groupDocuments(int viewIndex) {
 
 
@@ -121,7 +151,13 @@ public class ViewActivity extends BaseActivity {
             final View view = mSideBarView.getChildAt(i);
             if (i < 3) {
 
-                view.animate().rotationBy((i - 1) * 10).y(0).setDuration(500).withLayer();
+                view.animate().rotationBy((i - 1) * 10).y(0).setDuration(500).withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        fillSideBar(mTemplates);
+                    }
+                }).withLayer();
             } else {
 
                 view.animate().alpha(0).setDuration(200).withStartAction(new Runnable() {

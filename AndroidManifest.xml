@@ -29,8 +29,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="MainActivity"/>
-        <activity android:name=".ViewActivity">
+        <activity android:name=".MainActivity" android:configChanges="screenSize|orientation|keyboardHidden"/>
+        <activity android:name=".ViewActivity" android:configChanges="screenSize|orientation|keyboardHidden">
             <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
