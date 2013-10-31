@@ -10,8 +10,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import eu.janmuller.application.salesmenapp.model.Inquiry;
+import roboguice.util.Ln;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,7 +23,6 @@ import java.text.SimpleDateFormat;
  */
 public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
-    private static final SimpleDateFormat sSdf = new SimpleDateFormat("dd.MM.yyyy");
     private IInquiryAdapterCallback mInquiryAdapterCallback;
 
     public InquiriesAdapter(Context context) {
@@ -46,19 +47,25 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
         final Inquiry inquiry = getItem(position);
 
-        TextView companyName = (TextView)view.findViewById(R.id.company_name);
-        TextView name = (TextView)view.findViewById(R.id.name);
-        TextView attachments = (TextView)view.findViewById(R.id.attachments);
-        TextView date = (TextView)view.findViewById(R.id.date);
-        TextView state = (TextView)view.findViewById(R.id.state);
-        Button close = (Button)view.findViewById(R.id.close);
+        TextView companyName = (TextView) view.findViewById(R.id.company_name);
+        TextView name = (TextView) view.findViewById(R.id.name);
+        TextView attachments = (TextView) view.findViewById(R.id.attachments);
+        TextView date = (TextView) view.findViewById(R.id.date);
+        TextView state = (TextView) view.findViewById(R.id.state);
+        Button close = (Button) view.findViewById(R.id.close);
 
         companyName.setText(inquiry.company);
         name.setText(inquiry.contact);
         attachments.setText(inquiry.attachments);
-        state.setText(inquiry.state);
-        date.setText(sSdf.format(inquiry.date));
+        state.setText(inquiry.state.getText());
+        try {
 
+            Date created = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(inquiry.created);
+            date.setText(Helper.formatDate(created));
+        } catch (Exception e) {
+
+            Ln.e(e);
+        }
 
         close.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,6 +128,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
     public interface IInquiryAdapterCallback {
 
         public void onInquirySelect(Inquiry inquiry);
+
         public void onInquiryCloseRequest(Inquiry inquiry);
 
     }

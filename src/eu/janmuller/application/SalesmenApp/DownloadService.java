@@ -1,19 +1,16 @@
 package eu.janmuller.application.salesmenapp;
 
-import android.app.DownloadManager;
 import android.content.Context;
-import android.net.Uri;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import eu.janmuller.application.salesmenapp.model.Page;
-import eu.janmuller.application.salesmenapp.model.Tag;
-import eu.janmuller.application.salesmenapp.model.Template;
-import eu.janmuller.application.salesmenapp.model.TemplatesEnvelope;
+import eu.janmuller.application.salesmenapp.model.*;
 import roboguice.util.Ln;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +21,9 @@ import java.io.*;
 @Singleton
 public class DownloadService {
 
+    public static final String TEMPLATES_JSON_URL = "http://api-dallmayr.sb2000.cz/service.ashx/templates?auth=%s";
+    public static final String INQUIRIES_JSON_URL = "http://api-dallmayr.sb2000.cz/service.ashx/inquiries?auth=%s";
+
     @Inject
     Context mContext;
 
@@ -33,14 +33,40 @@ public class DownloadService {
      * 3. Stahne data pro zobrazeni HTML (html, css, obrazky)
      * 4. Ulozi je na kartu
      */
-    public void downloadTemplates() {
+    public void downloadTemplates(DownloadTask.IProgressCallback callback) {
 
         try {
 
+            callback.onProgressUpdate("templates.json", 0, 100);
             TemplatesEnvelope root = downloadTemplatesJson();
+            callback.onProgressUpdate("templates.json", 100, 100);
             Template[] templates = root.templates;
             saveTemplateMetadata2Db(templates);
-            downloadAndSaveTemplateFiles(templates);
+            downloadAndSaveTemplateFiles(templates, callback);
+        } catch (Exception e) {
+
+            Ln.e(e);
+        }
+    }
+
+    public void downloadAndSaveInquiries(DownloadTask.IProgressCallback callback) {
+
+        try {
+
+            callback.onProgressUpdate("inquiries.json", 0, 100);
+            URL url = new URL(String.format(INQUIRIES_JSON_URL, Helper.getUniqueId(mContext)));
+            HttpURLConnection urlConnection = getConnectionFromUrl(url);
+            InputStream inputStream = urlConnection.getInputStream();
+            final Gson gson = new Gson();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            InquiriesEnvelope inquiriesEnvelope = gson.fromJson(reader, InquiriesEnvelope.class);
+            for (Inquiry inquiry : inquiriesEnvelope.inquiries) {
+
+                inquiry.attachments = "1a, 2b, 3c";
+                inquiry.state = Inquiry.State.NEW;
+                inquiry.save();
+            }
+            callback.onProgressUpdate("inquiries.json", 100, 100);
         } catch (Exception e) {
 
             Ln.e(e);
@@ -52,11 +78,11 @@ public class DownloadService {
      *
      * @return pole sablon
      */
-    private TemplatesEnvelope downloadTemplatesJson() throws IOException {
+    private TemplatesEnvelope downloadTemplatesJson() throws Exception {
 
-        //TEMP
-
-        InputStream inputStream = mContext.getResources().getAssets().open("templates.json");
+        URL url = new URL(String.format(TEMPLATES_JSON_URL, Helper.getUniqueId(mContext)));
+        HttpURLConnection urlConnection = getConnectionFromUrl(url);
+        InputStream inputStream = urlConnection.getInputStream();
         final Gson gson = new Gson();
         final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         return gson.fromJson(reader, TemplatesEnvelope.class);
@@ -87,39 +113,64 @@ public class DownloadService {
      * @param templates
      * @throws Exception
      */
-    private void downloadAndSaveTemplateFiles(Template[] templates) throws Exception {
+    private void downloadAndSaveTemplateFiles(Template[] templates, DownloadTask.IProgressCallback callback) throws Exception {
+
+        deleteRecursive(Helper.getRootFolderAsFile());
 
         for (Template template : templates) {
 
             String baseUrl = template.baseUrl;
             String[] files = template.files;
 
-            // ziskam folder, do ktereho budu stahovat vsechny fily
-            File baseFolder = Helper.getParentFolderAsFile(baseUrl);
-            // smazu vcetne podadresaru
-            deleteRecursive(baseFolder);
-
             for (String fileName : files) {
 
-                downloadFile(baseUrl, fileName);
+                downloadFile(baseUrl, fileName, callback);
             }
         }
     }
 
-    private void downloadFile(String baseUrl, String fileName) throws Exception {
+    private void downloadFile(String baseUrl, String fileName, DownloadTask.IProgressCallback progressCallback) {
 
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(baseUrl + fileName));
+        try {
 
-        File parentFolder = Helper.getParentFolderAsFile(baseUrl);
-        File completePath = new File(parentFolder, fileName);
-        Files.createParentDirs(completePath);
-        Uri uri = Uri.fromFile(completePath);
-        request.setDestinationUri(uri);
-        DownloadManager manager = (DownloadManager)mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-        manager.enqueue(request);
+            URL url = new URL(baseUrl + fileName);
+
+
+            File parentFolder = Helper.getParentFolderAsFile(baseUrl);
+            File completePath = new File(parentFolder, fileName);
+            Files.createParentDirs(completePath);
+
+            FileOutputStream fileOutput = new FileOutputStream(completePath);
+            HttpURLConnection urlConnection = getConnectionFromUrl(url);
+            InputStream inputStream = urlConnection.getInputStream();
+            int totalSize = urlConnection.getContentLength();
+            int downloadedSize = 0;
+
+            byte[] buffer = new byte[1024];
+            int bufferLength;
+
+            while ((bufferLength = inputStream.read(buffer)) > 0) {
+
+                fileOutput.write(buffer, 0, bufferLength);
+                downloadedSize += bufferLength;
+                progressCallback.onProgressUpdate(fileName, downloadedSize, totalSize);
+            }
+            fileOutput.close();
+
+        } catch (Exception e) {
+
+            Ln.e(e);
+        }
     }
 
+    private HttpURLConnection getConnectionFromUrl(URL url) throws Exception {
 
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestMethod("GET");
+        urlConnection.setDoOutput(true);
+        urlConnection.connect();
+        return urlConnection;
+    }
 
     void deleteRecursive(File fileOrDirectory) {
 

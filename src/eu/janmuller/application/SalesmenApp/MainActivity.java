@@ -1,23 +1,15 @@
 package eu.janmuller.application.salesmenapp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
-import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.model.Inquiry;
-import eu.janmuller.application.salesmenapp.model.Page;
-import eu.janmuller.application.salesmenapp.model.Tag;
-import eu.janmuller.application.salesmenapp.model.Template;
-import org.joda.time.DateTime;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
-import roboguice.util.RoboAsyncTask;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @ContentView(R.layout.main)
@@ -29,8 +21,6 @@ public class MainActivity extends BaseActivity {
     @InjectView(R.id.spinner_templates)
     private Spinner mSpinnerTemplates;
 
-    @Inject
-    private DownloadService mDownloadService;
 
     /**
      * Called when the activity is first created.
@@ -39,83 +29,20 @@ public class MainActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        new DownloadTask(this, DownloadTask.Type.INQUIRIES, new DownloadTask.ITaskCompleteCallback() {
+            @Override
+            public void onTaskComplete() {
+
+                fillInquiriesTable();
+            }
+        }).execute();
+        new DownloadTask(this, DownloadTask.Type.TEMPLATES).execute();
     }
-
-    @Override
-    protected void onStart() {
-
-        super.onStart();
-
-        Tag.deleteAll(Tag.class);
-        Page.deleteAll(Page.class);
-        Template.deleteAll(Template.class);
-        mDownloadService.downloadTemplates();
-
-        //new DownloadTask(this, mDownloadService).execute();
-
-        /*TemplatesAdapter templatesAdapter = new TemplatesAdapter(this);
-
-        List<Template> list = new ArrayList<Template>();
-        Template template;
-
-        template = new Template("T1");
-        list.add(template);
-
-        template = new Template("T2");
-        list.add(template);
-
-        template = new Template("T3");
-        list.add(template);
-
-        templatesAdapter.addAll(list);
-        mSpinnerTemplates.setAdapter(templatesAdapter);*/
-
-        fillInquiriesTable();
-    }
-
-    private static class DownloadTask extends RoboAsyncTask<Void> {
-
-        private DownloadService mDownloadService;
-
-        private DownloadTask(Context context, DownloadService downloadService) {
-
-            super(context);
-            this.mDownloadService = downloadService;
-        }
-
-        @Override
-        public Void call() throws Exception {
-
-            Template.deleteAll(Template.class);
-            mDownloadService.downloadTemplates();
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-    }
-
 
     private void fillInquiriesTable() {
 
-        List<Inquiry> list = new ArrayList<Inquiry>();
-        Inquiry inquiry;
-
-        inquiry = new Inquiry("Seznam.cz", "Jara Novak", "2a, 2b, 3a, 3c", new DateTime().minusDays(3).toDate());
-        list.add(inquiry);
-        inquiry = new Inquiry("Skoda", "Pavel Vodrazka", "1a, 1b, 2a, 2c", new DateTime().minusDays(2).toDate());
-        list.add(inquiry);
-        inquiry = new Inquiry("Atlas", "Petra Nova", "2a", new DateTime().minusDays(1).toDate());
-        list.add(inquiry);
-        inquiry = new Inquiry("IBM", "Paul Allen", "3c", new DateTime().toDate());
-        list.add(inquiry);
-
-        inquiry = new Inquiry("Seznam.cz", "Jara Novak", "2a, 2b, 3a, 3c", new DateTime().minusDays(3).toDate());
-        list.add(inquiry);
-        inquiry = new Inquiry("Skoda", "Pavel Vodrazka", "1a, 1b, 2a, 2c", new DateTime().minusDays(2).toDate());
-        list.add(inquiry);
-        inquiry = new Inquiry("Atlas", "Petra Nova", "2a", new DateTime().minusDays(1).toDate());
-        list.add(inquiry);
-        inquiry = new Inquiry("IBM", "Paul Allen", "3c", new DateTime().toDate());
-        list.add(inquiry);
-
+        List<Inquiry> list = Inquiry.getAllObjects(Inquiry.class);
         InquiriesAdapter inquiriesAdapter = new InquiriesAdapter(this);
         inquiriesAdapter.setCallbackListener(new InquiriesAdapter.IInquiryAdapterCallback() {
             @Override
