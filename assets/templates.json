@@ -1,0 +1,102 @@
+{
+    "Templates" :
+        [
+            {
+                "Version" : 2.0,
+                "Published" : "16.10.2013 12:24:25",
+                "BaseURL" : "http://dallmayr.sb2000.cz/templates-v2/template1/",
+                "Name" : "3b - nabídka",
+                "Order" : 1,
+                "Thumbnail" : "template.png",
+                "Landscape" : true,
+                "Files" :
+                    [
+                        "1-1200x847.html",
+                        "3b-1200x847-bunky-samostatne.html",
+                        "3b-1200x847-jeden-div.html",
+                        "4-1200x847.html",
+                        "styl.css",
+                        "template.png",
+                        "img/bg1.jpg",
+                        "img/bg2.jpg",
+                        "img/loga.png",
+                        "img/logo-big-8.png",
+                        "img/logo-big.gif",
+                        "img/logo-big.png",
+                        "img/logo-small.png",
+                        "img/produkt.jpg",
+                        "img/produkt2.jpg",
+                        "thumbnails/1-1200x847.png",
+                        "thumbnails/3b-1200x847-bunky-samostatne.png",
+                        "thumbnails/3b-1200x847-jeden-div.png",
+                        "thumbnails/4-1200x847.png"
+                    ],
+                "Pages" :
+                    [
+                        {
+                            "Order" : 1,
+                            "File" : "1-1200x847.html",
+                            "Thumbnail" : "thumbnails/1-1200x847.png",
+                            "Tags" :
+                                [
+                                    {
+                                        "TagIdent" : "company",
+                                        "Value" : "pro společnost:<h5>{{Company}}</h5>"
+                                    }
+                                ]
+                        },
+                        {
+                            "Order" : 2,
+                            "File" : "3b-1200x847-bunky-samostatne.html",
+                            "Thumbnail" : "thumbnails/3b-1200x847-bunky-samostatne.png",
+                            "Tags" :
+                                [
+                                ]
+                        },
+                        {
+                            "Order" : 3,
+                            "File" : "3b-1200x847-jeden-div.html",
+                            "Thumbnail" : "thumbnails/3b-1200x847-jeden-div.png",
+                            "Tags" :
+                                [
+                                ]
+                        },
+                        {
+                            "Order" : 4,
+                            "File" : "4-1200x847.html",
+                            "Thumbnail" : "thumbnails/4-1200x847.png",
+                            "Tags" :
+                                [
+                                ]
+                        }
+                    ]
+            },
+            {
+                "Version" : 2.0,
+                "Published" : "16.10.2013 12:24:29",
+                "BaseURL" : "http://dallmayr.sb2000.cz/templates-v2/template2/",
+                "Name" : "6b - objednávka",
+                "Order" : 2,
+                "Thumbnail" : "template.png",
+                "Landscape" : false,
+                "Files" :
+                    [
+                        "objednavka.html",
+                        "styl-tab.css",
+                        "template.png",
+                        "thumbnails/objednavka.png"
+                    ],
+                "Pages" :
+                    [
+                        {
+                            "Order" : 1,
+                            "File" : "objednavka.html",
+                            "Thumbnail" : "thumbnails/objednavka.png",
+                            "Tags" :
+                                [
+                                ]
+                        }
+                    ]
+            }
+        ]
+}

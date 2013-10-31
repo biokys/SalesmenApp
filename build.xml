@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="SalesmenApp" default="help">
+<project contact="SalesmenApp" default="help">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
@@ -12,9 +12,9 @@
          Here are some properties you may want to change/update:
 
          source.dir
-             The name of the source directory. Default is 'src'.
+             The contact of the source directory. Default is 'src'.
          out.dir
-             The name of the output directory. Default is 'bin'.
+             The contact of the output directory. Default is 'bin'.
 
          For other overridable properties, look at the beginning of the rules
          files in the SDK, at tools/ant/build.xml

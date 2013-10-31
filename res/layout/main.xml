@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
+              android:background="@color/app_background"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
-        >
+              android:orientation="vertical"
+              android:paddingLeft="20dp"
+              android:paddingRight="20dp">
 
-    <TextView
+    <RelativeLayout
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+        <Spinner
+                android:visibility="gone"
+                android:layout_alignParentLeft="true"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinner_inquiries"/>
+
+        <Spinner
+                android:layout_alignParentRight="true"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:layout_marginBottom="5dp"
+                android:id="@+id/spinner_templates"/>
+
+    </RelativeLayout>
+
+    <ListView
+            android:choiceMode="singleChoice"
+            android:id="@+id/list"
+            android:background="#fff"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Hello World, MainActivity"
             />
+
+
 </LinearLayout>
 
