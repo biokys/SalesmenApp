@@ -1,4 +1,4 @@
-package eu.janmuller.application.salesmenapp.model;
+package eu.janmuller.application.salesmenapp.model.db;
 
 import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
@@ -11,12 +11,7 @@ import eu.janmuller.android.dao.api.Id;
  * Date: 19.10.13
  * Time: 16:33
  */
-@GenericModel.TableName(name = "tags")
-@GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-public class Tag extends BaseDateModel<Tag> {
-
-    @GenericModel.ForeignKey(attributeClass = Page.class)
-    public Id     pageId;
+abstract public class Tag<T extends Tag> extends BaseDateModel<T> {
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("TagIdent")
@@ -25,4 +20,13 @@ public class Tag extends BaseDateModel<Tag> {
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Value")
     public String value;
+
+    protected Tag() {
+    }
+
+    protected Tag(Tag tag) {
+
+        this.tagIndent = tag.tagIndent;
+        this.value = tag.value;
+    }
 }

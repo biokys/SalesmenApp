@@ -1,6 +1,7 @@
 package eu.janmuller.application.salesmenapp.model;
 
 import com.google.gson.annotations.SerializedName;
+import eu.janmuller.application.salesmenapp.model.db.Template;
 
 /**
  * Created with IntelliJ IDEA.

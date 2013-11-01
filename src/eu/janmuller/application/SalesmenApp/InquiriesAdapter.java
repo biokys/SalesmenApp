@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
-import eu.janmuller.application.salesmenapp.model.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.Inquiry;
 import roboguice.util.Ln;
 
 import java.text.SimpleDateFormat;

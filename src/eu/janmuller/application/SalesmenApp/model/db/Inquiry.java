@@ -1,11 +1,10 @@
-package eu.janmuller.application.salesmenapp.model;
+package eu.janmuller.application.salesmenapp.model.db;
 
 import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +14,7 @@ import java.util.Date;
  */
 @GenericModel.TableName(name = "inquiries")
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-public class Inquiry extends BaseDateModel<Inquiry> implements Serializable {
+final public class Inquiry extends BaseDateModel<Inquiry> {
 
     public enum State {
 

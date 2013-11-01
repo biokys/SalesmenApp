@@ -1,8 +1,11 @@
-package eu.janmuller.application.salesmenapp.model;
+package eu.janmuller.application.salesmenapp.model.db;
 
 import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
+import eu.janmuller.android.dao.exceptions.DaoConstraintException;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -46,7 +49,43 @@ public class Template extends BaseDateModel<Template> {
     public String[] files;
 
     @SerializedName("Pages")
-    public Page[] pages;
+    public TemplatePage[] pages;
+
+    /**
+     * Implicitni konstruktor kvuli SDD
+     */
+    public Template() {
+
+    }
+
+    /**
+     * Kopirovaci konstruktor
+     */
+    public Template(Template template) {
+
+        this.version = template.version;
+        this.published = template.published;
+        this.baseUrl = template.baseUrl;
+        this.name = template.name;
+        this.position = template.position;
+        this.thumbnail = template.thumbnail;
+        this.landscape = template.landscape;
+    }
+
+    /**
+     * Smaze sablonu vcetne odkazu na ni (Pages)
+     * @throws DaoConstraintException
+     */
+    /*@Override
+    public void delete() throws DaoConstraintException {
+
+        List<Page> pageList = Page.getByQuery(Page.class, "templateId=" + id.getId());
+        for (Page page : pageList) {
+
+            page.delete();
+        }
+        super.delete();
+    }*/
 
     @Override
     public String toString() {

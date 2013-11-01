@@ -3,10 +3,13 @@ package eu.janmuller.application.salesmenapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
-import eu.janmuller.application.salesmenapp.model.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.Template;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
@@ -21,6 +24,7 @@ public class MainActivity extends BaseActivity {
     @InjectView(R.id.spinner_templates)
     private Spinner mSpinnerTemplates;
 
+    private Button mButtonTemplates;
 
     /**
      * Called when the activity is first created.
@@ -30,14 +34,24 @@ public class MainActivity extends BaseActivity {
 
         super.onCreate(savedInstanceState);
 
-        new DownloadTask(this, DownloadTask.Type.INQUIRIES, new DownloadTask.ITaskCompleteCallback() {
-            @Override
-            public void onTaskComplete() {
+        if (Inquiry.getCountByQuery(Inquiry.class, "1=1") == 0) {
 
-                fillInquiriesTable();
-            }
-        }).execute();
-        new DownloadTask(this, DownloadTask.Type.TEMPLATES).execute();
+            new DownloadTask(this, DownloadTask.Type.INQUIRIES, new DownloadTask.ITaskCompleteCallback() {
+                @Override
+                public void onTaskComplete() {
+
+                    fillInquiriesTable();
+                }
+            }).execute();
+        } else {
+
+            fillInquiriesTable();
+        }
+
+        if (Template.getCountByQuery(Template.class, "1=1") == 0) {
+
+            new DownloadTask(this, DownloadTask.Type.TEMPLATES).execute();
+        }
     }
 
     private void fillInquiriesTable() {
@@ -58,6 +72,15 @@ public class MainActivity extends BaseActivity {
             }
         });
         inquiriesAdapter.addAll(list);
+        View header = getLayoutInflater().inflate(R.layout.inquiry_header, null);
+        mButtonTemplates = (Button) header.findViewById(R.id.button_templates);
+        mButtonTemplates.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
+        mListView.addHeaderView(header);
         mListView.setAdapter(inquiriesAdapter);
     }
 
