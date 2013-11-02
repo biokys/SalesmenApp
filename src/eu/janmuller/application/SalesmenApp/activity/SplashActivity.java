@@ -1,8 +1,9 @@
-package eu.janmuller.application.salesmenapp;
+package eu.janmuller.application.salesmenapp.activity;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import eu.janmuller.application.salesmenapp.R;
 import roboguice.activity.RoboSplashActivity;
 
 /**

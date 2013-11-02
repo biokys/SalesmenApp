@@ -2,6 +2,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
+import eu.janmuller.application.salesmenapp.IHideAble;
 
 /**
  * Konkretni dokument, ktery vznika vytvorenim (kopie) sablony
@@ -15,7 +16,7 @@ import eu.janmuller.android.dao.api.Id;
  */
 @GenericModel.TableName(name = "documents")
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-final public class Document extends Template {
+final public class Document extends Template implements IHideAble {
 
     @GenericModel.ForeignKey(attributeClass = Inquiry.class)
     public Id inquiryId;
@@ -34,5 +35,17 @@ final public class Document extends Template {
         super(template);
         this.inquiryId = inquiryId;
         this.show = true;
+    }
+
+    @Override
+    public void setVisibility(boolean visible) {
+
+        show = visible;
+    }
+
+    @Override
+    public boolean isVisible() {
+
+        return show;
     }
 }

@@ -3,6 +3,8 @@ package eu.janmuller.application.salesmenapp;
 import android.content.Context;
 import android.os.Environment;
 import android.provider.Settings;
+import android.webkit.WebView;
+import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
 import eu.janmuller.application.salesmenapp.model.db.Template;
 import org.joda.time.DateTime;
 

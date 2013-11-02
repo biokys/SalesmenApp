@@ -7,6 +7,5 @@
         android:background="@color/app_background"
         android:gravity="center">
 
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-              android:text="Dallmayar" android:textColor="#B3975D" android:textSize="100sp" android:textStyle="bold"/>
+    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/logo_dallmayr"/>
 </LinearLayout>

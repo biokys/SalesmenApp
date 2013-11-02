@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import eu.janmuller.application.salesmenapp.model.*;
+import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.util.Ln;
 
 import java.io.*;
@@ -23,6 +24,8 @@ public class DownloadService {
 
     public static final String TEMPLATES_JSON_URL = "http://api-dallmayr.sb2000.cz/service.ashx/templates?auth=%s";
     public static final String INQUIRIES_JSON_URL = "http://api-dallmayr.sb2000.cz/service.ashx/inquiries?auth=%s";
+    public static final String TEMPLATES_JSON     = "templates.json";
+    public static final String INQUIRIES_JSON     = "inquiries.json";
 
     @Inject
     Context mContext;
@@ -37,9 +40,9 @@ public class DownloadService {
 
         try {
 
-            callback.onProgressUpdate("templates.json", 0, 100);
+            callback.onProgressUpdate(TEMPLATES_JSON, 0, 100);
             TemplatesEnvelope root = downloadTemplatesJson();
-            callback.onProgressUpdate("templates.json", 100, 100);
+            callback.onProgressUpdate(TEMPLATES_JSON, 100, 100);
             Template[] templates = root.templates;
             saveTemplateMetadata2Db(templates);
             downloadAndSaveTemplateFiles(templates, callback);
@@ -49,11 +52,16 @@ public class DownloadService {
         }
     }
 
+    /**
+     * Stahne a ulozi data poptavek do databaze
+     *
+     * @param callback
+     */
     public void downloadAndSaveInquiries(DownloadTask.IProgressCallback callback) {
 
         try {
 
-            callback.onProgressUpdate("inquiries.json", 0, 100);
+            callback.onProgressUpdate(INQUIRIES_JSON, 0, 100);
             URL url = new URL(String.format(INQUIRIES_JSON_URL, Helper.getUniqueId(mContext)));
             HttpURLConnection urlConnection = getConnectionFromUrl(url);
             InputStream inputStream = urlConnection.getInputStream();
@@ -66,7 +74,7 @@ public class DownloadService {
                 inquiry.state = Inquiry.State.NEW;
                 inquiry.save();
             }
-            callback.onProgressUpdate("inquiries.json", 100, 100);
+            callback.onProgressUpdate(INQUIRIES_JSON, 100, 100);
         } catch (Exception e) {
 
             Ln.e(e);
@@ -93,11 +101,11 @@ public class DownloadService {
         for (Template template : templates) {
 
             template.save();
-            for (Page page : template.pages) {
+            for (TemplatePage page : template.pages) {
 
                 page.templateId = template.id;
                 page.save();
-                for (Tag tag : page.tags) {
+                for (TemplateTag tag : page.tags) {
 
                     tag.pageId = page.id;
                     tag.save();
@@ -119,24 +127,21 @@ public class DownloadService {
 
         for (Template template : templates) {
 
-            String baseUrl = template.baseUrl;
             String[] files = template.files;
 
             for (String fileName : files) {
 
-                downloadFile(baseUrl, fileName, callback);
+                downloadFile(template, fileName, callback);
             }
         }
     }
 
-    private void downloadFile(String baseUrl, String fileName, DownloadTask.IProgressCallback progressCallback) {
+    private void downloadFile(Template template, String fileName, DownloadTask.IProgressCallback progressCallback) {
 
         try {
 
-            URL url = new URL(baseUrl + fileName);
-
-
-            File parentFolder = Helper.getParentFolderAsFile(baseUrl);
+            URL url = new URL(template.baseUrl + fileName);
+            File parentFolder = Helper.getTemplateFolderAsFile(template);
             File completePath = new File(parentFolder, fileName);
             Files.createParentDirs(completePath);
 

@@ -1,9 +1,10 @@
-package eu.janmuller.application.salesmenapp;
+package eu.janmuller.application.salesmenapp.activity;
 
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import eu.janmuller.application.salesmenapp.R;
 import roboguice.inject.ContentView;
 
 /**

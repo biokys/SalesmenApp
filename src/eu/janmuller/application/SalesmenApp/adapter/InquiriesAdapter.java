@@ -1,4 +1,4 @@
-package eu.janmuller.application.salesmenapp;
+package eu.janmuller.application.salesmenapp.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import eu.janmuller.application.salesmenapp.Helper;
+import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
 import roboguice.util.Ln;
 

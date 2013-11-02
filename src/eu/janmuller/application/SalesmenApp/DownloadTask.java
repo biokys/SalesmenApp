@@ -4,10 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Handler;
 import com.google.inject.Inject;
-import eu.janmuller.application.salesmenapp.model.Inquiry;
-import eu.janmuller.application.salesmenapp.model.Page;
-import eu.janmuller.application.salesmenapp.model.Tag;
-import eu.janmuller.application.salesmenapp.model.Template;
+import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.util.RoboAsyncTask;
 
 public class DownloadTask extends RoboAsyncTask<Void> {
@@ -77,8 +74,10 @@ public class DownloadTask extends RoboAsyncTask<Void> {
                 break;
             case TEMPLATES:
 
-                Tag.deleteAll(Tag.class);
-                Page.deleteAll(Page.class);
+                TemplateTag.deleteAll(TemplateTag.class);
+                DocumentTag.deleteAll(DocumentTag.class);
+                TemplatePage.deleteAll(TemplatePage.class);
+                DocumentPage.deleteAll(DocumentPage.class);
                 Template.deleteAll(Template.class);
                 setTitle("Stahuji šablony");
                 mDownloadService.downloadTemplates(mProgressCallback);

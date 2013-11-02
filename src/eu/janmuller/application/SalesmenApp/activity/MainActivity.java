@@ -1,4 +1,4 @@
-package eu.janmuller.application.salesmenapp;
+package eu.janmuller.application.salesmenapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
+import eu.janmuller.application.salesmenapp.DownloadTask;
+import eu.janmuller.application.salesmenapp.adapter.InquiriesAdapter;
+import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
 import eu.janmuller.application.salesmenapp.model.db.Template;
 import roboguice.inject.ContentView;

@@ -1,9 +1,10 @@
-package eu.janmuller.application.salesmenapp;
+package eu.janmuller.application.salesmenapp.activity;
 
 import android.app.ActionBar;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.WindowManager;
+import eu.janmuller.application.salesmenapp.R;
 import roboguice.activity.RoboActivity;
 
 /**
@@ -27,7 +28,7 @@ public class BaseActivity extends RoboActivity {
 
         mActionBar = getActionBar();
         mActionBar.setDisplayShowTitleEnabled(false);
-        mActionBar.setLogo(R.drawable.ic_logo);
+        mActionBar.setLogo(R.drawable.logo);
     }
 
     @Override
