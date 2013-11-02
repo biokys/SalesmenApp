@@ -1,10 +1,7 @@
 package eu.janmuller.application.salesmenapp;
 
 import eu.janmuller.android.dao.api.SimpleDroidDao;
-import eu.janmuller.application.salesmenapp.model.Inquiry;
-import eu.janmuller.application.salesmenapp.model.Page;
-import eu.janmuller.application.salesmenapp.model.Tag;
-import eu.janmuller.application.salesmenapp.model.Template;
+import eu.janmuller.application.salesmenapp.model.db.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +12,7 @@ import eu.janmuller.application.salesmenapp.model.Template;
 public class Application extends android.app.Application {
 
     public static final String APP_DB  = "app_db";
-    public static final int    VERSION = 8;
+    public static final int    VERSION = 25;
 
     @Override
     public void onCreate() {
@@ -23,9 +20,12 @@ public class Application extends android.app.Application {
         super.onCreate();
 
         SimpleDroidDao.registerModelClass(Template.class);
-        SimpleDroidDao.registerModelClass(Page.class);
-        SimpleDroidDao.registerModelClass(Tag.class);
+        SimpleDroidDao.registerModelClass(TemplatePage.class);
+        SimpleDroidDao.registerModelClass(DocumentPage.class);
+        SimpleDroidDao.registerModelClass(TemplateTag.class);
+        SimpleDroidDao.registerModelClass(DocumentTag.class);
         SimpleDroidDao.registerModelClass(Inquiry.class);
+        SimpleDroidDao.registerModelClass(Document.class);
         SimpleDroidDao.initialize(this, APP_DB, VERSION, null);
     }
 }
