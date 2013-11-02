@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.*;
+import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
@@ -79,13 +80,12 @@ public class ViewActivity extends BaseActivity {
         // pokud otevirame poptavku poprve, pak k ni priradime vsechny sablony
         if (mDocuments.size() == 0) {
 
-            ViewActivityHelper.createDocuments(mDocuments, mInquiry.id);
+            ViewActivityHelper.createDocuments(mDocuments, mInquiry);
         }
 
         // zobrazim dokumenty jako stocky v postranim menu
         fillSideBar(mDocuments);
     }
-
 
     /**
      * Zobrazi stranky konkretniho dokumentu + zobrazi pohled na 1. stranku dokumentu
@@ -97,6 +97,7 @@ public class ViewActivity extends BaseActivity {
         mSideBarView.removeAllViews();
         mPageViewMode = true;
         mDocument = document;
+        invalidateOptionsMenu();
 
         List<DocumentPage> pages = DocumentPage.getByQuery(DocumentPage.class, "documentId=" + document.id.getId());
         if (pages.size() == 0) {
@@ -117,7 +118,7 @@ public class ViewActivity extends BaseActivity {
                 @Override
                 public void onClick(View view) {
 
-                    ViewActivityHelper.showHtml(mWebView, document, page);
+                    Helper.showHtml(mWebView, document, page);
                 }
             });
 
@@ -135,8 +136,12 @@ public class ViewActivity extends BaseActivity {
             mSideBarView.addView(view);
         }
 
-        // zobrazim prvni stranku
-        ViewActivityHelper.showHtml(mWebView, document, pages.get(0));
+        // zobrazim prvni zobrazitelnou stranku
+        DocumentPage firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
+        if (firstShowablePage != null) {
+
+            Helper.showHtml(mWebView, document, firstShowablePage);
+        }
     }
 
     /**
@@ -148,6 +153,7 @@ public class ViewActivity extends BaseActivity {
 
         mSideBarView.removeAllViews();
         mPageViewMode = false;
+        invalidateOptionsMenu();
 
         for (final Document document : documents) {
 
@@ -196,8 +202,17 @@ public class ViewActivity extends BaseActivity {
         for (int i = 0; i < menu.size(); i++) {
 
             MenuItem item = menu.getItem(i);
-            item.setVisible(!mEditMode);
+
+            if (item.getItemId() == R.id.menu_fullscreen) {
+
+                item.setVisible(!mEditMode && mPageViewMode);
+            } else {
+
+                item.setVisible(!mEditMode);
+            }
         }
+
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -218,8 +233,19 @@ public class ViewActivity extends BaseActivity {
 
                 switch2EditMode();
                 break;
+            case R.id.menu_fullscreen:
+
+                runFullscreenMode();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void runFullscreenMode() {
+
+        Intent intent = new Intent(this, FullscreenModeActivity.class);
+        intent.putExtra(FullscreenModeActivity.DOCUMENT, mDocument);
+        startActivity(intent);
     }
 
     private void switch2EditMode() {
@@ -266,6 +292,7 @@ public class ViewActivity extends BaseActivity {
     private void openSendActivity() {
 
         Intent intent = new Intent(this, SendActivity.class);
+        intent.putExtra(INQUIRY, mInquiry);
         startActivity(intent);
     }
 

@@ -29,15 +29,19 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.MainActivity" android:configChanges="screenSize|orientation|keyboardHidden"/>
-        <activity android:name=".activity.ViewActivity" android:configChanges="screenSize|orientation|keyboardHidden">
-            <!--<intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>-->
-        </activity>
-        <activity android:name=".activity.SendActivity" android:configChanges="screenSize|orientation|keyboardHidden"/>
-        <activity android:name=".activity.FullscreenModeActivity" android:configChanges="screenSize|orientation|keyboardHidden"
-                  android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"/>
+        <activity
+                android:name=".activity.MainActivity"
+                android:configChanges="screenSize|orientation|keyboardHidden"/>
+        <activity
+                android:name=".activity.ViewActivity"
+                android:configChanges="screenSize|orientation|keyboardHidden"/>
+        <activity
+                android:name=".activity.SendActivity"
+                android:configChanges="screenSize|orientation|keyboardHidden"
+                android:windowSoftInputMode="stateHidden"/>
+        <activity
+                android:name=".activity.FullscreenModeActivity"
+                android:configChanges="screenSize|orientation|keyboardHidden"
+                android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"/>
     </application>
 </manifest>

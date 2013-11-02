@@ -17,6 +17,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:hint="Komu"
+                android:id="@+id/email"
                 android:textSize="18sp"
                 android:inputType="textEmailAddress"
                 android:layout_marginTop="10dp"/>
@@ -40,6 +41,16 @@
                 android:singleLine="false"
                 android:layout_marginTop="20dp"/>
     </LinearLayout>
-    <View android:layout_width="fill_parent" android:layout_height="3dp" android:background="#999"/>
-    <GridLayout android:layout_width="fill_parent" android:layout_height="fill_parent" android:columnCount="5"/>
+
+    <View
+            android:layout_width="fill_parent"
+            android:layout_height="3dp"
+            android:background="#999"/>
+
+    <GridLayout
+            android:layout_width="fill_parent"
+            android:layout_height="400dp"
+            android:columnCount="5"
+            android:rowCount="5"
+            android:id="@+id/grid"/>
 </LinearLayout>

@@ -7,7 +7,7 @@
               android:layout_height="match_parent">
 
     <ScrollView
-            android:layout_width="200dp"
+            android:layout_width="@dimen/sidebar_width"
             android:layout_height="fill_parent"
             android:id="@+id/scrollview"
             android:background="@android:color/transparent">

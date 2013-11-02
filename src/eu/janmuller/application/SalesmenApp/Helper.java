@@ -102,4 +102,14 @@ public class Helper {
             return sSdf.format(date);
         }
     }
+
+    public static String getBaseUrl(Template template) {
+
+        return Helper.getTemplateFolderAsFile(template).getPath();
+    }
+
+    public static void showHtml(WebView webView, Template template, DocumentPage page) {
+
+        webView.loadUrl("file://" + getBaseUrl(template) + File.separator + page.file);
+    }
 }
