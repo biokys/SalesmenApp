@@ -26,6 +26,7 @@ import java.util.Date;
 public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
     private IInquiryAdapterCallback mInquiryAdapterCallback;
+    private SimpleDateFormat mSdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     public InquiriesAdapter(Context context) {
 
@@ -55,14 +56,16 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
         TextView date = (TextView) view.findViewById(R.id.date);
         TextView state = (TextView) view.findViewById(R.id.state);
         Button close = (Button) view.findViewById(R.id.close);
+        View newItemStripe = view.findViewById(R.id.new_item_stripe);
 
+        newItemStripe.setVisibility(inquiry.state == Inquiry.State.NEW ? View.VISIBLE : View.INVISIBLE);
         companyName.setText(inquiry.company);
         name.setText(inquiry.contact);
         attachments.setText(inquiry.attachments);
         state.setText(inquiry.state.getText());
         try {
 
-            Date created = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(inquiry.created);
+            Date created = mSdf.parse(inquiry.created);
             date.setText(Helper.formatDate(created));
         } catch (Exception e) {
 

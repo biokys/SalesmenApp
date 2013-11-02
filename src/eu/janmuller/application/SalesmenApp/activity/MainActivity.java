@@ -29,6 +29,9 @@ public class MainActivity extends BaseActivity {
 
     private Button mButtonTemplates;
 
+    private InquiriesAdapter mInquiriesAdapter;
+
+
     /**
      * Called when the activity is first created.
      */
@@ -36,6 +39,8 @@ public class MainActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        prepareListAdapter();
 
         if (Inquiry.getCountByQuery(Inquiry.class, "1=1") == 0) {
 
@@ -46,9 +51,6 @@ public class MainActivity extends BaseActivity {
                     fillInquiriesTable();
                 }
             }).execute();
-        } else {
-
-            fillInquiriesTable();
         }
 
         if (Template.getCountByQuery(Template.class, "1=1") == 0) {
@@ -57,11 +59,17 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void fillInquiriesTable() {
+    @Override
+    protected void onStart() {
 
-        List<Inquiry> list = Inquiry.getAllObjects(Inquiry.class);
-        InquiriesAdapter inquiriesAdapter = new InquiriesAdapter(this);
-        inquiriesAdapter.setCallbackListener(new InquiriesAdapter.IInquiryAdapterCallback() {
+        super.onStart();
+        fillInquiriesTable();
+    }
+
+    private void prepareListAdapter() {
+
+        mInquiriesAdapter = new InquiriesAdapter(this);
+        mInquiriesAdapter.setCallbackListener(new InquiriesAdapter.IInquiryAdapterCallback() {
             @Override
             public void onInquirySelect(Inquiry inquiry) {
 
@@ -74,17 +82,25 @@ public class MainActivity extends BaseActivity {
                 closeInquiry(inquiry);
             }
         });
-        inquiriesAdapter.addAll(list);
+
         View header = getLayoutInflater().inflate(R.layout.inquiry_header, null);
         mButtonTemplates = (Button) header.findViewById(R.id.button_templates);
         mButtonTemplates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //To change body of implemented methods use File | Settings | File Templates.
+
             }
         });
         mListView.addHeaderView(header);
-        mListView.setAdapter(inquiriesAdapter);
+        mListView.setAdapter(mInquiriesAdapter);
+    }
+
+    private void fillInquiriesTable() {
+
+        mInquiriesAdapter.clear();
+
+        List<Inquiry> list = Inquiry.getInquiriesWithAttachments();
+        mInquiriesAdapter.addAll(list);
     }
 
     @Override

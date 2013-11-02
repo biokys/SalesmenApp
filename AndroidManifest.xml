@@ -36,6 +36,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>-->
         </activity>
-        <activity android:name=".activity.SendActivity"/>
+        <activity android:name=".activity.SendActivity" android:configChanges="screenSize|orientation|keyboardHidden"/>
+        <activity android:name=".activity.FullscreenModeActivity" android:configChanges="screenSize|orientation|keyboardHidden"
+                  android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"/>
     </application>
 </manifest>

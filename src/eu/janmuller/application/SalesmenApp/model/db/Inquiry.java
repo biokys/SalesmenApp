@@ -5,6 +5,7 @@ import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -87,6 +88,48 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     public State state;
 
     public String attachments;
+
+    /**
+     * Vrati vsechny poptavky
+     * Metoda take vyplni ke kazde poptavce zkraceny nazev jejich priloh
+     * Poptavky jsou serazeni podle jejich stavu
+     * @return
+     */
+    public static List<Inquiry> getInquiriesWithAttachments() {
+
+        List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "1=1 order by state asc");
+        for (Inquiry inquiry : list) {
+
+            if (inquiry.state == State.NEW) {
+
+                inquiry.attachments = "-";
+                continue;
+            }
+            String attachments = "";
+            List<Document> documents = Document.getByQuery(Document.class, "show=1 and inquiryId=" + inquiry.id.getId());
+            int loop = 0;
+            for (Document document : documents) {
+
+                String[] splitted = document.name.split(" - ");
+                if (splitted.length > 0) {
+
+                    attachments += splitted[0];
+                } else {
+
+                    attachments += document.name;
+                }
+
+                if (++loop < documents.size()) {
+
+                    attachments += ", ";
+                }
+            }
+
+            inquiry.attachments = attachments;
+        }
+
+        return list;
+    }
 
     @Override
     public String toString() {

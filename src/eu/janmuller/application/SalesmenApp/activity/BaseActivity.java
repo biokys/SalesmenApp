@@ -20,15 +20,16 @@ public class BaseActivity extends RoboActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // vynutime landscape
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         super.onCreate(savedInstanceState);
 
-        mActionBar = getActionBar();
-        mActionBar.setDisplayShowTitleEnabled(false);
-        mActionBar.setLogo(R.drawable.logo);
+        if ((mActionBar = getActionBar()) != null) {
+
+            mActionBar.setDisplayShowTitleEnabled(false);
+            mActionBar.setLogo(R.drawable.logo);
+        }
     }
 
     @Override
