@@ -45,4 +45,23 @@ final public class DocumentPage extends Page<DocumentPage> implements IHideAble 
 
         return show;
     }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DocumentPage that = (DocumentPage) o;
+
+        if (!id.getId().equals(that.id.getId())) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return id.getId().hashCode();
+    }
 }

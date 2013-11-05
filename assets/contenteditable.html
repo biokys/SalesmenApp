@@ -1,0 +1,39 @@
+<script>
+    /**
+     * Enables and disables attribute contenteditable for elements with class .edit
+     *
+     * @param {string} mode Value 'edit' switches to editable mode, everything else disables editable mode.
+     */
+    function switchMode(mode) {
+        var editable = document.querySelectorAll('.edit');
+        var i = editable.length;
+        if (mode == 'edit') {
+            while (--i > -1) {
+                editable[i].setAttribute('contenteditable', true);
+                editable[i].style.backgroundColor = '#FFF8E7';
+                editable[i].style.border = '1px dotted #333333 ';
+            }
+        }
+        else {
+            while (--i > -1) {
+                editable[i].removeAttribute('contenteditable');
+                editable[i].style.backgroundColor = 'transparent';
+                editable[i].style.border = '';
+            }
+        }
+    }
+
+    function setCustomText(id, text) {
+
+        var section = document.getElementById(id);
+        section.innerHTML = text;
+    }
+
+    function getCustomText(tagid, id) {
+
+        var section = document.getElementById(id);
+        /*Android.saveText(section.innerHTML);*/
+        Android.saveText(tagid + "::" + section.innerHTML);
+    }
+
+</script>

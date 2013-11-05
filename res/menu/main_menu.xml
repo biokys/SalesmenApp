@@ -4,7 +4,7 @@
 
     <item
             android:id="@+id/menu_save"
-            android:icon="@drawable/ic_action_content_paste"
+            android:icon="@drawable/ab_tabulka"
             android:title="Open web"
             android:showAsAction="always"/>
 </menu>

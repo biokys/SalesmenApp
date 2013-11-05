@@ -1,5 +1,6 @@
 package eu.janmuller.application.salesmenapp.activity;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -78,6 +79,24 @@ class ViewActivityHelper {
         webView.setWebViewClient(new WebViewClient());
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUseWideViewPort(true);
+        webView.addJavascriptInterface(new WebAppInterface(), "Android");
+    }
+
+    static void setEditHtmlCellsVisibility(WebView webView, boolean visible) {
+
+        webView.loadUrl("javascript:switchMode(" + (visible ? "'edit'" : "") + ")");
+    }
+
+    static void setCustomText(WebView webView, DocumentTag documentTag) {
+
+        webView.loadUrl("javascript:setCustomText('" + documentTag.tagIndent + "','" + documentTag.value + "')");
+    }
+
+    static void getCustomTextAndSave(WebView webView, DocumentTag documentTag) {
+
+        webView.loadUrl("javascript:getCustomText('" + documentTag.id.getId()  + "','" + documentTag.tagIndent + "')");
     }
 
     static void manageVisibility(boolean editMode, View view, ImageView imageView,

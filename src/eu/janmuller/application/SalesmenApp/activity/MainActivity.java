@@ -42,7 +42,7 @@ public class MainActivity extends BaseActivity {
 
         prepareListAdapter();
 
-        if (Inquiry.getCountByQuery(Inquiry.class, "1=1") == 0) {
+        //if (Inquiry.getCountByQuery(Inquiry.class, "1=1") == 0) {
 
             new DownloadTask(this, DownloadTask.Type.INQUIRIES, new DownloadTask.ITaskCompleteCallback() {
                 @Override
@@ -51,7 +51,7 @@ public class MainActivity extends BaseActivity {
                     fillInquiriesTable();
                 }
             }).execute();
-        }
+        //}
 
         if (Template.getCountByQuery(Template.class, "1=1") == 0) {
 

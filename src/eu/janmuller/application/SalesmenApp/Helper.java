@@ -3,17 +3,22 @@ package eu.janmuller.application.salesmenapp;
 import android.content.Context;
 import android.os.Environment;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.webkit.WebView;
 import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
+import eu.janmuller.application.salesmenapp.model.db.DocumentTag;
+import eu.janmuller.application.salesmenapp.model.db.Page;
 import eu.janmuller.application.salesmenapp.model.db.Template;
 import org.joda.time.DateTime;
+import roboguice.util.Ln;
 
-import java.io.File;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -79,6 +84,28 @@ public class Helper {
 
         return Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
+    }
+
+    public static String loadJsHtml(Context context) {
+
+        String html = "";
+        try {
+
+            BufferedReader r = new BufferedReader(new InputStreamReader(context.getAssets().open("contenteditable.html")));
+            StringBuilder total = new StringBuilder();
+            String line;
+            while ((line = r.readLine()) != null) {
+
+                total.append(line);
+            }
+
+            html = total.toString();
+        } catch (IOException e) {
+
+            Ln.e(e);
+        }
+
+        return html;
     }
 
     /**

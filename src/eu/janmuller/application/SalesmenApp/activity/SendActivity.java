@@ -1,11 +1,20 @@
 package eu.janmuller.application.salesmenapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.Toast;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.model.db.Document;
+import eu.janmuller.application.salesmenapp.model.db.Inquiry;
 import roboguice.inject.ContentView;
+import roboguice.inject.InjectView;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,12 +25,48 @@ import roboguice.inject.ContentView;
 @ContentView(R.layout.send_activity)
 public class SendActivity extends BaseActivity {
 
+    @InjectView(R.id.email)
+    private EditText mEmailAddress;
+
+    @InjectView(R.id.grid)
+    private GridLayout mGridLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         mActionBar.setDisplayHomeAsUpEnabled(true);
         mActionBar.setHomeButtonEnabled(true);
+
+        Intent intent = getIntent();
+        Inquiry inquiry = (Inquiry) intent.getSerializableExtra(ViewActivity.INQUIRY);
+
+        if (inquiry == null) {
+
+            finish();
+            return;
+        }
+
+        if (inquiry.mail != null) {
+
+            mEmailAddress.setText(inquiry.mail);
+        }
+
+        for (int i = 0; i < 10; i++) {
+        for (Document document : getDocuments(inquiry)) {
+
+            final View view = getLayoutInflater().inflate(R.layout.documentlistview, null);
+            view.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    view.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.sidebar_width);
+                }
+            });
+            ViewActivityHelper.getThumbnailImage(view, document, document.thumbnail);
+            mGridLayout.addView(view);
+        }
+        }
     }
 
     @Override
@@ -46,6 +91,11 @@ public class SendActivity extends BaseActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private List<Document> getDocuments(Inquiry inquiry) {
+
+        return Document.getByQuery(Document.class, "show=1 and inquiryId=" + inquiry.id.getId());
     }
 
     private void sendMessage() {

@@ -28,7 +28,9 @@ public class DownloadService {
     public static final String INQUIRIES_JSON     = "inquiries.json";
 
     @Inject
-    Context mContext;
+    private Context mContext;
+
+    private String mHtmlWithJs;
 
     /**
      * 1. Stahne JSON data sablon ze serveru
@@ -39,6 +41,9 @@ public class DownloadService {
     public void downloadTemplates(DownloadTask.IProgressCallback callback) {
 
         try {
+
+            // nacteme z resourcu cast html s JS pro zmenu classy EDIT
+            mHtmlWithJs = Helper.loadJsHtml(mContext);
 
             callback.onProgressUpdate(TEMPLATES_JSON, 0, 100);
             TemplatesEnvelope root = downloadTemplatesJson();
@@ -70,7 +75,12 @@ public class DownloadService {
             InquiriesEnvelope inquiriesEnvelope = gson.fromJson(reader, InquiriesEnvelope.class);
             for (Inquiry inquiry : inquiriesEnvelope.inquiries) {
 
-                inquiry.attachments = "1a, 2b, 3c";
+                // pokud inquiry jiz v DB je, pak preskocime
+                if (Inquiry.getCountByQuery(Inquiry.class, "serverId=" + inquiry.serverId) > 0){
+
+                    continue;
+                }
+                inquiry.attachments = "";
                 inquiry.state = Inquiry.State.NEW;
                 inquiry.save();
             }
@@ -159,6 +169,13 @@ public class DownloadService {
                 fileOutput.write(buffer, 0, bufferLength);
                 downloadedSize += bufferLength;
                 progressCallback.onProgressUpdate(fileName, downloadedSize, totalSize);
+            }
+
+            // pokud se jedna o HTML soubor, pak na jeho konec pridame fragment JS kodu pro zmenu
+            // contenteditable vlastnosti
+            if (fileName.endsWith(".html")) {
+
+                fileOutput.write(mHtmlWithJs.getBytes());
             }
             fileOutput.close();
 
