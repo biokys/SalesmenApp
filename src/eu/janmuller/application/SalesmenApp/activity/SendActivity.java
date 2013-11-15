@@ -52,7 +52,6 @@ public class SendActivity extends BaseActivity {
             mEmailAddress.setText(inquiry.mail);
         }
 
-        for (int i = 0; i < 10; i++) {
         for (Document document : getDocuments(inquiry)) {
 
             final View view = getLayoutInflater().inflate(R.layout.documentlistview, null);
@@ -65,7 +64,6 @@ public class SendActivity extends BaseActivity {
             });
             ViewActivityHelper.getThumbnailImage(view, document, document.thumbnail);
             mGridLayout.addView(view);
-        }
         }
     }
 

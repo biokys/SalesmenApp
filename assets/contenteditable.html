@@ -11,7 +11,7 @@
             while (--i > -1) {
                 editable[i].setAttribute('contenteditable', true);
                 editable[i].style.backgroundColor = '#FFF8E7';
-                editable[i].style.border = '1px dotted #333333 ';
+                editable[i].style.border = '2pt solid #aa0000 ';
             }
         }
         else {
@@ -32,7 +32,6 @@
     function getCustomText(tagid, id) {
 
         var section = document.getElementById(id);
-        /*Android.saveText(section.innerHTML);*/
         Android.saveText(tagid + "::" + section.innerHTML);
     }
 

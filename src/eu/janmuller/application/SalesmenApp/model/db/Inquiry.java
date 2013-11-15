@@ -110,14 +110,15 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
             int loop = 0;
             for (Document document : documents) {
 
-                String[] splitted = document.name.split(" - ");
+                attachments += document.shortName;
+                /*String[] splitted = document.name.split(" - ");
                 if (splitted.length > 0) {
 
                     attachments += splitted[0];
                 } else {
 
                     attachments += document.name;
-                }
+                }*/
 
                 if (++loop < documents.size()) {
 

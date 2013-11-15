@@ -7,16 +7,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.*;
+import eu.janmuller.android.dao.api.LongId;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
-import eu.janmuller.application.salesmenapp.model.db.Document;
-import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
-import eu.janmuller.application.salesmenapp.model.db.Inquiry;
-import eu.janmuller.application.salesmenapp.model.db.Template;
+import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Aktivita ma na starosti zobrazovani seznamu dokumentu + zobrazovani konkretnich stranek jednotlivych dokumentu
@@ -34,20 +35,21 @@ public class ViewActivity extends BaseActivity {
     @InjectView(R.id.list)
     private LinearLayout mSideBarView;
 
-    @InjectView(R.id.webview)
-    private WebView mWebView;
+    @InjectView(R.id.webview_container)
+    private LinearLayout mWebViewContainer;
 
     @InjectView(R.id.scrollview)
     private ScrollView mScrollView;
 
-    private List<Template> mTemplates;
-    private Inquiry        mInquiry;
-    private List<Document> mDocuments;
-    private Document       mDocument;
-    private boolean        mEditMode;
-    private boolean        mPageViewMode;
-    private int            mActionBarDisplayOptions;
-
+    private List<Template>     mTemplates;
+    private Inquiry            mInquiry;
+    private List<Document>     mDocuments;
+    private Document           mDocument;
+    private boolean            mEditMode;
+    private boolean            mPageViewMode;
+    private int                mActionBarDisplayOptions;
+    private Map<DocumentPage, WebView> mWebViewMap;
+    private DocumentPage               mActualPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,10 +59,6 @@ public class ViewActivity extends BaseActivity {
         // ziskam Inquiry objekt z EXTRAS
         Intent intent = getIntent();
         mInquiry = (Inquiry) intent.getSerializableExtra(INQUIRY);
-        if (mInquiry != null) {
-
-            Toast.makeText(this, "Otevrena poptavka " + mInquiry.contact, Toast.LENGTH_SHORT).show();
-        }
 
         // configure actionbar
         mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -68,12 +66,11 @@ public class ViewActivity extends BaseActivity {
         mActionBar.setDisplayShowTitleEnabled(true);
         mActionBar.setTitle(mInquiry.title);
 
+        mWebViewMap = new HashMap<DocumentPage, WebView>();
         setUp();
     }
 
     private void setUp() {
-
-        ViewActivityHelper.configureWebView(mWebView);
 
         mDocuments = Document.getByQuery(Document.class, "inquiryId=" + mInquiry.id.getId());
 
@@ -118,7 +115,7 @@ public class ViewActivity extends BaseActivity {
                 @Override
                 public void onClick(View view) {
 
-                    Helper.showHtml(mWebView, document, page);
+                    showHtml(document, page);
                 }
             });
 
@@ -140,8 +137,48 @@ public class ViewActivity extends BaseActivity {
         DocumentPage firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
         if (firstShowablePage != null) {
 
-            Helper.showHtml(mWebView, document, firstShowablePage);
+            if (mActualPage != null && mActualPage.show) {
+
+                firstShowablePage = mActualPage;
+            }
+            showHtml(document, firstShowablePage);
         }
+    }
+
+    private void showHtml(Template template, final DocumentPage page) {
+
+        mActualPage = page;
+
+        WebView webView = mWebViewMap.get(page);
+
+        if (webView == null) {
+
+            webView = new WebView(ViewActivity.this);
+            ViewActivityHelper.configureWebView(webView);
+            Helper.showHtml(webView, template, page);
+            mWebViewMap.put(page, webView);
+        }
+
+        final WebView _webview = webView;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+
+                List<DocumentTag> list = DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + page.id.getId());
+                for (DocumentTag documentTag : list) {
+
+                    ViewActivityHelper.setCustomText(_webview, documentTag);
+                }
+
+                if (mEditMode) {
+
+                    ViewActivityHelper.setEditHtmlCellsVisibility(_webview, true);
+                }
+            }
+        });
+
+        mWebViewContainer.removeAllViews();
+        mWebViewContainer.addView(webView);
     }
 
     /**
@@ -253,6 +290,7 @@ public class ViewActivity extends BaseActivity {
         mEditMode = true;
         refreshSideBar();
 
+
         View view = getLayoutInflater().inflate(R.layout.action_bar_done, null);
         view.findViewById(R.id.done).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -273,9 +311,31 @@ public class ViewActivity extends BaseActivity {
     private void switch2ViewMode() {
 
         mEditMode = false;
+
+        if (mPageViewMode) {
+
+            saveEditChanges();
+        }
         refreshSideBar();
         mActionBar.setDisplayOptions(mActionBarDisplayOptions);
         invalidateOptionsMenu();
+    }
+
+    private void saveEditChanges() {
+
+        Iterator<DocumentPage> iterator = mWebViewMap.keySet().iterator();
+        while (iterator.hasNext()) {
+
+            DocumentPage page = iterator.next();
+            WebView webView = mWebViewMap.get(page);
+            List<DocumentTag> tags = DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + page.id.getId());
+            for (DocumentTag documentTag : tags) {
+
+                ViewActivityHelper.getCustomTextAndSave(webView, documentTag);
+            }
+
+            ViewActivityHelper.setEditHtmlCellsVisibility(webView, false);
+        }
     }
 
     private void refreshSideBar() {
