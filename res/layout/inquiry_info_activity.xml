@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:background="@color/app_background"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+        android:scrollbarStyle="outsideOverlay">
+
+    <TableLayout
+            android:stretchColumns="1"
+            android:background="@android:color/white"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <View
+                android:layout_width="fill_parent"
+                android:layout_height="20dp"
+                android:background="@color/app_background"/>
+
+        <TableRow
+                style="@style/InquiryInfoTableCell">
+
+            <TextView
+                    style="@style/InquiryInfoTableLabel"
+                    android:text="Poptávka"/>
+
+            <EditText
+                    style="@style/InquiryInfoTableText"
+                    android:id="@+id/name"/>
+        </TableRow>
+
+        <View style="@style/InquiryInfoTableDivider"/>
+
+        <TableRow
+                style="@style/InquiryInfoTableCell">
+
+            <TextView
+                    style="@style/InquiryInfoTableLabel"
+                    android:text="Zástupce"/>
+
+            <EditText
+                    style="@style/InquiryInfoTableText"
+                    android:id="@+id/agent"/>
+        </TableRow>
+
+        <View style="@style/InquiryInfoTableDivider"/>
+
+        <TableRow
+                style="@style/InquiryInfoTableCell">
+
+            <TextView
+                    style="@style/InquiryInfoTableLabel"
+                    android:text="Obchodník"/>
+
+            <EditText
+                    style="@style/InquiryInfoTableText"
+                    android:id="@+id/dealer"/>
+        </TableRow>
+
+        <View style="@style/InquiryInfoTableDivider"/>
+
+        <TableRow
+                style="@style/InquiryInfoTableCell">
+
+            <TextView
+                    style="@style/InquiryInfoTableLabel"
+                    android:text="Stav"/>
+
+            <EditText
+                    style="@style/InquiryInfoTableText"
+                    android:id="@+id/state"/>
+        </TableRow>
+
+        <View style="@style/InquiryInfoTableDivider"/>
+
+        <TableRow
+                style="@style/InquiryInfoTableCell">
+
+            <TextView
+                    style="@style/InquiryInfoTableLabel"
+                    android:text="Oslovení"/>
+
+            <EditText
+                    style="@style/InquiryInfoTableText"
+                    android:id="@+id/date_of_contact"/>
+        </TableRow>
+
+        <View style="@style/InquiryInfoTableDivider"/>
+
+        <TableRow
+                style="@style/InquiryInfoTableCell">
+
+            <TextView
+                    style="@style/InquiryInfoTableLabel"
+                    android:text="Poznámka"/>
+
+            <EditText
+                    style="@style/InquiryInfoTableText"/>
+        </TableRow>
+
+        <View
+                android:layout_width="fill_parent"
+                android:layout_height="20dp"
+                android:background="@color/app_background"/>
+    </TableLayout>
+
+</ScrollView>
+

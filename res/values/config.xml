@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <dimen name="sidebar_width">222dp</dimen>
     <dimen name="fullscreen_sidebar_width">65dp</dimen>
 
     <color name="app_background">#3c3c3c</color>
     <color name="spinner_background">#4298ba</color>
-
-
     <color name="list_item_highlight">#3D97B9</color>
 </resources>

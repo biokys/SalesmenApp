@@ -5,8 +5,6 @@ import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 
-import java.util.List;
-
 /**
  * Created with IntelliJ IDEA.
  * Coder: Jan Müller
@@ -17,6 +15,31 @@ import java.util.List;
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
 public class Template extends BaseDateModel<Template> {
 
+    public enum Type {
+
+        INFO("Info"),
+        DOCUMENT("Doc");
+
+        public String label;
+
+        private Type(String label) {
+
+            this.label = label;
+        }
+
+        public static Type getByLabel(String label) {
+
+            for (Type type : Type.values()) {
+
+                if (type.label.equals(label)) {
+
+                    return type;
+                }
+            }
+            return null;
+        }
+    }
+
     @GenericModel.DataType(type = DataTypeEnum.FLOAT)
     @SerializedName("Version")
     public float version;
@@ -26,12 +49,20 @@ public class Template extends BaseDateModel<Template> {
     public String published;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("Type")
+    public String type;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("BaseURL")
     public String baseUrl;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Name")
     public String name;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("ShortName")
+    public String shortName;
 
     @GenericModel.DataType(type = DataTypeEnum.INTEGER)
     @SerializedName("Order")
@@ -45,11 +76,17 @@ public class Template extends BaseDateModel<Template> {
     @SerializedName("Landscape")
     public boolean landscape;
 
+    @GenericModel.DataType(type = DataTypeEnum.BOOLEAN)
+    public boolean dataDownloaded;
+
     @SerializedName("Files")
     public String[] files;
 
     @SerializedName("Pages")
     public TemplatePage[] pages;
+
+    @SerializedName("DataSize")
+    public int dataSize;
 
     /**
      * Implicitni konstruktor kvuli SDD
@@ -70,10 +107,14 @@ public class Template extends BaseDateModel<Template> {
         this.position = template.position;
         this.thumbnail = template.thumbnail;
         this.landscape = template.landscape;
+        this.shortName = template.shortName;
+        this.type = template.type;
+        this.dataDownloaded = template.dataDownloaded;
     }
 
     /**
      * Smaze sablonu vcetne odkazu na ni (Pages)
+     *
      * @throws DaoConstraintException
      */
     /*@Override
@@ -86,7 +127,6 @@ public class Template extends BaseDateModel<Template> {
         }
         super.delete();
     }*/
-
     @Override
     public String toString() {
 

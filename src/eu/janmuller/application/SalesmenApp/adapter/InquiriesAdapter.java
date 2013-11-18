@@ -26,7 +26,7 @@ import java.util.Date;
 public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
     private IInquiryAdapterCallback mInquiryAdapterCallback;
-    private SimpleDateFormat mSdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+    public static SimpleDateFormat mSdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     public InquiriesAdapter(Context context) {
 

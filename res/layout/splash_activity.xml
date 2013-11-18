@@ -7,5 +7,5 @@
         android:background="@color/app_background"
         android:gravity="center">
 
-    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/logo_dallmayr"/>
+    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/splash_logo"/>
 </LinearLayout>

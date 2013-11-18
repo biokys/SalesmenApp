@@ -10,6 +10,13 @@
             android:showAsAction="always"/>
 
     <item
+            android:id="@+id/menu_info"
+            android:icon="@drawable/ic_action_action_about"
+            android:title="Info"
+            android:visible="false"
+            android:showAsAction="always"/>
+
+    <item
             android:id="@+id/menu_send"
             android:icon="@drawable/ic_action_social_send_now"
             android:title="Poslat"

@@ -37,7 +37,7 @@ class ViewActivityHelper {
      */
     static void createDocuments(List<Document> documents, Inquiry inquiry) {
 
-        List<Template> templates = Template.getAllObjects(Template.class);
+        List<Template> templates = Template.getByQuery(Template.class, "type='Doc'");
         try {
 
             GenericModel.beginTx();

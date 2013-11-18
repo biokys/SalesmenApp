@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Dallmayr</string>
+    <string name="base_url">http://dallmayr.sb2000.cz</string>
+</resources>
