@@ -12,7 +12,7 @@ import eu.janmuller.application.salesmenapp.model.db.*;
 public class Application extends android.app.Application {
 
     public static final String APP_DB  = "app_db";
-    public static final int    VERSION = 33;
+    public static final int    VERSION = 34;
 
     @Override
     public void onCreate() {

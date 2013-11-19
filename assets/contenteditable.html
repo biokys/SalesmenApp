@@ -35,4 +35,16 @@
         Android.saveText(tagid + "::" + section.innerHTML);
     }
 
+    function getAllEditableElements(pageid) {
+
+        var list = document.getElementsByClassName("edit");
+        for (var i = 0; i < list.length; i++) {
+            var element = list[i];
+            var id = element.id;
+            var text = element.innerHTML;
+
+            Android.saveTag(pageid, id, text);
+        }
+    }
+
 </script>

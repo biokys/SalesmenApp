@@ -15,4 +15,10 @@ public class WebAppInterface {
         documentTag.value = split[1];
         documentTag.save();
     }
+
+    private void saveTag(String pageid, String id, String text) {
+
+        DocumentTag documentTag = new DocumentTag();
+        //documentTag.
+    }
 }

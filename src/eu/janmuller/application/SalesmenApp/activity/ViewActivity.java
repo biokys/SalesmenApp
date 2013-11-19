@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
 import eu.janmuller.android.dao.api.LongId;
@@ -174,6 +175,8 @@ public class ViewActivity extends BaseActivity {
 
                     ViewActivityHelper.setEditHtmlCellsVisibility(_webview, true);
                 }
+
+
             }
         });
 
@@ -247,6 +250,11 @@ public class ViewActivity extends BaseActivity {
 
                 item.setVisible(!mEditMode);
             }
+
+            if (item.getItemId() == R.id.menu_info) {
+
+                item.setVisible(!mPageViewMode);
+            }
         }
 
 
@@ -274,8 +282,19 @@ public class ViewActivity extends BaseActivity {
 
                 runFullscreenMode();
                 break;
+            case R.id.menu_info:
+
+                showInquiryInfo();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showInquiryInfo() {
+
+        Intent intent = new Intent(this, InquiryInfoActivity.class);
+        intent.putExtra(INQUIRY, mInquiry);
+        startActivity(intent);
     }
 
     private void runFullscreenMode() {
