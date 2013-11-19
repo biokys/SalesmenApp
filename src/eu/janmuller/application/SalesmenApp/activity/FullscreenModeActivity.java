@@ -2,6 +2,7 @@ package eu.janmuller.application.salesmenapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
@@ -142,7 +143,7 @@ public class FullscreenModeActivity extends BaseActivity {
             container.addView(webView);
 
             final WebView _webview = webView;
-            webView.post(new Runnable() {
+            new Handler().post(new Runnable() {
                 @Override
                 public void run() {
 

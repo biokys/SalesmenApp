@@ -37,13 +37,12 @@
 
     function getAllEditableElements(pageid) {
 
-        var list = document.getElementsByClassName("edit");
-        for (var i = 0; i < list.length; i++) {
-            var element = list[i];
-            var id = element.id;
-            var text = element.innerHTML;
-
-            Android.saveTag(pageid, id, text);
+        var editable = document.querySelectorAll('.edit');
+        var i = editable.length;
+        while (--i > -1) {
+            var id = editable[i].id;
+            var text = editable[i].innerHTML;
+            Android.saveTag(pageid + "::" + id + "::" + text);
         }
     }
 

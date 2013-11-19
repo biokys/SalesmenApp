@@ -1,5 +1,6 @@
 package eu.janmuller.application.salesmenapp.server;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.widget.Toast;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import eu.janmuller.application.salesmenapp.model.db.*;
+import roboguice.inject.ContextSingleton;
 import roboguice.util.Ln;
 import roboguice.util.RoboAsyncTask;
 
@@ -18,7 +20,7 @@ import roboguice.util.RoboAsyncTask;
  * Date: 15.11.13
  * Time: 13:47
  */
-@Singleton
+@ContextSingleton
 public class DownloadData {
 
     public enum Type {
