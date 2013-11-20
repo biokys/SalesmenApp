@@ -1,7 +1,5 @@
 package eu.janmuller.application.salesmenapp.activity;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,7 +13,8 @@ import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.InquiriesAdapter;
-import eu.janmuller.application.salesmenapp.model.db.*;
+import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.Template;
 import eu.janmuller.application.salesmenapp.server.DownloadData;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
@@ -64,12 +63,11 @@ public class InquiryListActivity extends BaseActivity {
     public static final String VENDOR_MAFRA    = "mafra";
     public static final String VENDOR_DALLMAYR = "dallmayr";
 
-    public static String sActualVendor;
+    public static String           sActualVendor;
+    private       InquiriesAdapter mInquiriesAdapter;
 
     @InjectView(R.id.list)
     private ListView mListView;
-
-    private InquiriesAdapter mInquiriesAdapter;
 
     @Inject
     private DownloadData mDownloadData;

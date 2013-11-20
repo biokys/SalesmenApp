@@ -316,7 +316,7 @@ public class ViewActivity extends BaseActivity {
 
             case android.R.id.home:
 
-                finish();
+                onBackPressed();
                 break;
             case R.id.menu_send:
 

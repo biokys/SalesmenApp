@@ -18,7 +18,6 @@ import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.util.Ln;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.regex.Matcher;
