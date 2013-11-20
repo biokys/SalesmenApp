@@ -84,7 +84,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
         });
 
         View leftRow = view.findViewById(R.id.left_row);
-        leftRow.setBackgroundResource(android.R.drawable.list_selector_background);
+        //leftRow.setBackgroundResource(android.R.drawable.list_selector_background);
         /*leftRow.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -94,7 +94,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
             }
         });*/
 
-        view.setOnClickListener(new View.OnClickListener() {
+        /*view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -103,7 +103,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
                     mInquiryAdapterCallback.onInquirySelect(inquiry);
                 }
             }
-        });
+        });*/
 
 
         return view;

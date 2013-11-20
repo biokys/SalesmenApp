@@ -2,6 +2,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
+import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import eu.janmuller.application.salesmenapp.IHideAble;
 
 /**
@@ -41,6 +42,17 @@ final public class Document extends Template implements IHideAble {
     public void setVisibility(boolean visible) {
 
         show = visible;
+    }
+
+    @Override
+    public void delete() throws DaoConstraintException {
+
+        for (DocumentPage documentPage : DocumentPage.getByQuery(DocumentPage.class, "documentId=" + id.getId())) {
+
+            documentPage.delete();
+        }
+
+        super.delete();
     }
 
     @Override

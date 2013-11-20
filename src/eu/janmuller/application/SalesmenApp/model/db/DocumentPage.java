@@ -2,6 +2,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
+import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import eu.janmuller.application.salesmenapp.IHideAble;
 
 /**
@@ -57,6 +58,13 @@ final public class DocumentPage extends Page<DocumentPage> implements IHideAble 
         if (!id.getId().equals(that.id.getId())) return false;
 
         return true;
+    }
+
+    @Override
+    public void delete() throws DaoConstraintException {
+
+        DocumentTag.deleteByQuery(DocumentTag.class, "documentPageId=" + id.getId());
+        super.delete();    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override

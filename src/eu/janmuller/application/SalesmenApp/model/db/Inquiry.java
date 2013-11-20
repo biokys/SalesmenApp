@@ -3,6 +3,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
+import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 
 import java.io.Serializable;
 import java.util.List;
@@ -130,6 +131,17 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
         }
 
         return list;
+    }
+
+    @Override
+    public void delete() throws DaoConstraintException {
+
+        for (Document document : Document.getByQuery(Document.class, "inquiryId=" + id.getId())) {
+
+            document.delete();
+        }
+
+        super.delete();
     }
 
     @Override

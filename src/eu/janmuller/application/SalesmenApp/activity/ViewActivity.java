@@ -2,13 +2,15 @@ package eu.janmuller.application.salesmenapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.*;
-import eu.janmuller.android.dao.api.LongId;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.*;
@@ -32,6 +34,7 @@ import java.util.Map;
 public class ViewActivity extends BaseActivity {
 
     public static final String INQUIRY = "inquiry";
+    public static final String TEMP    = "temp";
 
     @InjectView(R.id.list)
     private LinearLayout mSideBarView;
@@ -42,15 +45,17 @@ public class ViewActivity extends BaseActivity {
     @InjectView(R.id.scrollview)
     private ScrollView mScrollView;
 
-    private List<Template>     mTemplates;
-    private Inquiry            mInquiry;
-    private List<Document>     mDocuments;
-    private Document           mDocument;
-    private boolean            mEditMode;
-    private boolean            mPageViewMode;
-    private int                mActionBarDisplayOptions;
+    private Inquiry                    mInquiry;
+    private List<Document>             mDocuments;
+    private Document                   mDocument;
+    private boolean                    mEditMode;
+    private boolean                    mPageViewMode;
+    private int                        mActionBarDisplayOptions;
     private Map<DocumentPage, WebView> mWebViewMap;
     private DocumentPage               mActualPage;
+    private boolean                    mTempInquiry;
+    private WebView                    mInfoWebView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,7 @@ public class ViewActivity extends BaseActivity {
         // ziskam Inquiry objekt z EXTRAS
         Intent intent = getIntent();
         mInquiry = (Inquiry) intent.getSerializableExtra(INQUIRY);
+        mTempInquiry = intent.getBooleanExtra(TEMP, false);
 
         // configure actionbar
         mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -67,13 +73,13 @@ public class ViewActivity extends BaseActivity {
         mActionBar.setDisplayShowTitleEnabled(true);
         mActionBar.setTitle(mInquiry.title);
 
-        mWebViewMap = new HashMap<DocumentPage, WebView>();
         setUp();
     }
 
     private void setUp() {
 
         mDocuments = Document.getByQuery(Document.class, "inquiryId=" + mInquiry.id.getId());
+        mWebViewMap = new HashMap<DocumentPage, WebView>();
 
         // pokud otevirame poptavku poprve, pak k ni priradime vsechny sablony
         if (mDocuments.size() == 0) {
@@ -146,7 +152,7 @@ public class ViewActivity extends BaseActivity {
         }
     }
 
-    private void showHtml(Template template, final DocumentPage page) {
+    private void showHtml(Document document, final DocumentPage page) {
 
         mActualPage = page;
 
@@ -156,12 +162,12 @@ public class ViewActivity extends BaseActivity {
 
             webView = new WebView(ViewActivity.this);
             ViewActivityHelper.configureWebView(webView);
-            Helper.showHtml(webView, template, page);
+            Helper.showHtml(webView, document, page);
             mWebViewMap.put(page, webView);
         }
 
         final WebView _webview = webView;
-        webView.post(new Runnable() {
+        new Handler().post(new Runnable() {
             @Override
             public void run() {
 
@@ -192,6 +198,7 @@ public class ViewActivity extends BaseActivity {
     private void fillSideBar(final List<Document> documents) {
 
         mSideBarView.removeAllViews();
+        mWebViewContainer.removeAllViews();
         mPageViewMode = false;
         invalidateOptionsMenu();
 
@@ -231,7 +238,48 @@ public class ViewActivity extends BaseActivity {
 
             // pridam do containeru
             mSideBarView.addView(view);
+
         }
+        showInlineInquiryInfo();
+    }
+
+    private void showInlineInquiryInfo() {
+
+        if (mInfoWebView == null) {
+
+            final WebView webView = new WebView(ViewActivity.this);
+            ViewActivityHelper.configureWebView(webView);
+            mInfoWebView = webView;
+            List<Template> templates = Template.getByQuery(Template.class, "type='Info'");
+            if (templates.size() > 0) {
+
+                Template template = templates.get(0);
+                List<TemplatePage> pages = TemplatePage.getByQuery(TemplatePage.class, "templateId=" + template.id.getId());
+                if (pages.size() > 0) {
+
+                    final Page page = pages.get(0);
+
+                    Helper.showHtml(webView, template, page);
+
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            List<TemplateTag> list = TemplateTag.getByQuery(TemplateTag.class, "pageId=" + page.id.getId());
+                            for (TemplateTag templateTag : list) {
+
+                                ViewActivityHelper.replaceTagByInquiryData(mInquiry, templateTag);
+                                ViewActivityHelper.setCustomText(webView, templateTag);
+                            }
+                        }
+                    });
+
+                }
+            }
+        }
+
+        mWebViewContainer.removeAllViews();
+        mWebViewContainer.addView(mInfoWebView);
     }
 
     @Override
@@ -333,6 +381,7 @@ public class ViewActivity extends BaseActivity {
 
         if (mPageViewMode) {
 
+            mActualPage = null;
             saveEditChanges();
         }
         refreshSideBar();
@@ -347,12 +396,7 @@ public class ViewActivity extends BaseActivity {
 
             DocumentPage page = iterator.next();
             WebView webView = mWebViewMap.get(page);
-            List<DocumentTag> tags = DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + page.id.getId());
-            for (DocumentTag documentTag : tags) {
-
-                ViewActivityHelper.getCustomTextAndSave(webView, documentTag);
-            }
-
+            ViewActivityHelper.getAndSaveTags(webView, page);
             ViewActivityHelper.setEditHtmlCellsVisibility(webView, false);
         }
     }
@@ -380,6 +424,7 @@ public class ViewActivity extends BaseActivity {
 
         if (mPageViewMode) {
 
+            mActualPage = null;
             fillSideBar(mDocuments);
         } else {
 
@@ -387,4 +432,13 @@ public class ViewActivity extends BaseActivity {
         }
     }
 
+    @Override
+    public void finish() {
+
+        if (mTempInquiry) {
+
+            mInquiry.delete();
+        }
+        super.finish();
+    }
 }

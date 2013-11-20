@@ -12,18 +12,8 @@ import java.util.List;
  *
  * Trida slouzi pro komunikaci s JS
  *
- *
  */
 public class WebAppInterface {
-
-    public void saveText(String text) {
-
-        String[] split = text.split("::");
-        Long id = Long.decode(split[0]);
-        DocumentTag documentTag = DocumentTag.findObjectById(DocumentTag.class, new LongId(id));
-        documentTag.value = split[1];
-        documentTag.save();
-    }
 
     /**
      * Pri ukonceni editace nad nejakou strankou se z JS vola teto metoda pro kazdy

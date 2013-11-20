@@ -1,6 +1,5 @@
 package eu.janmuller.application.salesmenapp.activity;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -9,6 +8,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.application.salesmenapp.Helper;
@@ -18,7 +18,11 @@ import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.util.Ln;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,6 +31,8 @@ import java.util.List;
  * Time: 11:12
  */
 class ViewActivityHelper {
+
+    public static final Pattern TAG_REPLACE_REGEX = Pattern.compile("\\{\\{(\\w+)\\}\\}");
 
     /**
      * Vytvori dokumenty k poptavce ze vsech dostupnych sablon
@@ -49,7 +55,6 @@ class ViewActivityHelper {
                 List<TemplatePage> pageList = TemplatePage.getByQuery(TemplatePage.class, "templateId=" + template.id.getId());
                 for (TemplatePage templatePage : pageList) {
 
-
                     DocumentPage documentPage = new DocumentPage(templatePage, document);
                     documentPage.save();
 
@@ -57,6 +62,7 @@ class ViewActivityHelper {
                     for (TemplateTag tag : tagList) {
 
                         DocumentTag documentTag = new DocumentTag(tag, documentPage);
+                        replaceTagByInquiryData(inquiry, documentTag);
                         documentTag.save();
                     }
                 }
@@ -74,6 +80,65 @@ class ViewActivityHelper {
         }
     }
 
+    public static void replaceTagByInquiryData(Inquiry inquiry, Tag tag) {
+
+        String value = tag.value;
+
+        Matcher matcher = TAG_REPLACE_REGEX.matcher(value);
+        StringBuffer stringBuffer = new StringBuffer();
+        while (matcher.find()) {
+
+            // dostaneme text ve tvaru {{..}}
+            String textToReplace = matcher.group();
+
+            // odfiltrujeme {{ a }}
+            textToReplace = textToReplace.substring(2);
+            textToReplace = textToReplace.substring(0, textToReplace.length() - 2);
+
+            try {
+
+                // vymenime tag za skutecnou hodnotu z instance objektu Inquiry
+                textToReplace = getValueByAttributeName(inquiry, textToReplace);
+            } catch (Exception e) {
+
+                Ln.e(e, "text: " + textToReplace);
+            }
+            if (textToReplace != null) {
+
+                matcher.appendReplacement(stringBuffer, textToReplace);
+            }
+        }
+        matcher.appendTail(stringBuffer);
+        tag.value = stringBuffer.toString();
+
+    }
+
+    /**
+     * Na zaklade jmena promenne (takova, ktera chodi v JSONu), ktere odpovida anotaci SerializedName
+     * najdeme hodnotu a vratime
+     * @throws IllegalAccessException
+     */
+    private static String getValueByAttributeName(Inquiry inquiry, String name) throws Exception {
+
+        Field[] fields = inquiry.getClass().getFields();
+        for (Field field : fields) {
+
+            if (field.isAnnotationPresent(SerializedName.class)) {
+
+                SerializedName annotation = field.getAnnotation(SerializedName.class);
+                if (name.equals(annotation.value())) {
+
+                    if (field.getType() == String.class) {
+
+                        return (String)field.get(inquiry);
+                    }
+                }
+            }
+        }
+
+        return "";
+    }
+
     static void configureWebView(WebView webView) {
 
         webView.setWebViewClient(new WebViewClient());
@@ -89,14 +154,14 @@ class ViewActivityHelper {
         webView.loadUrl("javascript:switchMode(" + (visible ? "'edit'" : "") + ")");
     }
 
-    static void setCustomText(WebView webView, DocumentTag documentTag) {
+    static void setCustomText(WebView webView, Tag documentTag) {
 
         webView.loadUrl("javascript:setCustomText('" + documentTag.tagIndent + "','" + documentTag.value + "')");
     }
 
-    static void getCustomTextAndSave(WebView webView, DocumentTag documentTag) {
+    static void getAndSaveTags(WebView webView, DocumentPage documentPage) {
 
-        webView.loadUrl("javascript:getCustomText('" + documentTag.id.getId()  + "','" + documentTag.tagIndent + "')");
+        webView.loadUrl("javascript:getAllEditableElements('" + documentPage.id.getId().toString() + "')");
     }
 
     static void manageVisibility(boolean editMode, View view, ImageView imageView,

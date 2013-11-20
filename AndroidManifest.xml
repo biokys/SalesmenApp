@@ -31,7 +31,7 @@
         </activity>
 
         <activity
-                android:name=".activity.MainActivity"
+                android:name=".activity.InquiryListActivity"
                 android:configChanges="screenSize|orientation|keyboardHidden"/>
         <activity
                 android:name=".activity.ViewActivity"

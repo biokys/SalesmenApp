@@ -1,9 +1,5 @@
 <script>
-    /**
-     * Enables and disables attribute contenteditable for elements with class .edit
-     *
-     * @param {string} mode Value 'edit' switches to editable mode, everything else disables editable mode.
-     */
+
     function switchMode(mode) {
         var editable = document.querySelectorAll('.edit');
         var i = editable.length;
@@ -27,12 +23,6 @@
 
         var section = document.getElementById(id);
         section.innerHTML = text;
-    }
-
-    function getCustomText(tagid, id) {
-
-        var section = document.getElementById(id);
-        Android.saveText(tagid + "::" + section.innerHTML);
     }
 
     function getAllEditableElements(pageid) {

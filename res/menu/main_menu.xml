@@ -7,10 +7,10 @@
             android:icon="@drawable/ab_tabulka"
             android:title="Open web"
             android:showAsAction="always"/>
-    <item
+    <!--<item
             android:id="@+id/menu_delete"
             android:icon="@android:drawable/ic_menu_delete"
             android:title="Delete"
-            android:showAsAction="always"/>
+            android:showAsAction="always"/>-->
 
 </menu>

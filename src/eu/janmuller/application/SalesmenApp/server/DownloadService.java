@@ -166,10 +166,6 @@ public class DownloadService {
 
         for (Template template : templates) {
 
-            if (template.type.equals(Template.Type.INFO.label)) {
-
-                continue;
-            }
             String[] files = template.files;
 
             for (String fileName : files) {

@@ -1,6 +1,8 @@
 package eu.janmuller.application.salesmenapp;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -31,6 +33,7 @@ public class Helper {
     public static final String SALESMANAPP_FOLDER = "salesmanapp";
 
     private static final SimpleDateFormat sSdf = new SimpleDateFormat("dd.MM.yyyy");
+    public static final String IS_PAIRED = "isPaired";
 
     /**
      * @return md5ku podle zadaneho stringu
@@ -86,6 +89,22 @@ public class Helper {
                 Settings.Secure.ANDROID_ID);
     }
 
+    public static void setPaired(Activity activity) {
+
+        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(IS_PAIRED, true);
+        editor.commit();
+    }
+
+    public static boolean isPaired(Activity activity) {
+
+        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(IS_PAIRED, false);
+    }
+
+
+
     public static String loadJsHtml(Context context) {
 
         String html = "";
@@ -135,7 +154,7 @@ public class Helper {
         return Helper.getTemplateFolderAsFile(template).getPath();
     }
 
-    public static void showHtml(WebView webView, Template template, DocumentPage page) {
+    public static void showHtml(WebView webView, Template template, Page page) {
 
         webView.loadUrl("file://" + getBaseUrl(template) + File.separator + page.file);
     }
