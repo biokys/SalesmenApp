@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="vendor">mafra</string>
-    <string name="app_name">Mafra</string>
-    <string name="base_url">http://mafra.sb2000.cz</string>
+    <string name="vendor">dallmayr</string>
+    <string name="app_name">Dallmayr</string>
+    <string name="base_url">http://dallmayr.sb2000.cz</string>
 </resources>
