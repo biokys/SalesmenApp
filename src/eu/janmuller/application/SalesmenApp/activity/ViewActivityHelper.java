@@ -155,7 +155,7 @@ class ViewActivityHelper {
 
     static void setCustomText(WebView webView, Tag documentTag) {
 
-        webView.loadUrl("javascript:setCustomText('" + documentTag.tagIndent + "','" + documentTag.value + "')");
+        webView.loadUrl("javascript:setCustomText('" + documentTag.tagIdent + "','" + documentTag.value + "')");
     }
 
     static void getAndSaveTags(WebView webView, DocumentPage documentPage) {

@@ -30,54 +30,18 @@ import java.util.List;
  */
 public class Helper {
 
-    public static final String SALESMANAPP_FOLDER = "salesmanapp";
-
-    private static final SimpleDateFormat sSdf = new SimpleDateFormat("dd.MM.yyyy");
+    public static final SimpleDateFormat sSdf = new SimpleDateFormat("dd.MM.yyyy");
     public static final String IS_PAIRED = "isPaired";
 
     /**
-     * @return md5ku podle zadaneho stringu
-     */
-    public static String md5(String s) {
-
-        MessageDigest digest;
-        try {
-
-            digest = MessageDigest.getInstance("MD5");
-            digest.update(s.getBytes(), 0, s.length());
-            return new BigInteger(1, digest.digest()).toString(16);
-        } catch (NoSuchAlgorithmException e) {
-
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    /**
-     * @return Hlavni folder, kde jsou vsechny data aplikace
-     */
-    public static File getRootFolderAsFile() {
-
-        return getTemplateFolderAsFile(null);
-    }
-
-    /**
-     *
-     * @param template Sablona
+     * @param template Sablona pro kterou se vytvori slozka na filesystemu
      * @return folder, kde se nachazi vsechna data sablony
      */
     public static File getTemplateFolderAsFile(Template template) {
 
-        File parent = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-
-        if (template == null) {
-
-            return new File(parent, SALESMANAPP_FOLDER);
-        }
-
-        String dir = Helper.md5(template.baseUrl);
-        String completePath = SALESMANAPP_FOLDER + File.separator + dir;
-        return new File(parent, completePath);
+        String dir = template.ident + "_" + template.version;
+        String completePath = Config.sActualVendor + File.separator + dir;
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), completePath);
     }
 
     /**

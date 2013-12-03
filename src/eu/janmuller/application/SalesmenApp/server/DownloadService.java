@@ -29,8 +29,8 @@ import java.util.List;
 @Singleton
 public class DownloadService {
 
-    public static String TEMPLATES_JSON_URL = "/templates.json?auth=%s";
-    public static String INQUIRIES_JSON_URL = "/inquiries.json?auth=%s";
+    public static String TEMPLATES_JSON_URL = "/templates?auth=%s";
+    public static String INQUIRIES_JSON_URL = "/inquiries?auth=%s";
 
     public static final String TEMPLATES_JSON = "templates.json";
     public static final String INQUIRIES_JSON = "inquiries.json";
@@ -63,7 +63,7 @@ public class DownloadService {
         TemplatesEnvelope root = downloadTemplatesJson();
         callback.onProgressUpdate(TEMPLATES_JSON, 100, 100);
         Template[] templates = root.templates;
-        return saveTemplateMetadata2Db(templates);
+        return getOnlyNewTemplates(templates);
     }
 
     /**
@@ -95,8 +95,10 @@ public class DownloadService {
         for (Inquiry inquiry : inquiriesEnvelope.inquiries) {
 
             // pokud inquiry jiz v DB je, pak preskocime
-            if (Inquiry.getCountByQuery(Inquiry.class, "serverId=" + inquiry.serverId) > 0) {
-
+            List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "serverId=" + inquiry.serverId);
+            if (list.size() > 0) {
+                Inquiry existingInquiry = list.get(0);
+                existingInquiry.mergeWith(inquiry);
                 continue;
             }
             inquiry.attachments = "";
@@ -122,37 +124,42 @@ public class DownloadService {
     }
 
     /**
-     * Ulozi nove sablony a vrati jen ty, ktere ulozil
-     * <p/>
-     * Neuklada, ty co jiz v db existuji
+     * Vraci jen ty, ktere jeste nejsou ulozeny v DB
      *
      * @param templates
      * @return
      */
-    private Template[] saveTemplateMetadata2Db(Template[] templates) {
+    private Template[] getOnlyNewTemplates(Template[] templates) {
 
         List<Template> list = new ArrayList<Template>();
         for (Template template : templates) {
 
             // pokud dana sablona uz v db je, pak ji neukladame
-            if (Template.getCountByQuery(Template.class, "version=" + template.version + " and name='" + template.name + "'") > 0) {
+            if (Template.getCountByQuery(Template.class, "version=" + template.version + " and ident='" + template.ident + "'") > 0) {
 
                 continue;
-            }
-            template.save();
-            for (TemplatePage page : template.pages) {
-
-                page.templateId = template.id;
-                page.save();
-                for (TemplateTag tag : page.tags) {
-
-                    tag.pageId = page.id;
-                    tag.save();
-                }
             }
             list.add(template);
         }
         return list.toArray(new Template[list.size()]);
+    }
+
+    /**
+     * Ulozi nove sablony
+     */
+    private void saveTemplateMetadata2Db(Template template) {
+
+        template.save();
+        for (TemplatePage page : template.pages) {
+
+            page.templateId = template.id;
+            page.save();
+            for (TemplateTag tag : page.tags) {
+
+                tag.pageId = page.id;
+                tag.save();
+            }
+        }
     }
 
     /**
@@ -172,8 +179,7 @@ public class DownloadService {
 
                 downloadFile(template, fileName, callback);
             }
-            template.dataDownloaded = true;
-            template.save();
+            saveTemplateMetadata2Db(template);
         }
     }
 

@@ -277,7 +277,6 @@ public class ViewActivity extends BaseActivity {
                 }
             }
         }
-
         mWebViewContainer.removeAllViews();
         mWebViewContainer.addView(mInfoWebView);
     }
@@ -298,14 +297,7 @@ public class ViewActivity extends BaseActivity {
 
                 item.setVisible(!mEditMode);
             }
-
-            if (item.getItemId() == R.id.menu_info) {
-
-                item.setVisible(!mPageViewMode);
-            }
         }
-
-
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -330,19 +322,8 @@ public class ViewActivity extends BaseActivity {
 
                 runFullscreenMode();
                 break;
-            case R.id.menu_info:
-
-                showInquiryInfo();
-                break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void showInquiryInfo() {
-
-        Intent intent = new Intent(this, InquiryInfoActivity.class);
-        intent.putExtra(INQUIRY, mInquiry);
-        startActivity(intent);
     }
 
     private void runFullscreenMode() {

@@ -3,7 +3,6 @@ package eu.janmuller.application.salesmenapp.model.db;
 import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
-import eu.janmuller.android.dao.api.Id;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,18 +14,19 @@ abstract public class Tag<T extends Tag> extends BaseDateModel<T> {
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("TagIdent")
-    public String tagIndent;
+    public String tagIdent;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Value")
     public String value;
 
     protected Tag() {
+
     }
 
     protected Tag(Tag tag) {
 
-        this.tagIndent = tag.tagIndent;
+        this.tagIdent = tag.tagIdent;
         this.value = tag.value;
     }
 }

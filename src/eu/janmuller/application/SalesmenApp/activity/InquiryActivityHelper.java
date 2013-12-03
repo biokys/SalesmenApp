@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.InquiriesAdapter;
 import eu.janmuller.application.salesmenapp.model.db.*;
@@ -22,7 +24,7 @@ import java.util.Date;
 public class InquiryActivityHelper {
 
     public static void closeInquiry(final Activity activity, final Inquiry inquiry,
-                              final ServerService serverService, final ArrayAdapter listAdapter) {
+                                    final ServerService serverService, final ArrayAdapter listAdapter) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setNegativeButton(R.string.cancel, null);
@@ -30,18 +32,39 @@ public class InquiryActivityHelper {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
-                String msg;
-                if (serverService.closeInquiry(inquiry)) {
+                final Handler handler = new Handler();
+                new Thread() {
 
-                    msg = "Poptávka byla uzavřena";
-                    inquiry.state = Inquiry.State.COMPLETE;
-                    inquiry.save();
-                    listAdapter.notifyDataSetChanged();
-                } else {
+                    @Override
+                    public void run() {
 
-                    msg = "Během uzavírání došlo k chybě";
-                }
-                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
+                        if (serverService.closeInquiry(inquiry)) {
+
+                            inquiry.state = Inquiry.State.COMPLETE;
+                            inquiry.save();
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    listAdapter.remove(inquiry);
+                                    listAdapter.notifyDataSetChanged();
+                                    Toast.makeText(activity, "Poptávka byla uzavřena", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        } else {
+
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    Toast.makeText(activity, "Během uzavírání došlo k chybě", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
+                }.start();
+
             }
         });
         builder.setTitle("Info");
@@ -51,6 +74,7 @@ public class InquiryActivityHelper {
 
     /**
      * Otevre prohlizeni dokumentu pro konkretni poptavku
+     *
      * @param activity
      * @param inquiry
      */
@@ -61,6 +85,7 @@ public class InquiryActivityHelper {
 
     /**
      * Otevre prohlizeni dokumentu
+     *
      * @param activity
      * @param inquiry
      * @param tempInquiry pokud true, pak se vytvori jen docasna poptavka, ktera se po navratu zpet zase smaze
@@ -78,7 +103,7 @@ public class InquiryActivityHelper {
         Inquiry inquiry = new Inquiry();
         inquiry.title = "Dočasná poptávka";
         inquiry.company = "Společnost";
-        inquiry.created = InquiriesAdapter.mSdf.format(new Date());
+        inquiry.created = Helper.sSdf.format(new Date());
         inquiry.state = Inquiry.State.NEW;
         inquiry.save();
         InquiryActivityHelper.openViewActivity(activity, inquiry, true);

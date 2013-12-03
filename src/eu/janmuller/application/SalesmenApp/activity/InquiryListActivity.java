@@ -1,26 +1,23 @@
 package eu.janmuller.application.salesmenapp.activity;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.*;
 import com.google.inject.Inject;
-import eu.janmuller.application.salesmenapp.Helper;
+import eu.janmuller.application.salesmenapp.Config;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.InquiriesAdapter;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
-import eu.janmuller.application.salesmenapp.model.db.Template;
-import eu.janmuller.application.salesmenapp.server.DownloadData;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -60,17 +57,13 @@ import java.util.List;
 @ContentView(R.layout.main)
 public class InquiryListActivity extends BaseActivity {
 
-    public static final String VENDOR_MAFRA    = "mafra";
-    public static final String VENDOR_DALLMAYR = "dallmayr";
-
-    public static String           sActualVendor;
-    private       InquiriesAdapter mInquiriesAdapter;
+    private InquiriesAdapter mInquiriesAdapter;
 
     @InjectView(R.id.list)
     private ListView mListView;
 
-    @Inject
-    private DownloadData mDownloadData;
+    @InjectView(R.id.no_inquiries)
+    private TextView mNoItems;
 
     @Inject
     private ServerService mServerService;
@@ -83,14 +76,15 @@ public class InquiryListActivity extends BaseActivity {
 
         super.onCreate(savedInstanceState);
 
-        if (!Helper.isPaired(this)) {
+        /*if (!Helper.isPaired(this)) {
 
 
-        }
-        sActualVendor = getString(R.string.vendor);
+        }*/
 
+        prepareListAdapter();
+        fillInquiriesTable();
 
-        if (sActualVendor.equals(VENDOR_MAFRA)) {
+        /*if (Config.sActualVendor.equals(Config.VENDOR_MAFRA)) {
 
             if (Template.getCountByQuery(Template.class, "1=1") == 0) {
 
@@ -111,41 +105,8 @@ public class InquiryListActivity extends BaseActivity {
 
             prepareListAdapter();
             loadData();
-        }
+        }*/
 
-    }
-
-    private void loadData() {
-
-        mDownloadData
-                .setDownloadInquiries(sActualVendor.equals(VENDOR_DALLMAYR))
-                .run(new DownloadData.IDownloadDataCallback() {
-                    @Override
-                    public void onInquiriesDownloaded() {
-
-                        if (sActualVendor.equals(VENDOR_DALLMAYR)) {
-
-                            fillInquiriesTable();
-                        }
-                    }
-
-                    @Override
-                    public void onTemplatesDownloaded() {
-
-                        if (sActualVendor.equals(VENDOR_MAFRA)) {
-
-                            List<Inquiry> list = Inquiry.getAllObjects(Inquiry.class);
-                            Inquiry inquiry;
-
-                            inquiry = list.size() > 0 ? list.get(0) : new Inquiry();
-                            inquiry.title = "Mafra";
-                            inquiry.created = InquiriesAdapter.mSdf.format(new Date());
-                            inquiry.state = Inquiry.State.NEW;
-                            inquiry.save();
-                            InquiryActivityHelper.openViewActivity(InquiryListActivity.this, inquiry);
-                        }
-                    }
-                });
     }
 
 
@@ -153,7 +114,7 @@ public class InquiryListActivity extends BaseActivity {
     protected void onStart() {
 
         super.onStart();
-        if (sActualVendor.equals(VENDOR_DALLMAYR)) {
+        if (Config.sActualVendor.equals(Config.VENDOR_DALLMAYR)) {
 
             fillInquiriesTable();
         }
@@ -202,7 +163,9 @@ public class InquiryListActivity extends BaseActivity {
     private void fillInquiriesTable() {
 
         mInquiriesAdapter.clear();
-        mInquiriesAdapter.addAll(Inquiry.getInquiriesWithAttachments());
+        List<Inquiry> inquiries = Inquiry.getInquiriesWithAttachments();
+        mInquiriesAdapter.addAll(inquiries);
+        mNoItems.setVisibility(inquiries.size() > 0 ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -221,23 +184,6 @@ public class InquiryListActivity extends BaseActivity {
 
                 Toast.makeText(InquiryListActivity.this, "Tady se otevre web", Toast.LENGTH_SHORT).show();
                 break;
-            /*case R.id.menu_delete:
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(InquiryListActivity.this);
-                builder.setNegativeButton(R.string.cancel, null);
-                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        InquiryActivityHelper.deleteAll();
-                        loadData();
-                    }
-                });
-                builder.setTitle("Varovani");
-                builder.setMessage("Opravdu vse smazat?");
-
-                builder.create().show();
-                break;*/
         }
         return super.onOptionsItemSelected(item);
     }
@@ -245,9 +191,11 @@ public class InquiryListActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (sActualVendor.equals(VENDOR_MAFRA)) {
+        if (Config.sActualVendor.equals(Config.VENDOR_MAFRA)) {
 
             finish();
         }
     }
+
+
 }

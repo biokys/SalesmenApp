@@ -23,6 +23,7 @@
                 android:layout_marginTop="10dp"/>
 
         <EditText
+                android:id="@+id/subject"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:hint="Předmět"
@@ -31,6 +32,7 @@
                 android:layout_marginTop="20dp"/>
 
         <EditText
+                android:id="@+id/body"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:hint="Text zprávy"

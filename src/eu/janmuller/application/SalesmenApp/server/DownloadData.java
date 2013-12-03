@@ -1,16 +1,12 @@
 package eu.janmuller.application.salesmenapp.server;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.widget.Toast;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import eu.janmuller.application.salesmenapp.model.db.*;
-import roboguice.inject.ContextSingleton;
 import roboguice.util.Ln;
 import roboguice.util.RoboAsyncTask;
 
@@ -20,7 +16,6 @@ import roboguice.util.RoboAsyncTask;
  * Date: 15.11.13
  * Time: 13:47
  */
-@ContextSingleton
 public class DownloadData {
 
     public enum Type {
@@ -70,13 +65,13 @@ public class DownloadData {
             @Override
             public void onTaskComplete(Object result) {
 
-                if (result instanceof Integer) {
+                int size = getDataSize(mTemplates);
+                if (size > 0) {
 
-                    int size = (Integer) result;
-                    if (size > 0) {
+                    showDownloadTemplateDataDialog(size);
+                } else {
 
-                        showDownloadTemplateDataDialog(size);
-                    }
+                    mDownloadDataCallback.onNoNewTemplatesFound();
                 }
             }
         }).execute();
@@ -99,26 +94,17 @@ public class DownloadData {
                 }).execute();
             }
         });
-        builder.setTitle("Aktualizovat šablony");
+        builder.setTitle("Aktualizace šablon");
 
-        double dataSizeInKb = dataSize / 1000d;
-        String formattedSize = (int) dataSizeInKb + " kB";
-        String formattedDuration = "";
-        double linkSpeed = 0;//getLinkSpeedInKb();
-        if (linkSpeed > 0) {
-
-            double downloadDurationInSec = dataSizeInKb / linkSpeed;
-            formattedDuration = "Bude to trvat zhruba " + downloadDurationInSec + " sekund.";
-        }
-        builder.setMessage("Jsou k dispozici nové verze dokumentů. Celková velikost souborů je " + formattedSize + ". " + formattedDuration);
-
+        int dataSizeInKb = dataSize / 1024;
+        String formattedSize = dataSizeInKb + "kB";
+        builder.setMessage("Jsou k dispozici nové verze dokumentů. Celková velikost souborů je " + formattedSize + ".");
         builder.create().show();
     }
 
     public class DownloadTask extends RoboAsyncTask<Object> {
 
-        private ProgressDialog mProgressDialog;
-        private Type           mType;
+        private Type mType;
         private final Handler mHandler = new Handler();
         private ITaskCompleteCallback mTaskCompleteCallback;
 
@@ -134,17 +120,6 @@ public class DownloadData {
             this.mTaskCompleteCallback = taskCompleteCallback;
         }
 
-        @Override
-        protected void onPreExecute() throws Exception {
-
-            mProgressDialog = new ProgressDialog(getContext());
-            mProgressDialog.setIndeterminate(false);
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            mProgressDialog.setMessage("");
-            mProgressDialog.setTitle("Stahuji data");
-            mProgressDialog.show();
-        }
-
         IProgressCallback mProgressCallback = new IProgressCallback() {
             @Override
             public void onProgressUpdate(final String text, final int actual, final int total) {
@@ -153,9 +128,7 @@ public class DownloadData {
                     @Override
                     public void run() {
 
-                        mProgressDialog.setProgress(actual);
-                        mProgressDialog.setMax(total);
-                        mProgressDialog.setMessage(text);
+                        mDownloadDataCallback.onProgressUpdate(total, actual, text);
                     }
                 });
             }
@@ -169,19 +142,18 @@ public class DownloadData {
 
                 case INQUIRIES_JSON:
 
-                    setTitle("Stahuji poptávky");
+                    setTitle("Stahuji poptávky: ");
                     mDownloadService.downloadAndSaveInquiries(mProgressCallback);
                     break;
                 case TEMPLATES_JSON:
 
 
-                    setTitle("Stahuji definici šablon");
+                    setTitle("Stahuji definici šablon: ");
                     mTemplates = mDownloadService.downloadTemplatesJson(mProgressCallback);
-                    result = getDataSize(mTemplates);
                     break;
                 case TEMPLATES_DATA:
 
-                    setTitle("Stahuji šablony");
+                    setTitle("Stahuji šablony: ");
                     mDownloadService.downloadTemplatesData(mTemplates, mProgressCallback);
                     break;
             }
@@ -189,19 +161,6 @@ public class DownloadData {
             return result;
         }
 
-        public int getDataSize(Template[] templates) {
-
-            int size = 0;
-            for (Template template : templates) {
-
-                if (template.type.equals(Template.Type.DOCUMENT.label)) {
-
-                    size += template.dataSize;
-                }
-            }
-
-            return size;
-        }
 
         private void setTitle(final String title) {
 
@@ -209,18 +168,13 @@ public class DownloadData {
                 @Override
                 public void run() {
 
-                    mProgressDialog.setTitle(title);
+                    mDownloadDataCallback.onDownloadTypeChanged(title);
                 }
             });
         }
 
         @Override
         protected void onException(Exception e) throws RuntimeException {
-
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-
-                mProgressDialog.dismiss();
-            }
 
             Toast.makeText(mContext, "Během stahování došlo k chybě", Toast.LENGTH_SHORT).show();
             Ln.e(e);
@@ -229,16 +183,25 @@ public class DownloadData {
         @Override
         protected void onSuccess(Object o) throws Exception {
 
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-
-                mProgressDialog.dismiss();
-            }
-
             if (mTaskCompleteCallback != null) {
 
                 mTaskCompleteCallback.onTaskComplete(o);
             }
         }
+    }
+
+    public int getDataSize(Template[] templates) {
+
+        int size = 0;
+        for (Template template : templates) {
+
+            if (template.type.equals(Template.Type.DOCUMENT.label)) {
+
+                size += template.dataSize;
+            }
+        }
+
+        return size;
     }
 
     private void deleteAll() {
@@ -267,5 +230,11 @@ public class DownloadData {
         public void onInquiriesDownloaded();
 
         public void onTemplatesDownloaded();
+
+        public void onNoNewTemplatesFound();
+
+        public void onProgressUpdate(int total, int progress, String message);
+
+        public void onDownloadTypeChanged(String action);
     }
 }

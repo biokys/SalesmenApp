@@ -90,6 +90,22 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
 
     public String attachments;
 
+    public void mergeWith(Inquiry inquiryFromServer) {
+
+        inquiryFromServer.id = id;
+        inquiryFromServer.state = state == State.NEW ? state : State.OPEN;
+        inquiryFromServer.attachments = attachments;
+        /*title = inquiryFromServer.title;
+        description = inquiryFromServer.description;
+        company = inquiryFromServer.company;
+        street = inquiryFromServer.street;
+        city = inquiryFromServer.city;
+        zip = inquiryFromServer.zip;
+        regNo = inquiryFromServer.regNo;
+        telephone = inquiryFromServer.telephone;
+        mail = inquiryFromServer.mail;*/
+        inquiryFromServer.save();
+    }
     /**
      * Vrati vsechny poptavky
      * Metoda take vyplni ke kazde poptavce zkraceny nazev jejich priloh
@@ -98,7 +114,7 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
      */
     public static List<Inquiry> getInquiriesWithAttachments() {
 
-        List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "1=1 order by state asc");
+        List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "state < " + State.COMPLETE.ordinal() + " order by state asc");
         for (Inquiry inquiry : list) {
 
             if (inquiry.state == State.NEW) {

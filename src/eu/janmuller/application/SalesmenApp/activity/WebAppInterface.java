@@ -36,7 +36,7 @@ public class WebAppInterface {
         String text = split[2];
 
         List<DocumentTag> documentTags = DocumentTag.getByQuery(DocumentTag.class,
-                "documentPageId=" + Long.decode(pageid) + " and tagIndent='" + id + "'");
+                "documentPageId=" + Long.decode(pageid) + " and tagIdent='" + id + "'");
 
         DocumentTag documentTag;
         if (documentTags.size() > 0) {
@@ -46,7 +46,7 @@ public class WebAppInterface {
         } else {
 
             documentTag = new DocumentTag();
-            documentTag.tagIndent = id;
+            documentTag.tagIdent = id;
             documentTag.documentPageId = new LongId(Long.decode(pageid));
             documentTag.value = text;
         }

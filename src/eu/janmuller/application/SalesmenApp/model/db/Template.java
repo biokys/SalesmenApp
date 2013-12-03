@@ -40,6 +40,10 @@ public class Template extends BaseDateModel<Template> {
         }
     }
 
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("Ident")
+    public String ident;
+
     @GenericModel.DataType(type = DataTypeEnum.FLOAT)
     @SerializedName("Version")
     public float version;
@@ -76,9 +80,6 @@ public class Template extends BaseDateModel<Template> {
     @SerializedName("Landscape")
     public boolean landscape;
 
-    @GenericModel.DataType(type = DataTypeEnum.BOOLEAN)
-    public boolean dataDownloaded;
-
     @SerializedName("Files")
     public String[] files;
 
@@ -101,6 +102,7 @@ public class Template extends BaseDateModel<Template> {
     public Template(Template template) {
 
         this.version = template.version;
+        this.ident = template.ident;
         this.published = template.published;
         this.baseUrl = template.baseUrl;
         this.name = template.name;
@@ -109,24 +111,8 @@ public class Template extends BaseDateModel<Template> {
         this.landscape = template.landscape;
         this.shortName = template.shortName;
         this.type = template.type;
-        this.dataDownloaded = template.dataDownloaded;
     }
 
-    /**
-     * Smaze sablonu vcetne odkazu na ni (Pages)
-     *
-     * @throws DaoConstraintException
-     */
-    /*@Override
-    public void delete() throws DaoConstraintException {
-
-        List<Page> pageList = Page.getByQuery(Page.class, "templateId=" + id.getId());
-        for (Page page : pageList) {
-
-            page.delete();
-        }
-        super.delete();
-    }*/
     @Override
     public String toString() {
 

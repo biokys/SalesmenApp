@@ -3,5 +3,5 @@
 
     <string name="vendor">dallmayr</string>
     <string name="app_name">Dallmayr</string>
-    <string name="base_url">http://dallmayr.sb2000.cz</string>
+    <string name="base_url">http://api-dallmayr.sb2000.cz/service.ashx</string>
 </resources>

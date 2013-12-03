@@ -26,7 +26,6 @@ import java.util.Date;
 public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
     private IInquiryAdapterCallback mInquiryAdapterCallback;
-    public static SimpleDateFormat mSdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     public InquiriesAdapter(Context context) {
 
@@ -65,7 +64,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
         state.setText(inquiry.state.getText());
         try {
 
-            Date created = mSdf.parse(inquiry.created);
+            Date created = Helper.sSdf.parse(inquiry.created);
             date.setText(Helper.formatDate(created));
         } catch (Exception e) {
 
@@ -82,52 +81,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
                 }
             }
         });
-
-        View leftRow = view.findViewById(R.id.left_row);
-        //leftRow.setBackgroundResource(android.R.drawable.list_selector_background);
-        /*leftRow.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-
-                manageHighlightingWhileTouching(getContext(), motionEvent, view);
-                return true;
-            }
-        });*/
-
-        /*view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (mInquiryAdapterCallback != null) {
-
-                    mInquiryAdapterCallback.onInquirySelect(inquiry);
-                }
-            }
-        });*/
-
-
         return view;
-    }
-
-
-    public static void manageHighlightingWhileTouching(Context context, MotionEvent event, View v) {
-
-        switch (event.getAction()) {
-
-            case MotionEvent.ACTION_DOWN:
-
-                v.setBackgroundColor(context.getResources().getColor(R.color.list_item_highlight));
-                break;
-            case MotionEvent.ACTION_UP:
-
-                v.setBackgroundColor(Color.parseColor("#00000000"));
-                v.performClick();
-
-            case MotionEvent.ACTION_CANCEL:
-
-                v.setBackgroundColor(Color.parseColor("#00000000"));
-                break;
-        }
     }
 
     public interface IInquiryAdapterCallback {
