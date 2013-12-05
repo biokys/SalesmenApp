@@ -3,7 +3,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
-import eu.janmuller.application.salesmenapp.IHideAble;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 
 /**
  * Konkretni dokument, ktery vznika vytvorenim (kopie) sablony
@@ -17,7 +17,7 @@ import eu.janmuller.application.salesmenapp.IHideAble;
  */
 @GenericModel.TableName(name = "documents")
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-final public class Document extends Template implements IHideAble {
+final public class Document extends Template implements ISidebarShowable {
 
     @GenericModel.ForeignKey(attributeClass = Inquiry.class)
     public Id inquiryId;
@@ -59,5 +59,23 @@ final public class Document extends Template implements IHideAble {
     public boolean isVisible() {
 
         return show;
+    }
+
+    @Override
+    public String getTitle() {
+
+        return name;
+    }
+
+    @Override
+    public Document getDocument() {
+
+        return this;
+    }
+
+    @Override
+    public String getImagePath() {
+
+        return thumbnail;
     }
 }

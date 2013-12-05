@@ -7,20 +7,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.*;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Aktivita ma na starosti zobrazovani seznamu dokumentu + zobrazovani konkretnich stranek jednotlivych dokumentu
@@ -36,14 +32,17 @@ public class ViewActivity extends BaseActivity {
     public static final String INQUIRY = "inquiry";
     public static final String TEMP    = "temp";
 
-    @InjectView(R.id.list)
-    private LinearLayout mSideBarView;
+    /*@InjectView(R.id.list)
+    private LinearLayout mSideBarView;*/
 
     @InjectView(R.id.webview_container)
     private LinearLayout mWebViewContainer;
 
-    @InjectView(R.id.scrollview)
-    private ScrollView mScrollView;
+    /*@InjectView(R.id.scrollview)
+    private ScrollView mScrollView;*/
+
+    @InjectView(R.id.listview)
+    private ListView mListView;
 
     private Inquiry                    mInquiry;
     private List<Document>             mDocuments;
@@ -55,6 +54,7 @@ public class ViewActivity extends BaseActivity {
     private DocumentPage               mActualPage;
     private boolean                    mTempInquiry;
     private WebView                    mInfoWebView;
+    private DocumentAdapter            mDocumentAdapter;
 
 
     @Override
@@ -72,6 +72,23 @@ public class ViewActivity extends BaseActivity {
         mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayShowTitleEnabled(true);
         mActionBar.setTitle(mInquiry.title);
+
+        mDocumentAdapter = new DocumentAdapter(this);
+        mListView.setAdapter(mDocumentAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                ISidebarShowable item = mDocumentAdapter.getItem(i);
+                if (mPageViewMode) {
+
+                    showHtml(item.getDocument(), (DocumentPage)item);
+                } else {
+
+                    fillSideBar(item.getDocument());
+                }
+            }
+        });
 
         setUp();
     }
@@ -98,7 +115,8 @@ public class ViewActivity extends BaseActivity {
      */
     private void fillSideBar(final Document document) {
 
-        mSideBarView.removeAllViews();
+        mDocumentAdapter.clear();
+        mDocumentAdapter.setEditMode(mEditMode);
         mPageViewMode = true;
         mDocument = document;
         invalidateOptionsMenu();
@@ -109,36 +127,11 @@ public class ViewActivity extends BaseActivity {
             return;
         }
 
-        for (final DocumentPage page : pages) {
+        for (DocumentPage page : pages) {
 
-            // vynechame ty, ktere jsou schovane
-            if (ViewActivityHelper.excludeHidden(page, mEditMode)) {
-
-                continue;
-            }
-
-            View view = getLayoutInflater().inflate(R.layout.documentlistview, null);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    showHtml(document, page);
-                }
-            });
-
-            ImageView imageView = ViewActivityHelper.getThumbnailImage(view, document, page.thumbnail);
-            TextView textView = (TextView) view.findViewById(R.id.text);
-            textView.setText(String.valueOf(page.position));
-
-            ViewActivityHelper.manageVisibility(mEditMode, view, imageView, page, new ViewActivityHelper.IVisibilityChangeCallback() {
-                @Override
-                public void onVisibilityChanged() {
-
-                    fillSideBar(document);
-                }
-            });
-            mSideBarView.addView(view);
+            page.parentDocument = document;
         }
+        mDocumentAdapter.addAll(filterHiddenItems(pages));
 
         // zobrazim prvni zobrazitelnou stranku
         DocumentPage firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
@@ -150,6 +143,38 @@ public class ViewActivity extends BaseActivity {
             }
             showHtml(document, firstShowablePage);
         }
+    }
+
+    /**
+     * Zobrazi v postranim panelu nahledy jednotlivych dokumentu
+     *
+     * @param documents
+     */
+    private void fillSideBar(final List<Document> documents) {
+
+        mDocumentAdapter.clear();
+        mDocumentAdapter.setEditMode(mEditMode);
+        mWebViewContainer.removeAllViews();
+        mPageViewMode = false;
+
+        invalidateOptionsMenu();
+
+        mDocumentAdapter.addAll(filterHiddenItems(documents));
+        showInlineInquiryInfo();
+    }
+
+    private List<ISidebarShowable> filterHiddenItems(List items) {
+
+        List<ISidebarShowable> visibleItems = new ArrayList<ISidebarShowable>();
+        for (ISidebarShowable item : (List<ISidebarShowable>)items) {
+
+            if (!ViewActivityHelper.excludeHidden(item, mEditMode)) {
+
+                visibleItems.add(item);
+            }
+        }
+
+        return visibleItems;
     }
 
     private void showHtml(Document document, final DocumentPage page) {
@@ -188,59 +213,6 @@ public class ViewActivity extends BaseActivity {
 
         mWebViewContainer.removeAllViews();
         mWebViewContainer.addView(webView);
-    }
-
-    /**
-     * Zobrazi v postranim panelu nahledy jednotlivych dokumentu
-     *
-     * @param documents
-     */
-    private void fillSideBar(final List<Document> documents) {
-
-        mSideBarView.removeAllViews();
-        mWebViewContainer.removeAllViews();
-        mPageViewMode = false;
-        invalidateOptionsMenu();
-
-        for (final Document document : documents) {
-
-            // vynechame ty, ktere jsou schovane pokud nejsme v editmodu
-            if (ViewActivityHelper.excludeHidden(document, mEditMode)) {
-
-                continue;
-            }
-
-            View view = getLayoutInflater().inflate(R.layout.documentlistview, null);
-
-            // po kliku na stocek zobrazim v postranim panelu jednotlive stranky
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    fillSideBar(document);
-                }
-            });
-
-            TextView textView = (TextView) view.findViewById(R.id.text);
-            textView.setText(document.name);
-
-            // nastavim nahled dokumentu
-            ImageView imageView = ViewActivityHelper.getThumbnailImage(view, document, document.thumbnail);
-
-            // nastavim stav nahledu (shovany, zobrazeny)
-            ViewActivityHelper.manageVisibility(mEditMode, view, imageView, document, new ViewActivityHelper.IVisibilityChangeCallback() {
-                @Override
-                public void onVisibilityChanged() {
-
-                    fillSideBar(mDocuments);
-                }
-            });
-
-            // pridam do containeru
-            mSideBarView.addView(view);
-
-        }
-        showInlineInquiryInfo();
     }
 
     private void showInlineInquiryInfo() {

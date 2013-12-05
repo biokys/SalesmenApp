@@ -6,7 +6,11 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <ScrollView
+    <ListView
+            android:id="@+id/listview"
+            android:layout_width="@dimen/sidebar_width"
+            android:layout_height="fill_parent"/>
+    <!--<ScrollView
             android:layout_width="@dimen/sidebar_width"
             android:layout_height="fill_parent"
             android:id="@+id/scrollview"
@@ -17,7 +21,7 @@
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"/>
-    </ScrollView>
+    </ScrollView>-->
 
     <LinearLayout
             android:background="#fff"

@@ -10,14 +10,14 @@
             android:showAsAction="always"/>
 
     <item
-            android:id="@+id/menu_send"
-            android:icon="@drawable/ic_action_social_send_now"
-            android:title="Poslat"
-            android:showAsAction="always"/>
-
-    <item
             android:id="@+id/menu_edit"
             android:icon="@drawable/ic_action_content_edit"
             android:title="Editovat"
+            android:showAsAction="always"/>
+
+    <item
+            android:id="@+id/menu_send"
+            android:icon="@drawable/ic_action_social_send_now"
+            android:title="Poslat"
             android:showAsAction="always"/>
 </menu>

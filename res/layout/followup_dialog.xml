@@ -4,14 +4,18 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical" >
-    <CalendarView
-            android:id="@+id/calendar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:minHeight="200dp"/>
+
+    <DatePicker
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/datePicker"/>
 
     <EditText
             android:id="@+id/text"
+            android:hint="Zpráva"
+            android:minLines="2"
+            android:maxLines="5"
+            android:singleLine="false"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
 </LinearLayout>

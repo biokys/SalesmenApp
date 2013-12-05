@@ -12,8 +12,8 @@ import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.application.salesmenapp.Helper;
-import eu.janmuller.application.salesmenapp.IHideAble;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.util.Ln;
 
@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * Date: 02.11.13
  * Time: 11:12
  */
-class ViewActivityHelper {
+public class ViewActivityHelper {
 
     public static final Pattern TAG_REPLACE_REGEX = Pattern.compile("\\{\\{(\\w+)\\}\\}");
 
@@ -163,8 +163,8 @@ class ViewActivityHelper {
         webView.loadUrl("javascript:getAllEditableElements('" + documentPage.id.getId().toString() + "')");
     }
 
-    static void manageVisibility(boolean editMode, View view, ImageView imageView,
-                                 final IHideAble document, final IVisibilityChangeCallback callback) {
+    public static void manageVisibility(boolean editMode, View view, ImageView imageView,
+                                 final ISidebarShowable document, final IVisibilityChangeCallback callback) {
 
         ImageView deleteView = (ImageView) view.findViewById(R.id.delete);
         deleteView.setOnClickListener(new View.OnClickListener() {
@@ -191,22 +191,23 @@ class ViewActivityHelper {
             imageView.setColorFilter(document.isVisible() ? Color.TRANSPARENT : Color.parseColor("#66000000"));
         } else {
 
+            imageView.setColorFilter(Color.TRANSPARENT);
             deleteView.setVisibility(View.GONE);
             showView.setVisibility(View.GONE);
         }
     }
 
-    private static void hideDocument(IHideAble document, IVisibilityChangeCallback callback) {
+    private static void hideDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
 
         changeDocumentVisibility(document, false, callback);
     }
 
-    private static void showDocument(IHideAble document, IVisibilityChangeCallback callback) {
+    private static void showDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
 
         changeDocumentVisibility(document, true, callback);
     }
 
-    private static void changeDocumentVisibility(IHideAble document, boolean show, IVisibilityChangeCallback callback) {
+    private static void changeDocumentVisibility(ISidebarShowable document, boolean show, IVisibilityChangeCallback callback) {
 
         document.setVisibility(show);
         if (document instanceof BaseDateModel) {
@@ -217,7 +218,7 @@ class ViewActivityHelper {
 
     }
 
-    static ImageView getThumbnailImage(View view, Document document, String filename) {
+    public static ImageView getThumbnailImage(View view, Document document, String filename) {
 
         Bitmap bitmap = BitmapFactory.decodeFile(Helper.getBaseUrl(document) + File.separator + filename);
         ImageView imageView = (ImageView) view.findViewById(R.id.image);
@@ -244,12 +245,12 @@ class ViewActivityHelper {
         return null;
     }
 
-    static boolean excludeHidden(IHideAble hideAble, boolean editMode) {
+    static boolean excludeHidden(ISidebarShowable hideAble, boolean editMode) {
 
         return !hideAble.isVisible() && !editMode;
     }
 
-    interface IVisibilityChangeCallback {
+    public interface IVisibilityChangeCallback {
 
         public void onVisibilityChanged();
     }

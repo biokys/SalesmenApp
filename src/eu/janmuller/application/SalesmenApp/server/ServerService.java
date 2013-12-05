@@ -126,12 +126,11 @@ public class ServerService {
      * @param date    Datum znovuosloveni
      * @param message Popis znovuosloveni
      */
-    public boolean followUp(Inquiry inquiry, Date date, String message) {
+    public boolean followUp(Inquiry inquiry, String date, String message) {
 
         HttpURLConnection urlConnection = null;
         try {
             String inquiryId = inquiry.serverId;
-            String strDate = date.toString();
             String urlParams = String.format("?auth=%s",
                     Helper.getUniqueId(mContext));
 
@@ -140,7 +139,7 @@ public class ServerService {
 
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             params.add(new BasicNameValuePair("id", inquiryId));
-            params.add(new BasicNameValuePair("date", strDate));
+            params.add(new BasicNameValuePair("date", date));
             params.add(new BasicNameValuePair("description", message));
             ConnectionHelper.doPost(urlConnection, params);
             urlConnection.connect();

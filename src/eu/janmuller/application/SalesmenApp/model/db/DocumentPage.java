@@ -3,7 +3,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
-import eu.janmuller.application.salesmenapp.IHideAble;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,13 +13,15 @@ import eu.janmuller.application.salesmenapp.IHideAble;
  */
 @GenericModel.TableName(name = "document_pages")
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-final public class DocumentPage extends Page<DocumentPage> implements IHideAble {
+final public class DocumentPage extends Page<DocumentPage> implements ISidebarShowable {
 
     @ForeignKey(attributeClass = Document.class)
     public Id documentId;
 
     @GenericModel.DataType(type = DataTypeEnum.BOOLEAN)
     public boolean show;
+
+    public Document parentDocument;
 
     /**
      * Implicitni konstruktor
@@ -47,6 +49,33 @@ final public class DocumentPage extends Page<DocumentPage> implements IHideAble 
         return show;
     }
 
+
+    @Override
+    public Document getDocument() {
+
+        return parentDocument;
+    }
+
+    @Override
+    public String getTitle() {
+
+        return String.valueOf(position);
+    }
+
+    @Override
+    public String getImagePath() {
+
+        return thumbnail;
+    }
+
+    @Override
+    public void delete() throws DaoConstraintException {
+
+        DocumentTag.deleteByQuery(DocumentTag.class, "documentPageId=" + id.getId());
+        super.delete();
+    }
+
+
     @Override
     public boolean equals(Object o) {
 
@@ -58,13 +87,6 @@ final public class DocumentPage extends Page<DocumentPage> implements IHideAble 
         if (!id.getId().equals(that.id.getId())) return false;
 
         return true;
-    }
-
-    @Override
-    public void delete() throws DaoConstraintException {
-
-        DocumentTag.deleteByQuery(DocumentTag.class, "documentPageId=" + id.getId());
-        super.delete();    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override

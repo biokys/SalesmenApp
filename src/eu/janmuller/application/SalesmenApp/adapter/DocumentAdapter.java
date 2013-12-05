@@ -5,8 +5,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.activity.ViewActivityHelper;
+import eu.janmuller.application.salesmenapp.model.db.Document;
+import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
+
+import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,11 +21,18 @@ import eu.janmuller.application.salesmenapp.R;
  * Date: 18.10.13
  * Time: 15:19
  */
-public class DocumentAdapter extends ArrayAdapter<String> {
+public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
+
+    private boolean mEditMode;
 
     public DocumentAdapter(Context context) {
 
-        super(context, R.layout.documentlistview);
+        super(context, R.layout.documentlistview, new ArrayList<ISidebarShowable>());
+    }
+
+    public void setEditMode(boolean editMode) {
+
+        mEditMode = editMode;
     }
 
     @Override
@@ -31,20 +45,19 @@ public class DocumentAdapter extends ArrayAdapter<String> {
             view = vi.inflate(R.layout.documentlistview, null);
         }
 
-        String text = getItem(position);
+        ISidebarShowable document = getItem(position);
         TextView textView = (TextView) view.findViewById(R.id.text);
+        textView.setText(String.valueOf(document.getTitle()));
 
-        textView.setText(text);
+        ImageView imageView = ViewActivityHelper.getThumbnailImage(view, document.getDocument(), document.getImagePath());
+        ViewActivityHelper.manageVisibility(mEditMode, view, imageView, document, new ViewActivityHelper.IVisibilityChangeCallback() {
+            @Override
+            public void onVisibilityChanged() {
+
+                notifyDataSetChanged();
+                //fillSideBar(document);
+            }
+        });
         return view;
-    }
-
-    public void groupIt() {
-
-
-    }
-
-    public void unGroupIt() {
-
-
     }
 }

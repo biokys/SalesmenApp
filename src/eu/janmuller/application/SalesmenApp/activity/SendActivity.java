@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.Toast;
 import com.google.inject.Inject;
+import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
@@ -173,22 +174,32 @@ public class SendActivity extends BaseActivity {
         builder.create().show();
     }
 
+    DatePicker mDatePicker;
+    EditText   mEditText;
+
     private void showFollowUpDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         View view = getLayoutInflater().inflate(R.layout.followup_dialog, null);
+
+
         builder.setView(view);
         builder.setNegativeButton(R.string.cancel, null);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
-                sendFollowUpRequest(new Date(), "Bla bla");
+                Date date = new Date(mDatePicker.getCalendarView().getDate());
+                sendFollowUpRequest(date, mEditText.getText().toString());
             }
         });
         builder.setTitle("Nastavení připomenutí");
-        builder.create().show();
+        AlertDialog alertDialog = builder.create();
+
+        mDatePicker = (DatePicker) view.findViewById(R.id.datePicker);
+        mEditText = (EditText) view.findViewById(R.id.text);
+        alertDialog.show();
     }
 
     private void sendFollowUpRequest(final Date date, final String message) {
@@ -199,7 +210,8 @@ public class SendActivity extends BaseActivity {
             @Override
             public void run() {
 
-                if (mServerService.followUp(mInquiry, date, message)) {
+                String strDate = Helper.sSdf.format(date);
+                if (mServerService.followUp(mInquiry, strDate, message)) {
 
                     handler.post(new Runnable() {
                         @Override
