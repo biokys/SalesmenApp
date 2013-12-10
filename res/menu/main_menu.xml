@@ -5,12 +5,12 @@
     <item
             android:id="@+id/menu_open_web"
             android:icon="@drawable/ab_tabulka"
-            android:title="Open web"
+            android:title="Otevřít web"
             android:showAsAction="always"/>
-    <!--<item
-            android:id="@+id/menu_delete"
-            android:icon="@android:drawable/ic_menu_delete"
-            android:title="Delete"
-            android:showAsAction="always"/>-->
+    <item
+            android:id="@+id/menu_refresh"
+            android:icon="@drawable/ic_action_navigation_refresh"
+            android:title="Obnovit"
+            android:showAsAction="always"/>
 
 </menu>

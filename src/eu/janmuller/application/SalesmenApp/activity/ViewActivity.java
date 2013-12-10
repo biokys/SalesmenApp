@@ -1,5 +1,6 @@
 package eu.janmuller.application.salesmenapp.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -7,7 +8,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
-import android.widget.*;
+import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
@@ -15,8 +19,12 @@ import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
+import roboguice.util.RoboAsyncTask;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Aktivita ma na starosti zobrazovani seznamu dokumentu + zobrazovani konkretnich stranek jednotlivych dokumentu
@@ -32,17 +40,15 @@ public class ViewActivity extends BaseActivity {
     public static final String INQUIRY = "inquiry";
     public static final String TEMP    = "temp";
 
-    /*@InjectView(R.id.list)
-    private LinearLayout mSideBarView;*/
+    public static final int FULLSCREEN_REQUEST_CODE = 1999;
 
     @InjectView(R.id.webview_container)
     private LinearLayout mWebViewContainer;
 
-    /*@InjectView(R.id.scrollview)
-    private ScrollView mScrollView;*/
-
     @InjectView(R.id.listview)
     private ListView mListView;
+
+    private Handler mHandler = new Handler();
 
     private Inquiry                    mInquiry;
     private List<Document>             mDocuments;
@@ -51,11 +57,11 @@ public class ViewActivity extends BaseActivity {
     private boolean                    mPageViewMode;
     private int                        mActionBarDisplayOptions;
     private Map<DocumentPage, WebView> mWebViewMap;
-    private DocumentPage               mActualPage;
+    private PageContainer              mActualPage;
     private boolean                    mTempInquiry;
     private WebView                    mInfoWebView;
     private DocumentAdapter            mDocumentAdapter;
-
+    private ProgressDialog             mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,75 +79,92 @@ public class ViewActivity extends BaseActivity {
         mActionBar.setDisplayShowTitleEnabled(true);
         mActionBar.setTitle(mInquiry.title);
 
+        setUp();
+    }
+
+    /**
+     * Metoda vytvori list adapter, nacte z db documenty, ktere patri poptavce
+     */
+    private void setUp() {
+
+        mWebViewMap = new HashMap<DocumentPage, WebView>();
         mDocumentAdapter = new DocumentAdapter(this);
         mListView.setAdapter(mDocumentAdapter);
+        handleListViewItemClicks();
+        mProgressDialog = ProgressDialog.show(this, null, "Pracuji...");
+
+        new RoboAsyncTask<Void>(this) {
+
+            @Override
+            public Void call() throws Exception {
+
+                mDocuments = mInquiry.getDocumentsByInquiry();
+
+                // pokud otevirame poptavku poprve, pak k ni priradime vsechny sablony
+                if (mDocuments.size() == 0) {
+
+                    ViewActivityHelper.createDocuments(mDocuments, mInquiry);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onSuccess(Void aVoid) throws Exception {
+
+                // zobrazim dokumenty jako stocky v postranim menu
+                fillSideBar(mDocuments);
+            }
+        }.execute();
+    }
+
+    /**
+     * Handluje click na polozku v listview
+     */
+    private void handleListViewItemClicks() {
+
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                ISidebarShowable item = mDocumentAdapter.getItem(i);
-                if (mPageViewMode) {
-
-                    showHtml(item.getDocument(), (DocumentPage)item);
-                } else {
-
-                    fillSideBar(item.getDocument());
-                }
+                setPage(i);
             }
         });
-
-        setUp();
-    }
-
-    private void setUp() {
-
-        mDocuments = Document.getByQuery(Document.class, "inquiryId=" + mInquiry.id.getId());
-        mWebViewMap = new HashMap<DocumentPage, WebView>();
-
-        // pokud otevirame poptavku poprve, pak k ni priradime vsechny sablony
-        if (mDocuments.size() == 0) {
-
-            ViewActivityHelper.createDocuments(mDocuments, mInquiry);
-        }
-
-        // zobrazim dokumenty jako stocky v postranim menu
-        fillSideBar(mDocuments);
     }
 
     /**
-     * Zobrazi stranky konkretniho dokumentu + zobrazi pohled na 1. stranku dokumentu
+     * Nastavi stranku podle dane pozice, nebo dokument v zavislosti na mPageViewMode
+     * Pokud se jedna o editaci, pak ulozime aktualni stranku pred tim, nez prejdeme na dalsi
+     * Zaroven take aktualni stranku odzoomujem na defaultni zoom level
      *
-     * @param document
+     * @param position pozice v listview (indexace od 0)
      */
-    private void fillSideBar(final Document document) {
+    private void setPage(int position) {
 
-        mDocumentAdapter.clear();
-        mDocumentAdapter.setEditMode(mEditMode);
-        mPageViewMode = true;
-        mDocument = document;
-        invalidateOptionsMenu();
+        ISidebarShowable item = mDocumentAdapter.getItem(position);
+        if (mPageViewMode) {
 
-        List<DocumentPage> pages = DocumentPage.getByQuery(DocumentPage.class, "documentId=" + document.id.getId());
-        if (pages.size() == 0) {
+            final WebView lastWebView = mActualPage.webview;
 
-            return;
-        }
+            if (mEditMode) {
 
-        for (DocumentPage page : pages) {
-
-            page.parentDocument = document;
-        }
-        mDocumentAdapter.addAll(filterHiddenItems(pages));
-
-        // zobrazim prvni zobrazitelnou stranku
-        DocumentPage firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
-        if (firstShowablePage != null) {
-
-            if (mActualPage != null && mActualPage.show) {
-
-                firstShowablePage = mActualPage;
+                saveActualPage(mActualPage);
             }
-            showHtml(document, firstShowablePage);
+            // zobrazime novou stranku
+            showHtml(item.getDocument(), (DocumentPage) item);
+
+            // zoom-outujem aktualni webview na defaultni zoom
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    while (lastWebView.zoomOut()) {
+                    }
+                }
+            });
+
+        } else {
+
+            fillSideBar(item.getDocument());
         }
     }
 
@@ -152,34 +175,75 @@ public class ViewActivity extends BaseActivity {
      */
     private void fillSideBar(final List<Document> documents) {
 
+        mActualPage = null;
+        mPageViewMode = false;
+
         mDocumentAdapter.clear();
         mDocumentAdapter.setEditMode(mEditMode);
         mWebViewContainer.removeAllViews();
-        mPageViewMode = false;
 
         invalidateOptionsMenu();
 
-        mDocumentAdapter.addAll(filterHiddenItems(documents));
+        mDocumentAdapter.addAll(ViewActivityHelper.filterHiddenItems(documents, mEditMode));
+        mListView.setSelection(0);
         showInlineInquiryInfo();
     }
 
-    private List<ISidebarShowable> filterHiddenItems(List items) {
+    /**
+     * Zobrazi stranky konkretniho dokumentu + zobrazi pohled na 1. stranku dokumentu
+     *
+     * @param document
+     */
+    private void fillSideBar(final Document document) {
 
-        List<ISidebarShowable> visibleItems = new ArrayList<ISidebarShowable>();
-        for (ISidebarShowable item : (List<ISidebarShowable>)items) {
+        boolean setPositionToStart = !mPageViewMode;
+        mPageViewMode = true;
 
-            if (!ViewActivityHelper.excludeHidden(item, mEditMode)) {
+        mDocumentAdapter.clear();
+        mDocumentAdapter.setEditMode(mEditMode);
+        mDocument = document;
+        invalidateOptionsMenu();
 
-                visibleItems.add(item);
-            }
+        List<DocumentPage> pages = document.getDocumentPagesByDocument();
+        if (pages.size() == 0) {
+
+            return;
         }
 
-        return visibleItems;
+        for (DocumentPage page : pages) {
+
+            page.parentDocument = document;
+        }
+        mDocumentAdapter.addAll(ViewActivityHelper.filterHiddenItems(pages, mEditMode));
+        if (setPositionToStart) {
+
+            mListView.setSelection(0);
+        }
+
+        // zobrazim prvni zobrazitelnou stranku
+        DocumentPage firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
+        if (firstShowablePage != null) {
+
+            if (mActualPage != null) {
+
+                DocumentPage documentPage = mActualPage.documentPage;
+                if (documentPage != null && documentPage.show) {
+
+                    firstShowablePage = documentPage;
+                }
+            }
+            showHtml(document, firstShowablePage);
+        }
     }
 
-    private void showHtml(Document document, final DocumentPage page) {
 
-        mActualPage = page;
+    /**
+     * Metoda slouzi k zobrazeni stranky dokumentu do webview
+     * Webview se cachuji a tak se inicializuji pouze pri prvnim prohlizeni.
+     * Do sablony ve webview se pomoci JS nastavuji informace z poptavky a z ulozenych dat
+     * Zaroven se prepina mezi view/edit modem
+     */
+    private void showHtml(Document document, final DocumentPage page) {
 
         WebView webView = mWebViewMap.get(page);
 
@@ -191,23 +255,24 @@ public class ViewActivity extends BaseActivity {
             mWebViewMap.put(page, webView);
         }
 
+        mActualPage = new PageContainer(webView, page);
         final WebView _webview = webView;
         new Handler().post(new Runnable() {
             @Override
             public void run() {
 
-                List<DocumentTag> list = DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + page.id.getId());
+                List<DocumentTag> list = page.getDocumentTagsByPage();
                 for (DocumentTag documentTag : list) {
 
-                    ViewActivityHelper.setCustomText(_webview, documentTag);
+                    if (documentTag.tagIdent != null && documentTag.tagIdent.length() > 0) {
+                        ViewActivityHelper.setCustomText(_webview, documentTag);
+                    }
                 }
 
                 if (mEditMode) {
 
                     ViewActivityHelper.setEditHtmlCellsVisibility(_webview, true);
                 }
-
-
             }
         });
 
@@ -215,44 +280,61 @@ public class ViewActivity extends BaseActivity {
         mWebViewContainer.addView(webView);
     }
 
+    /**
+     * Metoda, ktera zobrazuje uvodni obrazovku pri zobrazeni dokumentuuu v poptavce
+     * Pokud se jedna o regulerni poptavku, pak se zde zobrazi informace o poptavce
+     * Vezme se sablona a do ni se vsadi informace s poptavky
+     * <p/>
+     * Pokud se jedna o docasnou poptavku (coz je poptavka pouze pro zobrazeni sablon), pak se zde zobrazi
+     * logo vendora
+     */
     private void showInlineInquiryInfo() {
 
-        if (mInfoWebView == null) {
+        if (!mTempInquiry) {
 
-            final WebView webView = new WebView(ViewActivity.this);
-            ViewActivityHelper.configureWebView(webView);
-            mInfoWebView = webView;
-            List<Template> templates = Template.getByQuery(Template.class, "type='Info'");
-            if (templates.size() > 0) {
+            if (mInfoWebView == null) {
 
-                Template template = templates.get(0);
-                List<TemplatePage> pages = TemplatePage.getByQuery(TemplatePage.class, "templateId=" + template.id.getId());
-                if (pages.size() > 0) {
+                mInfoWebView = new WebView(ViewActivity.this);
+                ViewActivityHelper.configureWebView(mInfoWebView);
+                List<Template> templates = Template.getByQuery(Template.class, "type='Info'");
+                if (templates.size() > 0) {
 
-                    final Page page = pages.get(0);
+                    final Template template = templates.get(0);
+                    List<TemplatePage> pages = template.getTemplatePagesByTemplate();
+                    if (pages.size() > 0) {
 
-                    Helper.showHtml(webView, template, page);
+                        final Page page = pages.get(0);
+                        Helper.showHtml(mInfoWebView, template, page, new WebViewClient() {
 
-                    new Handler().post(new Runnable() {
-                        @Override
-                        public void run() {
+                            @Override
+                            public void onPageFinished(WebView view, String url) {
 
-                            List<TemplateTag> list = TemplateTag.getByQuery(TemplateTag.class, "pageId=" + page.id.getId());
-                            for (TemplateTag templateTag : list) {
+                                List<TemplateTag> list = ((TemplatePage) page).getTemplateTagsByPage();
+                                for (TemplateTag templateTag : list) {
 
-                                ViewActivityHelper.replaceTagByInquiryData(mInquiry, templateTag);
-                                ViewActivityHelper.setCustomText(webView, templateTag);
+                                    ViewActivityHelper.replaceTagByInquiryData(mInquiry, templateTag);
+                                    ViewActivityHelper.setCustomText(mInfoWebView, templateTag);
+                                }
+                                dismissStartupDialog();
                             }
-                        }
-                    });
-
+                        });
+                    }
                 }
             }
+            mWebViewContainer.addView(mInfoWebView);
+        } else {
+
+            if (mWebViewContainer.getChildCount() == 0) {
+
+                getLayoutInflater().inflate(R.layout.view_splash, mWebViewContainer);
+            }
+            dismissStartupDialog();
         }
-        mWebViewContainer.removeAllViews();
-        mWebViewContainer.addView(mInfoWebView);
     }
 
+    /**
+     * Metoda zodpovedna za vytvareni menu v actionbaru
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -273,6 +355,9 @@ public class ViewActivity extends BaseActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Metoda zodpovedna za obsluhovani stisku tlacitek menu v actionbaru
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -292,19 +377,16 @@ public class ViewActivity extends BaseActivity {
                 break;
             case R.id.menu_fullscreen:
 
-                runFullscreenMode();
+                openFullscreenModeActivity();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void runFullscreenMode() {
 
-        Intent intent = new Intent(this, FullscreenModeActivity.class);
-        intent.putExtra(FullscreenModeActivity.DOCUMENT, mDocument);
-        startActivity(intent);
-    }
-
+    /**
+     * Prepnuti do editacniho modu
+     */
     private void switch2EditMode() {
 
         mEditMode = true;
@@ -328,28 +410,50 @@ public class ViewActivity extends BaseActivity {
         invalidateOptionsMenu();
     }
 
+    /**
+     * Prepnuti do prohlizeciho modu
+     */
     private void switch2ViewMode() {
 
         mEditMode = false;
 
         if (mPageViewMode) {
 
+            // pri prechodu z editace ulozime zmeny v aktualnim webview
+            saveActualPage(mActualPage);
+            // disablujem vsechny editacni policka
+            disableContentEditable();
             mActualPage = null;
-            saveEditChanges();
         }
-        refreshSideBar();
         mActionBar.setDisplayOptions(mActionBarDisplayOptions);
-        invalidateOptionsMenu();
+        refreshSideBar();
     }
 
-    private void saveEditChanges() {
+    /**
+     * Ulozi aktualne zobrazenou stranku - editacni pole
+     *
+     * @param pageContainer aktualne zobrazene webview vcetne DocumentPage
+     */
+    private void saveActualPage(PageContainer pageContainer) {
+
+        if (pageContainer != null) {
+
+            ViewActivityHelper.getAndSaveTags(pageContainer.webview, pageContainer.documentPage);
+            ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.webview, false);
+        }
+    }
+
+    /**
+     * U vsech stranek dokumentu odebere classu pro editaci, tzn. ze disabluje
+     * editaci techto dokumentu
+     */
+    private void disableContentEditable() {
 
         Iterator<DocumentPage> iterator = mWebViewMap.keySet().iterator();
         while (iterator.hasNext()) {
 
             DocumentPage page = iterator.next();
             WebView webView = mWebViewMap.get(page);
-            ViewActivityHelper.getAndSaveTags(webView, page);
             ViewActivityHelper.setEditHtmlCellsVisibility(webView, false);
         }
     }
@@ -365,6 +469,17 @@ public class ViewActivity extends BaseActivity {
         }
     }
 
+    private void dismissStartupDialog() {
+
+        if (mProgressDialog.isShowing()) {
+
+            mProgressDialog.dismiss();
+        }
+    }
+
+    /**
+     * Otevre aktivitu na posilani zprav a preda ji aktualni poptavku
+     */
     private void openSendActivity() {
 
         Intent intent = new Intent(this, SendActivity.class);
@@ -372,10 +487,23 @@ public class ViewActivity extends BaseActivity {
         startActivity(intent);
     }
 
+    /**
+     * Otevre aktivitu zobrazujici fullscreen prezentaci + ji preda aktualne zobrazeny dokument
+     */
+    private void openFullscreenModeActivity() {
+
+        Intent intent = new Intent(this, FullscreenModeActivity.class);
+        intent.putExtra(FullscreenModeActivity.DOCUMENT, mDocument);
+        startActivityForResult(intent, FULLSCREEN_REQUEST_CODE);
+    }
+
     @Override
     public void onBackPressed() {
 
-        if (mPageViewMode) {
+        if (mEditMode) {
+
+            switch2ViewMode();
+        } else if (mPageViewMode) {
 
             mActualPage = null;
             fillSideBar(mDocuments);
@@ -393,5 +521,28 @@ public class ViewActivity extends BaseActivity {
             mInquiry.delete();
         }
         super.finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FULLSCREEN_REQUEST_CODE && resultCode == RESULT_OK) {
+
+            int page2Show = data.getIntExtra(FullscreenModeActivity.CURRENT_PAGE_CODE, 0);
+            setPage(page2Show);
+        }
+    }
+
+    private class PageContainer {
+
+        final public WebView      webview;
+        final public DocumentPage documentPage;
+
+        private PageContainer(WebView webview, DocumentPage documentPage) {
+
+            this.webview = webview;
+            this.documentPage = documentPage;
+        }
     }
 }

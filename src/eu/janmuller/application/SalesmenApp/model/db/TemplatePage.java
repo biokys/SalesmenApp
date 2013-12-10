@@ -3,6 +3,8 @@ package eu.janmuller.application.salesmenapp.model.db;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * Coder: Jan Müller
@@ -16,4 +18,8 @@ final public class TemplatePage extends Page<TemplatePage> {
     @GenericModel.ForeignKey(attributeClass = Template.class)
     public Id templateId;
 
+    public List<TemplateTag> getTemplateTagsByPage() {
+
+        return TemplateTag.getByQuery(TemplateTag.class, "pageId=" + this.id.getId());
+    }
 }

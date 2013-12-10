@@ -3,6 +3,7 @@ package eu.janmuller.application.salesmenapp.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.speech.RecognitionService;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
@@ -31,6 +32,7 @@ import java.util.List;
 public class FullscreenModeActivity extends BaseActivity {
 
     public static final String DOCUMENT = "document";
+    public static final String CURRENT_PAGE_CODE = "curren_page";
 
     @InjectView(R.id.previous)
     private View previousSlide;
@@ -50,6 +52,7 @@ public class FullscreenModeActivity extends BaseActivity {
     private Document             mDocument;
     private List<DocumentPage>   mDocumentPages;
     private SparseArray<WebView> mWebViewSparseArray;
+    private int mCurrentPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +101,7 @@ public class FullscreenModeActivity extends BaseActivity {
             @Override
             public void onPageSelected(int position) {
 
+                mCurrentPage = position;
                 setArrowsVisibility(position);
             }
         });
@@ -148,7 +152,7 @@ public class FullscreenModeActivity extends BaseActivity {
                 public void run() {
 
                     DocumentPage documentPage = mDocumentPages.get(position);
-                    List<DocumentTag> list = DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + documentPage.id.getId());
+                    List<DocumentTag> list = documentPage.getDocumentTagsByPage();
                     for (DocumentTag documentTag : list) {
 
                         ViewActivityHelper.setCustomText(_webview, documentTag);
@@ -171,5 +175,14 @@ public class FullscreenModeActivity extends BaseActivity {
         mDocumentPages = DocumentPage.getByQuery(
                 DocumentPage.class, "show=1 and documentId=" + document.id.getId());
         mWebViewSparseArray = new SparseArray<WebView>(mDocumentPages.size());
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        Intent intent = new Intent();
+        intent.putExtra(CURRENT_PAGE_CODE, mCurrentPage);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }

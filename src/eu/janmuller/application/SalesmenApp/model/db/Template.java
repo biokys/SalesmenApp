@@ -5,6 +5,8 @@ import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * Coder: Jan Müller
@@ -111,6 +113,11 @@ public class Template extends BaseDateModel<Template> {
         this.landscape = template.landscape;
         this.shortName = template.shortName;
         this.type = template.type;
+    }
+
+    public List<TemplatePage> getTemplatePagesByTemplate() {
+
+        return TemplatePage.getByQuery(TemplatePage.class, "templateId=" + this.id.getId());
     }
 
     @Override

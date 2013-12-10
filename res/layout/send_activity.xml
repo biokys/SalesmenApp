@@ -49,10 +49,14 @@
             android:layout_height="3dp"
             android:background="#999"/>
 
-    <GridLayout
+    <GridView
             android:layout_width="fill_parent"
-            android:layout_height="400dp"
-            android:columnCount="5"
-            android:rowCount="5"
+            android:layout_height="wrap_content"
+            android:columnWidth="@dimen/sidebar_width"
+            android:numColumns="auto_fit"
+            android:verticalSpacing="10dp"
+            android:horizontalSpacing="10dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
             android:id="@+id/grid"/>
 </LinearLayout>

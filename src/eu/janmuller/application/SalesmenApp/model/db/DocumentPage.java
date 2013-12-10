@@ -5,6 +5,8 @@ import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * Coder: Jan Müller
@@ -73,6 +75,11 @@ final public class DocumentPage extends Page<DocumentPage> implements ISidebarSh
 
         DocumentTag.deleteByQuery(DocumentTag.class, "documentPageId=" + id.getId());
         super.delete();
+    }
+
+    public List<DocumentTag> getDocumentTagsByPage() {
+
+        return DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + this.id.getId());
     }
 
 

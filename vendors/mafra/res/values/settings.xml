@@ -4,4 +4,5 @@
     <string name="vendor">mafra</string>
     <string name="app_name">Mafra</string>
     <string name="base_url">http://mafra.sb2000.cz</string>
+    <string name="web_url">http://www.mafra.cz/cs/default.asp</string>
 </resources>

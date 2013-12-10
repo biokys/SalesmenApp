@@ -16,6 +16,7 @@ import org.apache.http.message.BasicNameValuePair;
 import roboguice.util.Ln;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -33,6 +34,7 @@ import java.util.List;
 @Singleton
 public class ServerService {
 
+    public static final String GENERAL_ERROR = "Obecná chyba";
     private Context mContext;
 
     private String mBaseUrl;
@@ -44,7 +46,7 @@ public class ServerService {
         mBaseUrl = context.getResources().getString(R.string.base_url);
     }
 
-    public boolean closeInquiry(Inquiry inquiry) {
+    public void closeInquiry(Inquiry inquiry) throws ConnectionException {
 
         HttpURLConnection urlConnection = null;
         try {
@@ -58,12 +60,14 @@ public class ServerService {
 
             ConnectionHelper.doPost(urlConnection, params);
             urlConnection.connect();
-            int responseCode = urlConnection.getResponseCode();
-            return responseCode == 200;
+            if (urlConnection.getResponseCode() != 200) {
 
-        } catch (Exception e) {
+                throw new ConnectionException(urlConnection.getResponseMessage());
+            }
+        } catch (IOException e) {
 
             Ln.e(e);
+            throw new ConnectionException(GENERAL_ERROR);
         } finally {
 
             if (urlConnection != null) {
@@ -71,8 +75,6 @@ public class ServerService {
                 urlConnection.disconnect();
             }
         }
-
-        return false;
     }
 
     /**
@@ -80,7 +82,7 @@ public class ServerService {
      *
      * @return vraci true, pokud byl dotaz uspesny a zarizeni je jiz registrovano
      */
-    public boolean isDeviceRegistered() {
+    public boolean isDeviceRegistered() throws ConnectionException {
 
         HttpURLConnection urlConnection = null;
         try {
@@ -100,14 +102,12 @@ public class ServerService {
                 return resultObject.status;
             } else {
 
-                throw new ConnectionException("Problém s přípojením [isDeviceRegistered]");
+                throw new ConnectionException(urlConnection.getResponseMessage());
             }
-        } catch (ConnectionException e) {
+        } catch (IOException e) {
 
             Ln.e(e);
-        } catch (Exception e) {
-
-            Ln.e(e);
+            throw new ConnectionException(GENERAL_ERROR);
         } finally {
 
             if (urlConnection != null) {
@@ -115,8 +115,6 @@ public class ServerService {
                 urlConnection.disconnect();
             }
         }
-
-        return false;
     }
 
     /**
@@ -126,7 +124,7 @@ public class ServerService {
      * @param date    Datum znovuosloveni
      * @param message Popis znovuosloveni
      */
-    public boolean followUp(Inquiry inquiry, String date, String message) {
+    public void followUp(Inquiry inquiry, String date, String message) throws ConnectionException {
 
         HttpURLConnection urlConnection = null;
         try {
@@ -143,10 +141,14 @@ public class ServerService {
             params.add(new BasicNameValuePair("description", message));
             ConnectionHelper.doPost(urlConnection, params);
             urlConnection.connect();
-            return urlConnection.getResponseCode() == 200;
-        } catch (Exception e) {
+            if (urlConnection.getResponseCode() != 200) {
+
+                throw new ConnectionException(urlConnection.getResponseMessage());
+            }
+        } catch (IOException e) {
 
             Ln.e(e);
+            throw new ConnectionException(GENERAL_ERROR);
         } finally {
 
             if (urlConnection != null) {
@@ -154,12 +156,10 @@ public class ServerService {
                 urlConnection.disconnect();
             }
         }
-
-        return false;
     }
 
 
-    public boolean send(String mail, String title, String text, List<Document> documents) {
+    public void send(Inquiry inquiry, String mail, String title, String text, List<Document> documents) throws ConnectionException {
 
         SendDataObject sendDataObject = getSendDataObject(documents);
         String json = new Gson().toJson(sendDataObject);
@@ -176,12 +176,17 @@ public class ServerService {
             params.add(new BasicNameValuePair("title", title));
             params.add(new BasicNameValuePair("text", text));
             params.add(new BasicNameValuePair("data", json));
+            params.add(new BasicNameValuePair("id", inquiry.serverId));
             ConnectionHelper.doPost(urlConnection, params);
             urlConnection.connect();
-            return urlConnection.getResponseCode() == 200;
-        } catch (Exception e) {
+            if (urlConnection.getResponseCode() != 200) {
+
+                throw new ConnectionException(urlConnection.getResponseMessage());
+            }
+        } catch (IOException e) {
 
             Ln.e(e);
+            throw new ConnectionException(GENERAL_ERROR);
         } finally {
 
             if (urlConnection != null) {
@@ -189,7 +194,6 @@ public class ServerService {
                 urlConnection.disconnect();
             }
         }
-        return false;
     }
 
     private SendDataObject getSendDataObject(List<Document> documents) {
@@ -199,16 +203,20 @@ public class ServerService {
         int mainLoop = 0;
         for (Document document : documents) {
 
+            if (!document.show) {
+
+                continue;
+            }
             SendDataObject.Document sendDocument = new SendDataObject.Document();
             sendDocument.ident = document.ident;
             sendDocument.version = document.version;
-            List<DocumentPage> documentPages = DocumentPage.getByQuery(DocumentPage.class, "documentId=" + document.id.getId());
+            List<DocumentPage> documentPages = document.getDocumentPagesByDocument();
             SendDataObject.Document.Page[] pages = new SendDataObject.Document.Page[documentPages.size()];
             int loop = 0;
             for (DocumentPage documentPage : documentPages) {
 
                 SendDataObject.Document.Page page = new SendDataObject.Document.Page();
-                List<DocumentTag> documentTags = DocumentTag.getByQuery(DocumentTag.class, "documentPageId=" + documentPage.id.getId());
+                List<DocumentTag> documentTags = documentPage.getDocumentTagsByPage();
                 SendDataObject.Document.Page.Tag[] tags = new SendDataObject.Document.Page.Tag[documentTags.size()];
                 int tagLoop = 0;
                 for (DocumentTag documentTag : documentTags) {
@@ -218,6 +226,7 @@ public class ServerService {
                     tag.value = documentTag.value;
                     tags[tagLoop++] = tag;
                 }
+                page.id = documentPage.file;
                 page.tags = tags;
                 pages[loop++] = page;
             }
@@ -250,6 +259,9 @@ public class ServerService {
 
                 @SerializedName("tags")
                 public Tag[] tags;
+
+                @SerializedName("id")
+                public String id;
             }
 
             @SerializedName("ident")

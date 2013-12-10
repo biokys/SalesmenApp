@@ -3,20 +3,29 @@
     function switchMode(mode) {
         var editable = document.querySelectorAll('.edit');
         var i = editable.length;
-        if (mode == 'edit') {
-            while (--i > -1) {
+        while (--i > -1) {
+            if (mode == 'edit') {
                 editable[i].setAttribute('contenteditable', true);
                 editable[i].style.backgroundColor = '#FFF8E7';
                 editable[i].style.border = '2pt solid #aa0000 ';
-            }
-        }
-        else {
-            while (--i > -1) {
+            } else {
                 editable[i].removeAttribute('contenteditable');
                 editable[i].style.backgroundColor = 'transparent';
                 editable[i].style.border = '';
             }
         }
+
+        var postit = document.querySelectorAll('.post-it');
+        i = postit.length;
+        while (--i > -1) {
+            if (mode != 'edit') {
+                postit[i].classList.add("empty");
+            } else {
+                postit[i].classList.remove("empty");
+
+            }
+        }
+
     }
 
     function setCustomText(id, text) {

@@ -4,6 +4,8 @@
     <dimen name="fullscreen_sidebar_width">65dp</dimen>
 
     <color name="app_background">#3c3c3c</color>
-    <color name="spinner_background">#4298ba</color>
-    <color name="list_item_highlight">#3D97B9</color>
+    <color name="blue_button_normal">#4298ba</color>
+    <color name="blue_button_pressed">#347F9D</color>
+
+    <color name="white">#ffffff</color>
 </resources>

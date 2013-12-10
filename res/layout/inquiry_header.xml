@@ -9,18 +9,20 @@
     <LinearLayout
             android:layout_marginTop="20dp"
                   android:orientation="vertical"
-                  android:layout_width="match_parent"
+                  android:layout_width="fill_parent"
                   android:layout_height="match_parent"
-                  android:background="@android:color/white"
-                  android:padding="5dp">
+                  android:gravity="right"
+            android:paddingBottom="15dp">
 
         <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_templates"
                 android:text="Vzorové dokumenty"
-                android:drawableLeft="@drawable/dokumenty"
-                android:drawablePadding="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textColor="#fff"
+                android:background="@drawable/button_selector"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
     </LinearLayout>

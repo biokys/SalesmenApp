@@ -8,12 +8,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Config;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
 import eu.janmuller.application.salesmenapp.model.db.Template;
+import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.DownloadData;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.RoboGuice;
@@ -135,7 +137,7 @@ public class SplashActivity extends RoboSplashActivity {
 
         if (Helper.isPaired(this)) {
 
-            afterRoboGuiceInit();
+            loadData();
             return;
         }
         final Handler handler = new Handler();
@@ -143,23 +145,34 @@ public class SplashActivity extends RoboSplashActivity {
             @Override
             public void run() {
 
-                if (mServerService.isDeviceRegistered()) {
+                try {
+                    if (mServerService.isDeviceRegistered()) {
 
-                    Helper.setPaired(SplashActivity.this);
+                        Helper.setPaired(SplashActivity.this);
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                loadData();
+                            }
+                        });
+                    } else {
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showDeviceIdDialog();
+                            }
+                        });
+                    }
+                } catch (final ConnectionException e) {
+
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
 
-                            afterRoboGuiceInit();
-                        }
-                    });
-                } else {
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            showDeviceIdDialog();
+                            Toast.makeText(SplashActivity.this, "Během ověřování zařízení došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -167,84 +180,40 @@ public class SplashActivity extends RoboSplashActivity {
         }.start();
     }
 
-    private void afterRoboGuiceInit() {
-
-        if (Config.sActualVendor.equals(Config.VENDOR_MAFRA)) {
-
-            if (Template.getCountByQuery(Template.class, "1=1") == 0) {
-
-                loadData();
-            } else {
-
-                List<Inquiry> list = Inquiry.getAllObjects(Inquiry.class);
-                if (list.size() > 0) {
-
-                    InquiryActivityHelper.openViewActivity(this, list.get(0));
-                } else {
-
-                    InquiryActivityHelper.deleteAll();
-                    loadData();
-                }
-            }
-        } else {
-
-            loadData();
-        }
-    }
-
-
     private void loadData() {
 
-        mDownloadData
-                .setDownloadInquiries(Config.sActualVendor.equals(Config.VENDOR_DALLMAYR))
-                .run(new DownloadData.IDownloadDataCallback() {
-                    @Override
-                    public void onInquiriesDownloaded() {
-/*
-                        if (Config.sActualVendor.equals(Config.VENDOR_DALLMAYR)) {
+        mDownloadData.run(new DownloadData.IDownloadDataCallback() {
+            @Override
+            public void onInquiriesDownloaded() {
 
-                            fillInquiriesTable();
-                        }*/
-                    }
+            }
 
-                    @Override
-                    public void onDownloadTypeChanged(String action) {
+            @Override
+            public void onDownloadTypeChanged(String action) {
 
-                        mTextAction.setText(action);
-                    }
+                mTextAction.setText(action);
+            }
 
-                    @Override
-                    public void onProgressUpdate(int total, int progress, String message) {
+            @Override
+            public void onProgressUpdate(int total, int progress, String message) {
 
-                        mProgressBar.setProgress(progress);
-                        mProgressBar.setMax(total);
-                        mTextProgress.setText(message);
-                    }
+                mProgressBar.setProgress(progress);
+                mProgressBar.setMax(total);
+                mTextProgress.setText(message);
+            }
 
-                    @Override
-                    public void onNoNewTemplatesFound() {
+            @Override
+            public void onNoNewTemplatesFound() {
 
-                        startInquiryActivity();
-                    }
+                startInquiryActivity();
+            }
 
-                    @Override
-                    public void onTemplatesDownloaded() {
+            @Override
+            public void onTemplatesDownloaded() {
 
-                        startInquiryActivity();
-                        /*if (sActualVendor.equals(VENDOR_MAFRA)) {
-
-                            List<Inquiry> list = Inquiry.getAllObjects(Inquiry.class);
-                            Inquiry inquiry;
-
-                            inquiry = list.size() > 0 ? list.get(0) : new Inquiry();
-                            inquiry.title = "Mafra";
-                            inquiry.created = InquiriesAdapter.mSdf.format(new Date());
-                            inquiry.state = Inquiry.State.NEW;
-                            inquiry.save();
-                            InquiryActivityHelper.openViewActivity(InquiryListActivity.this, inquiry);
-                        }*/
-                    }
-                });
+                startInquiryActivity();
+            }
+        });
     }
 
     private void startInquiryActivity() {

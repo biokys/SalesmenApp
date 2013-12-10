@@ -95,16 +95,12 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
         inquiryFromServer.id = id;
         inquiryFromServer.state = state == State.NEW ? state : State.OPEN;
         inquiryFromServer.attachments = attachments;
-        /*title = inquiryFromServer.title;
-        description = inquiryFromServer.description;
-        company = inquiryFromServer.company;
-        street = inquiryFromServer.street;
-        city = inquiryFromServer.city;
-        zip = inquiryFromServer.zip;
-        regNo = inquiryFromServer.regNo;
-        telephone = inquiryFromServer.telephone;
-        mail = inquiryFromServer.mail;*/
         inquiryFromServer.save();
+    }
+
+    public List<Document> getDocumentsByInquiry() {
+
+        return Document.getByQuery(Document.class, "inquiryId=" + this.id.getId());
     }
     /**
      * Vrati vsechny poptavky
@@ -128,15 +124,6 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
             for (Document document : documents) {
 
                 attachments += document.shortName;
-                /*String[] splitted = document.name.split(" - ");
-                if (splitted.length > 0) {
-
-                    attachments += splitted[0];
-                } else {
-
-                    attachments += document.name;
-                }*/
-
                 if (++loop < documents.size()) {
 
                     attachments += ", ";

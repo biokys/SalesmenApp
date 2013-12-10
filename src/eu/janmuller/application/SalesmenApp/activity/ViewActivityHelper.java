@@ -15,10 +15,12 @@ import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 import eu.janmuller.application.salesmenapp.model.db.*;
+import org.apache.commons.lang3.StringEscapeUtils;
 import roboguice.util.Ln;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,13 +53,13 @@ public class ViewActivityHelper {
                 Document document = new Document(template, inquiry.id);
                 document.save();
 
-                List<TemplatePage> pageList = TemplatePage.getByQuery(TemplatePage.class, "templateId=" + template.id.getId());
+                List<TemplatePage> pageList = template.getTemplatePagesByTemplate();
                 for (TemplatePage templatePage : pageList) {
 
                     DocumentPage documentPage = new DocumentPage(templatePage, document);
                     documentPage.save();
 
-                    List<TemplateTag> tagList = TemplateTag.getByQuery(TemplateTag.class, "pageId=" + templatePage.id.getId());
+                    List<TemplateTag> tagList = templatePage.getTemplateTagsByPage();
                     for (TemplateTag tag : tagList) {
 
                         DocumentTag documentTag = new DocumentTag(tag, documentPage);
@@ -145,6 +147,7 @@ public class ViewActivityHelper {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
+
         webView.addJavascriptInterface(new WebAppInterface(), "Android");
     }
 
@@ -155,7 +158,8 @@ public class ViewActivityHelper {
 
     static void setCustomText(WebView webView, Tag documentTag) {
 
-        webView.loadUrl("javascript:setCustomText('" + documentTag.tagIdent + "','" + documentTag.value + "')");
+        String text = StringEscapeUtils.escapeJava(documentTag.value);
+        webView.loadUrl("javascript:setCustomText('" + documentTag.tagIdent + "','" + text + "')");
     }
 
     static void getAndSaveTags(WebView webView, DocumentPage documentPage) {
@@ -245,7 +249,33 @@ public class ViewActivityHelper {
         return null;
     }
 
-    static boolean excludeHidden(ISidebarShowable hideAble, boolean editMode) {
+    /**
+     * Pomocna metoda, ktera odfiltruje z listu polozky podle logiky dane metodou excludeHidden
+     * @param items vstupni list polozek
+     * @return pouze polozky ktere se maji zobrazit
+     */
+    static List<ISidebarShowable> filterHiddenItems(List items, boolean editMode) {
+
+        List<ISidebarShowable> visibleItems = new ArrayList<ISidebarShowable>();
+        for (ISidebarShowable item : (List<ISidebarShowable>) items) {
+
+            if (!excludeHidden(item, editMode)) {
+
+                visibleItems.add(item);
+            }
+        }
+
+        return visibleItems;
+    }
+
+    /**
+     * Rozhoduje o viditelnosti polozky - polozka se nezobrazi pokud se jedna o normalni mod a zaroven je polozka
+     * skryta. Naopak zobrazi se, pokud je polozka oznacena jako sktryta ale jsme v editacnim rezimu
+     * @param hideAble polozka implentujici ISidebarShowable interface
+     * @param editMode rezim zobrazeni (normal/edit)
+     * @return true pokud se polozka nema zobrazit
+     */
+    private static boolean excludeHidden(ISidebarShowable hideAble, boolean editMode) {
 
         return !hideAble.isVisible() && !editMode;
     }

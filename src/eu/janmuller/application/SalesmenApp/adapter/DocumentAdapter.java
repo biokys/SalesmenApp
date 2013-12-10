@@ -1,17 +1,16 @@
 package eu.janmuller.application.salesmenapp.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.activity.ViewActivityHelper;
-import eu.janmuller.application.salesmenapp.model.db.Document;
-import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
 
 import java.util.ArrayList;
 
@@ -55,7 +54,6 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
             public void onVisibilityChanged() {
 
                 notifyDataSetChanged();
-                //fillSideBar(document);
             }
         });
         return view;

@@ -3,6 +3,7 @@ package eu.janmuller.application.salesmenapp.activity;
 
 import eu.janmuller.android.dao.api.LongId;
 import eu.janmuller.application.salesmenapp.model.db.DocumentTag;
+import org.apache.commons.lang3.StringEscapeUtils;
 import roboguice.util.Ln;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class WebAppInterface {
         if (documentTags.size() > 0) {
 
             documentTag = documentTags.get(0);
+            text = StringEscapeUtils.unescapeJava(text);
             documentTag.value = text;
         } else {
 

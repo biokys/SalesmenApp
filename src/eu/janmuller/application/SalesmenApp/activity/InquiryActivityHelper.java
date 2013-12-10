@@ -9,8 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
-import eu.janmuller.application.salesmenapp.adapter.InquiriesAdapter;
 import eu.janmuller.application.salesmenapp.model.db.*;
+import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 
 import java.util.Date;
@@ -38,7 +38,9 @@ public class InquiryActivityHelper {
                     @Override
                     public void run() {
 
-                        if (serverService.closeInquiry(inquiry)) {
+                        try {
+
+                            serverService.closeInquiry(inquiry);
 
                             inquiry.state = Inquiry.State.COMPLETE;
                             inquiry.save();
@@ -51,14 +53,13 @@ public class InquiryActivityHelper {
                                     Toast.makeText(activity, "Poptávka byla uzavřena", Toast.LENGTH_SHORT).show();
                                 }
                             });
-
-                        } else {
+                        } catch (final ConnectionException e) {
 
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
 
-                                    Toast.makeText(activity, "Během uzavírání došlo k chybě", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(activity, "Během uzavírání došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }

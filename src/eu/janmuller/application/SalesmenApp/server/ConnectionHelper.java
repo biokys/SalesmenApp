@@ -2,10 +2,7 @@ package eu.janmuller.application.salesmenapp.server;
 
 import org.apache.http.NameValuePair;
 
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.util.List;
@@ -18,10 +15,9 @@ import java.util.List;
  */
 public class ConnectionHelper {
 
-    public static void doPost(HttpURLConnection urlConnection, List<NameValuePair> params) throws Exception {
+    public static void doPost(HttpURLConnection urlConnection, List<NameValuePair> params) throws IOException {
 
         urlConnection.setDoOutput(true);
-        urlConnection.setChunkedStreamingMode(0);
         urlConnection.setRequestMethod("POST");
 
 

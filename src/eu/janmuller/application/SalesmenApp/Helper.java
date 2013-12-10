@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import org.joda.time.DateTime;
@@ -118,9 +119,16 @@ public class Helper {
 
         return Helper.getTemplateFolderAsFile(template).getPath();
     }
-
     public static void showHtml(WebView webView, Template template, Page page) {
 
+        showHtml(webView, template, page, null);
+    }
+    public static void showHtml(WebView webView, Template template, Page page, WebViewClient webViewClient) {
+
+        if (webViewClient != null) {
+
+            webView.setWebViewClient(webViewClient);
+        }
         webView.loadUrl("file://" + getBaseUrl(template) + File.separator + page.file);
     }
 }

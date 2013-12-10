@@ -5,6 +5,8 @@ import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 
+import java.util.List;
+
 /**
  * Konkretni dokument, ktery vznika vytvorenim (kopie) sablony
  * Tento dokument se od sablony zpravidla lisi jinym poctem stran a ruznymi tagy
@@ -53,6 +55,11 @@ final public class Document extends Template implements ISidebarShowable {
         }
 
         super.delete();
+    }
+
+    public List<DocumentPage> getDocumentPagesByDocument() {
+
+        return DocumentPage.getByQuery(DocumentPage.class, "documentId=" + this.id.getId());
     }
 
     @Override

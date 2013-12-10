@@ -11,15 +11,14 @@ import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.GridLayout;
-import android.widget.Toast;
+import android.widget.*;
 import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
@@ -47,7 +46,7 @@ public class SendActivity extends BaseActivity {
     private EditText mBody;
 
     @InjectView(R.id.grid)
-    private GridLayout mGridLayout;
+    private GridView mGridLayout;
 
     @Inject
     private ServerService mServerService;
@@ -76,20 +75,12 @@ public class SendActivity extends BaseActivity {
             mEmailAddress.setText(mInquiry.mail);
         }
 
-        mDocuments = getDocuments(mInquiry);
-        for (Document document : mDocuments) {
+        mDocuments = mInquiry.getDocumentsByInquiry();
 
-            final View view = getLayoutInflater().inflate(R.layout.documentlistview, null);
-            view.post(new Runnable() {
-                @Override
-                public void run() {
-
-                    view.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.sidebar_width);
-                }
-            });
-            ViewActivityHelper.getThumbnailImage(view, document, document.thumbnail);
-            mGridLayout.addView(view);
-        }
+        DocumentAdapter documentAdapter = new DocumentAdapter(this);
+        documentAdapter.setEditMode(true);
+        mGridLayout.setAdapter(documentAdapter);
+        documentAdapter.addAll(mDocuments);
     }
 
     @Override
@@ -116,10 +107,7 @@ public class SendActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private List<Document> getDocuments(Inquiry inquiry) {
 
-        return Document.getByQuery(Document.class, "show=1 and inquiryId=" + inquiry.id.getId());
-    }
 
     private void sendMessage() {
 
@@ -134,19 +122,21 @@ public class SendActivity extends BaseActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
-                Toast.makeText(SendActivity.this, "Odesílám poptávku...", Toast.LENGTH_SHORT).show();
-
                 final Handler handler = new Handler();
                 new Thread() {
 
                     @Override
                     public void run() {
 
-                        if (mServerService.send(mEmailAddress.getText().toString(),
-                                mSubject.getText().toString(),
-                                mBody.getText().toString(),
-                                mDocuments)) {
+                        try {
 
+                            // odeslu zpravu
+                            mServerService.send(mInquiry, mEmailAddress.getText().toString(),
+                                    mSubject.getText().toString(),
+                                    mBody.getText().toString(),
+                                    mDocuments);
+
+                            // pokud nedoslo k chybe, zobrazim followup dialog
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -154,13 +144,14 @@ public class SendActivity extends BaseActivity {
                                     showFollowUpDialog();
                                 }
                             });
-                        } else {
+                        } catch (final ConnectionException e) {
 
+                            // v pripade chyby zobrazim chybovou hlasku
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
 
-                                    Toast.makeText(SendActivity.this, "Při odesílání zprávy došlo k chybě. Zkuste to později", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(SendActivity.this, "Při odesílání zprávy došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -170,27 +161,30 @@ public class SendActivity extends BaseActivity {
         });
         builder.setTitle("Odeslání zprávy");
         builder.setMessage("Opravdu si přejete odeslat zprávu?");
-
         builder.create().show();
     }
 
     DatePicker mDatePicker;
     EditText   mEditText;
 
+    /**
+     * Zobrazeni followup dialogu
+     */
     private void showFollowUpDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         View view = getLayoutInflater().inflate(R.layout.followup_dialog, null);
-
-
         builder.setView(view);
         builder.setNegativeButton(R.string.cancel, null);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
+                // nactu datum z datepickeru
                 Date date = new Date(mDatePicker.getCalendarView().getDate());
+
+                // zobrazim followup dialog
                 sendFollowUpRequest(date, mEditText.getText().toString());
             }
         });
@@ -202,6 +196,9 @@ public class SendActivity extends BaseActivity {
         alertDialog.show();
     }
 
+    /**
+     * Poslani follow up requestu
+     */
     private void sendFollowUpRequest(final Date date, final String message) {
 
         final Handler handler = new Handler();
@@ -211,22 +208,28 @@ public class SendActivity extends BaseActivity {
             public void run() {
 
                 String strDate = Helper.sSdf.format(date);
-                if (mServerService.followUp(mInquiry, strDate, message)) {
+                try {
 
+                    // odeslu followup na server
+                    mServerService.followUp(mInquiry, strDate, message);
+
+                    // zobrazim hlasku o uspechu
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
 
-                            Toast.makeText(SendActivity.this, "Připomenutí úspěšně odesláno", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SendActivity.this, "Zpráva byla odeslána", Toast.LENGTH_SHORT).show();
+                            finish();
                         }
                     });
-                } else {
+                } catch (final ConnectionException e) {
 
+                    // v pripade chyby zobrazim chybovou hlasku
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
 
-                            Toast.makeText(SendActivity.this, "Odeslání připomeutí se nezdařilo. Zkuste to později", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SendActivity.this, "Odeslání připomeutí se nezdařilo [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -235,69 +238,27 @@ public class SendActivity extends BaseActivity {
 
     }
 
+    /**
+     * Validace vstupniho formulare
+     * Validujeme email a predmet. V pripade problemu, zobrazime toast + requestujeme focus na konkretni edittext
+     * @return true = vsechno OK
+     */
     private boolean validateMessage() {
 
         if (!Patterns.EMAIL_ADDRESS.matcher(mEmailAddress.getText().toString()).find()) {
 
             Toast.makeText(SendActivity.this, "Zadejte validní email", Toast.LENGTH_SHORT).show();
+            mEmailAddress.requestFocus();
             return false;
         }
 
         if (mSubject.getText().toString().length() == 0) {
 
             Toast.makeText(SendActivity.this, "Zadejte předmět", Toast.LENGTH_SHORT).show();
+            mSubject.requestFocus();
             return false;
         }
 
         return true;
-    }
-
-    private static final int DATE_DIALOG_ID = 1;
-
-    private int    year;
-    private int    month;
-    private int    day;
-    private String currentDate;
-
-    private void showDateDialog() {
-
-
-        final Calendar c = Calendar.getInstance();
-        year = c.get(Calendar.YEAR);
-        month = c.get(Calendar.MONTH);
-        day = c.get(Calendar.DAY_OF_MONTH);
-        showDialog(DATE_DIALOG_ID);
-    }
-
-
-    private void updateDisplay() {
-
-        currentDate = new StringBuilder().append(day).append(".")
-                .append(month + 1).append(".").append(year).toString();
-
-    }
-
-    DatePickerDialog.OnDateSetListener myDateSetListener = new DatePickerDialog.OnDateSetListener() {
-
-        @Override
-        public void onDateSet(DatePicker datePicker, int i, int j, int k) {
-
-            year = i;
-            month = j;
-            day = k;
-            updateDisplay();
-        }
-    };
-
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-
-        switch (id) {
-            case DATE_DIALOG_ID:
-                return new DatePickerDialog(this, myDateSetListener, year, month,
-                        day);
-        }
-        return null;
     }
 }

@@ -36,12 +36,6 @@ public class DownloadData {
     private Template[]            mTemplates;
     private IDownloadDataCallback mDownloadDataCallback;
 
-    public DownloadData setDownloadInquiries(boolean downloadInquiries) {
-
-        mDownloadInquiries = downloadInquiries;
-        return this;
-    }
-
     public void run(IDownloadDataCallback downloadDataCallback) {
 
         mDownloadDataCallback = downloadDataCallback;
@@ -176,8 +170,13 @@ public class DownloadData {
         @Override
         protected void onException(Exception e) throws RuntimeException {
 
-            Toast.makeText(mContext, "Během stahování došlo k chybě", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(mContext, "Během stahování došlo k chybě", Toast.LENGTH_SHORT).show();
             Ln.e(e);
+
+            if (mTaskCompleteCallback != null) {
+
+                mTaskCompleteCallback.onTaskComplete(null);
+            }
         }
 
         @Override
@@ -193,6 +192,10 @@ public class DownloadData {
     public int getDataSize(Template[] templates) {
 
         int size = 0;
+        if (templates == null) {
+
+            return size;
+        }
         for (Template template : templates) {
 
             if (template.type.equals(Template.Type.DOCUMENT.label)) {
@@ -202,17 +205,6 @@ public class DownloadData {
         }
 
         return size;
-    }
-
-    private void deleteAll() {
-
-        TemplateTag.deleteAll(TemplateTag.class);
-        DocumentTag.deleteAll(DocumentTag.class);
-        TemplatePage.deleteAll(TemplatePage.class);
-        DocumentPage.deleteAll(DocumentPage.class);
-        Template.deleteAll(Template.class);
-        Document.deleteAll(Document.class);
-        Inquiry.deleteAll(Inquiry.class);
     }
 
     interface IProgressCallback {

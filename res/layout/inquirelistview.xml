@@ -9,7 +9,7 @@
     <View
             android:layout_width="5dp"
             android:layout_height="fill_parent"
-            android:background="@color/list_item_highlight"
+            android:background="@color/blue_button_normal"
             android:visibility="invisible"
             android:id="@+id/new_item_stripe"/>
 
@@ -72,14 +72,14 @@
                 android:background="#ddd"/>
 
         <Button
-                android:layout_margin="10dp"
                 android:drawableLeft="@drawable/ic_navigation_accept"
+                android:background="@drawable/close_button_selector"
                 android:id="@+id/close"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/spinner_background"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:textColor="@color/blue_button_normal"
                 android:textSize="20sp"
                 android:focusable="false"
                 android:text="Uzavřít"/>
