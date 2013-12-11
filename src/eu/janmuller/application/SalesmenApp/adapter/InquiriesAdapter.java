@@ -50,7 +50,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
         final Inquiry inquiry = getItem(position);
 
         TextView companyName = (TextView) view.findViewById(R.id.company_name);
-        TextView name = (TextView) view.findViewById(R.id.name);
+        TextView title = (TextView) view.findViewById(R.id.title);
         TextView attachments = (TextView) view.findViewById(R.id.attachments);
         TextView date = (TextView) view.findViewById(R.id.date);
         TextView state = (TextView) view.findViewById(R.id.state);
@@ -59,7 +59,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
         newItemStripe.setVisibility(inquiry.state == Inquiry.State.NEW ? View.VISIBLE : View.INVISIBLE);
         companyName.setText(inquiry.company);
-        name.setText(inquiry.contact);
+        title.setText(inquiry.title);
         attachments.setText(inquiry.attachments);
         state.setText(inquiry.state.getText());
         try {

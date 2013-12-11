@@ -500,7 +500,10 @@ public class ViewActivity extends BaseActivity {
     @Override
     public void onBackPressed() {
 
-        if (mEditMode) {
+        if (mActualPage.webview != null && mActualPage.webview.canGoBack()) {
+
+            mActualPage.webview.goBack();
+        } else  if (mEditMode) {
 
             switch2ViewMode();
         } else if (mPageViewMode) {

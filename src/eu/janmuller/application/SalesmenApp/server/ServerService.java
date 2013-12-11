@@ -11,6 +11,7 @@ import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
 import eu.janmuller.application.salesmenapp.model.db.DocumentTag;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import roboguice.util.Ln;
@@ -175,7 +176,7 @@ public class ServerService {
             params.add(new BasicNameValuePair("mail", mail));
             params.add(new BasicNameValuePair("title", title));
             params.add(new BasicNameValuePair("text", text));
-            params.add(new BasicNameValuePair("data", json));
+            params.add(new BasicNameValuePair("data", StringEscapeUtils.escapeJava(json)));
             params.add(new BasicNameValuePair("id", inquiry.serverId));
             ConnectionHelper.doPost(urlConnection, params);
             urlConnection.connect();

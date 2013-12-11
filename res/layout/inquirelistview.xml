@@ -32,13 +32,13 @@
                     style="@style/TableTextStyle.Title"
                     android:layout_marginBottom="0dp"
                     android:text="aaaaaa"
-                    android:id="@+id/company_name"/>
+                    android:id="@+id/title"/>
 
             <TextView
                     style="@style/TableTextStyle"
                     android:text="aaaaaa"
                     android:layout_marginTop="-5dp"
-                    android:id="@+id/name"/>
+                    android:id="@+id/company_name"/>
 
         </LinearLayout>
 

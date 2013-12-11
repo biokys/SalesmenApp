@@ -74,15 +74,35 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     public String regNo;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
-    @SerializedName("Tel")
+    @SerializedName("SellerTel")
     public String telephone;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("SellerMail")
+    public String sellerMail;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("SellerName")
+    public String sellerName;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("SellerStreet")
+    public String sellerStreet;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("SellerCity")
+    public String sellerCity;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("SellerZIP")
+    public String sellerZIP;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Mail")
     public String mail;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
-    @SerializedName("Contact")
+    @SerializedName("Contacts")
     public String contact;
 
     @GenericModel.DataType(type = DataTypeEnum.ENUM)
