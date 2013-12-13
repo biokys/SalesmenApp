@@ -59,7 +59,13 @@ final public class Document extends Template implements ISidebarShowable {
 
     public List<DocumentPage> getDocumentPagesByDocument() {
 
-        return DocumentPage.getByQuery(DocumentPage.class, "documentId=" + this.id.getId());
+        return getDocumentPagesByDocument(false);
+    }
+
+    public List<DocumentPage> getDocumentPagesByDocument(boolean onlyVisible) {
+
+        String visibleSql = onlyVisible ? " and show=1" : "";
+        return DocumentPage.getByQuery(DocumentPage.class, "documentId=" + this.id.getId() + visibleSql);
     }
 
     @Override

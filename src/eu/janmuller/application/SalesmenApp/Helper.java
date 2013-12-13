@@ -3,26 +3,21 @@ package eu.janmuller.application.salesmenapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.provider.Settings;
-import android.text.TextUtils;
-import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ImageView;
-import eu.janmuller.application.salesmenapp.model.db.*;
+import eu.janmuller.application.salesmenapp.model.db.Page;
+import eu.janmuller.application.salesmenapp.model.db.Template;
 import org.joda.time.DateTime;
 import roboguice.util.Ln;
 
-import java.io.*;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,7 +28,10 @@ import java.util.List;
 public class Helper {
 
     public static final SimpleDateFormat sSdf = new SimpleDateFormat("dd.MM.yyyy");
+
+    public static final String PREF_FILE = "prefs";
     public static final String IS_PAIRED = "isPaired";
+    public static final String WEB_URL   = "web_url";
 
     /**
      * @param template Sablona pro kterou se vytvori slozka na filesystemu
@@ -69,6 +67,19 @@ public class Helper {
         return sharedPref.getBoolean(IS_PAIRED, false);
     }
 
+    public static void setWebUrl(Activity activity, String url) {
+
+        SharedPreferences sharedPref = activity.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(WEB_URL, url);
+        editor.commit();
+    }
+
+    public static String getWebUrl(Activity activity) {
+
+        SharedPreferences sharedPref = activity.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
+        return sharedPref.getString(WEB_URL, null);
+    }
 
 
     public static String loadJsHtml(Context context) {
@@ -95,6 +106,7 @@ public class Helper {
 
     /**
      * Formatuje datum
+     *
      * @param date datum
      * @return Dnes, Vcera, jinak dd.MM.yyyy
      */
@@ -119,10 +131,12 @@ public class Helper {
 
         return Helper.getTemplateFolderAsFile(template).getPath();
     }
+
     public static void showHtml(WebView webView, Template template, Page page) {
 
         showHtml(webView, template, page, null);
     }
+
     public static void showHtml(WebView webView, Template template, Page page, WebViewClient webViewClient) {
 
         if (webViewClient != null) {

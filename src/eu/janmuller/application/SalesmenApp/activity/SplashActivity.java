@@ -13,15 +13,11 @@ import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Config;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
-import eu.janmuller.application.salesmenapp.model.db.Inquiry;
-import eu.janmuller.application.salesmenapp.model.db.Template;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.DownloadData;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.RoboGuice;
 import roboguice.activity.RoboSplashActivity;
-
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -135,7 +131,9 @@ public class SplashActivity extends RoboSplashActivity {
 
     private void checkIfPaired() {
 
-        if (Helper.isPaired(this)) {
+        // pokud je zarizeni uz zparovane, nebo je to vendor bez poptavek,
+        // pak vynechame parovani a jdeme primo na loadovani dat
+        if (Helper.isPaired(this) || !getResources().getBoolean(R.bool.has_inquiries)) {
 
             loadData();
             return;
@@ -146,9 +144,18 @@ public class SplashActivity extends RoboSplashActivity {
             public void run() {
 
                 try {
-                    if (mServerService.isDeviceRegistered()) {
+                    ServerService.ResultObject deviceRegistered = mServerService.isDeviceRegistered();
+                    if (deviceRegistered.status) {
 
                         Helper.setPaired(SplashActivity.this);
+                        if (deviceRegistered.url != null) {
+
+                            Helper.setWebUrl(SplashActivity.this, deviceRegistered.url);
+                        }
+
+                        // odesleme nafrontovane zpravy, pokud nejake jsou
+                        //mServerService.sendFromSendQueue();
+
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -203,23 +210,25 @@ public class SplashActivity extends RoboSplashActivity {
             }
 
             @Override
-            public void onNoNewTemplatesFound() {
-
-                startInquiryActivity();
-            }
-
-            @Override
             public void onTemplatesDownloaded() {
 
                 startInquiryActivity();
             }
-        });
+        }, getResources().getBoolean(R.bool.has_inquiries));
     }
 
     private void startInquiryActivity() {
 
-        Intent intent = new Intent(this, InquiryListActivity.class);
-        startActivity(intent);
+        if (getResources().getBoolean(R.bool.has_inquiries)) {
+
+            // otevreme seznam poptavek
+            Intent intent = new Intent(this, InquiryListActivity.class);
+            startActivity(intent);
+        } else {
+
+            // vytvorime temp poptavku a otevreme primo prohlizeni dokumentu
+            InquiryActivityHelper.createAndOpenTempInquiry(SplashActivity.this);
+        }
         finish();
     }
 

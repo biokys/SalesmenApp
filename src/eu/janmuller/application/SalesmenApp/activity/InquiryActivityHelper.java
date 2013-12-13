@@ -12,6 +12,7 @@ import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
+import roboguice.util.Ln;
 
 import java.util.Date;
 
@@ -73,6 +74,41 @@ public class InquiryActivityHelper {
         builder.create().show();
     }
 
+    public static void resendMessages(final ServerService serverService,
+                                      final IResendMessageCallback resendMessageCallback) {
+
+        final Handler handler = new Handler();
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                try {
+
+                    final int count = serverService.sendFromSendQueue();
+                    if (resendMessageCallback != null) {
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                resendMessageCallback.onMesagesSent(count);
+                            }
+                        });
+                    }
+                } catch (ConnectionException e) {
+
+                    Ln.e(e);
+                }
+            }
+        }.start();
+    }
+
+    public interface IResendMessageCallback {
+
+        public void onMesagesSent(int count);
+    }
+
     /**
      * Otevre prohlizeni dokumentu pro konkretni poptavku
      *
@@ -95,13 +131,13 @@ public class InquiryActivityHelper {
 
         Intent intent = new Intent(activity, ViewActivity.class);
         intent.putExtra(ViewActivity.INQUIRY, inquiry);
-        intent.putExtra(ViewActivity.TEMP, tempInquiry);
         activity.startActivityForResult(intent, 100);
     }
 
     public static void createAndOpenTempInquiry(Activity activity) {
 
         Inquiry inquiry = new Inquiry();
+        inquiry.temporary = true;
         inquiry.title = "Dočasná poptávka";
         inquiry.company = "Společnost";
         inquiry.created = Helper.sSdf.format(new Date());

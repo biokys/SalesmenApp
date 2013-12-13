@@ -2,15 +2,13 @@ package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
-import eu.janmuller.application.salesmenapp.model.db.Document;
-import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
-import eu.janmuller.application.salesmenapp.model.db.DocumentTag;
-import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.*;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -81,9 +79,9 @@ public class ServerService {
     /**
      * Zjistuje, zda je zarizeni jiz registrovano
      *
-     * @return vraci true, pokud byl dotaz uspesny a zarizeni je jiz registrovano
+     * @return vraci ResultObject
      */
-    public boolean isDeviceRegistered() throws ConnectionException {
+    public ResultObject isDeviceRegistered() throws ConnectionException {
 
         HttpURLConnection urlConnection = null;
         try {
@@ -100,7 +98,7 @@ public class ServerService {
                 final Gson gson = new Gson();
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 ResultObject resultObject = gson.fromJson(reader, ResultObject.class);
-                return resultObject.status;
+                return resultObject;
             } else {
 
                 throw new ConnectionException(urlConnection.getResponseMessage());
@@ -129,7 +127,6 @@ public class ServerService {
 
         HttpURLConnection urlConnection = null;
         try {
-            String inquiryId = inquiry.serverId;
             String urlParams = String.format("?auth=%s",
                     Helper.getUniqueId(mContext));
 
@@ -137,7 +134,7 @@ public class ServerService {
             urlConnection = (HttpURLConnection) url.openConnection();
 
             List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("id", inquiryId));
+            params.add(new BasicNameValuePair("id", inquiry.temporary ? "-1" : inquiry.serverId));
             params.add(new BasicNameValuePair("date", date));
             params.add(new BasicNameValuePair("description", message));
             ConnectionHelper.doPost(urlConnection, params);
@@ -159,11 +156,45 @@ public class ServerService {
         }
     }
 
+    /**
+     * Metoda natahne frontu neodeslanych zprav z DB, vsechny postupne odesle. Pri kazdem odeslani zpravy se smaze
+     * zprava z fronty
+     * @throws ConnectionException
+     */
+    public int sendFromSendQueue() throws ConnectionException {
+
+        int count = 0;
+        for (SendQueue sendQueue : SendQueue.getAllObjects(SendQueue.class)) {
+            Inquiry inquiry = Inquiry.getByServerId(sendQueue.inquiryServerId);
+            if (inquiry != null) {
+
+                send(inquiry, sendQueue.mail, sendQueue.title, sendQueue.text, sendQueue.json);
+                inquiry.delete();
+                count++;
+            }
+        }
+
+        return count;
+    }
 
     public void send(Inquiry inquiry, String mail, String title, String text, List<Document> documents) throws ConnectionException {
 
         SendDataObject sendDataObject = getSendDataObject(documents);
-        String json = new Gson().toJson(sendDataObject);
+        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+        String json = gson.toJson(sendDataObject);
+
+        try {
+
+            send(inquiry, mail, title, text, json);
+        } catch (ConnectionException e) {
+
+            // pokud dojde k chybe pri odesilani, pak zpravu ulozime do fronty
+            SendQueue.push(inquiry, mail, title, text, json);
+            throw e;
+        }
+    }
+
+    public void send(Inquiry inquiry, String mail, String title, String text, String json) throws ConnectionException {
 
         HttpURLConnection urlConnection = null;
         try {
@@ -171,13 +202,14 @@ public class ServerService {
                     Helper.getUniqueId(mContext));
 
             URL url = new URL(mBaseUrl + "/send" + urlParams);
+            //URL url = new URL("http://192.168.1.12:4444/service.ashx/send" + urlParams);
             urlConnection = (HttpURLConnection) url.openConnection();
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             params.add(new BasicNameValuePair("mail", mail));
             params.add(new BasicNameValuePair("title", title));
             params.add(new BasicNameValuePair("text", text));
-            params.add(new BasicNameValuePair("data", StringEscapeUtils.escapeJava(json)));
-            params.add(new BasicNameValuePair("id", inquiry.serverId));
+            params.add(new BasicNameValuePair("data", json/*StringEscapeUtils.escapeJava(json)*/));
+            params.add(new BasicNameValuePair("id", inquiry.temporary ? "-1" : inquiry.serverId));
             ConnectionHelper.doPost(urlConnection, params);
             urlConnection.connect();
             if (urlConnection.getResponseCode() != 200) {
@@ -199,19 +231,24 @@ public class ServerService {
 
     private SendDataObject getSendDataObject(List<Document> documents) {
 
-        SendDataObject sendDataObject = new SendDataObject();
-        SendDataObject.Document[] sendDocuments = new SendDataObject.Document[documents.size()];
-        int mainLoop = 0;
+        // list obsahuujici jen viditelne dokumenty
+        List<Document> filteredList = new ArrayList<Document>();
         for (Document document : documents) {
 
-            if (!document.show) {
+            if (document.show) {
 
-                continue;
+                filteredList.add(document);
             }
+        }
+        SendDataObject sendDataObject = new SendDataObject();
+        SendDataObject.Document[] sendDocuments = new SendDataObject.Document[filteredList.size()];
+        int mainLoop = 0;
+        for (Document document : filteredList) {
+
             SendDataObject.Document sendDocument = new SendDataObject.Document();
             sendDocument.ident = document.ident;
             sendDocument.version = document.version;
-            List<DocumentPage> documentPages = document.getDocumentPagesByDocument();
+            List<DocumentPage> documentPages = document.getDocumentPagesByDocument(true);
             SendDataObject.Document.Page[] pages = new SendDataObject.Document.Page[documentPages.size()];
             int loop = 0;
             for (DocumentPage documentPage : documentPages) {
@@ -224,7 +261,7 @@ public class ServerService {
 
                     SendDataObject.Document.Page.Tag tag = new SendDataObject.Document.Page.Tag();
                     tag.ident = documentTag.tagIdent;
-                    tag.value = documentTag.value;
+                    tag.value = StringEscapeUtils.escapeJava(documentTag.value);
                     tags[tagLoop++] = tag;
                 }
                 page.id = documentPage.file;
@@ -238,9 +275,10 @@ public class ServerService {
         return sendDataObject;
     }
 
-    private class ResultObject {
+    public class ResultObject {
 
         public boolean status;
+        public String url;
     }
 
     public static class SendDataObject {

@@ -58,7 +58,6 @@ public class ViewActivity extends BaseActivity {
     private int                        mActionBarDisplayOptions;
     private Map<DocumentPage, WebView> mWebViewMap;
     private PageContainer              mActualPage;
-    private boolean                    mTempInquiry;
     private WebView                    mInfoWebView;
     private DocumentAdapter            mDocumentAdapter;
     private ProgressDialog             mProgressDialog;
@@ -71,7 +70,6 @@ public class ViewActivity extends BaseActivity {
         // ziskam Inquiry objekt z EXTRAS
         Intent intent = getIntent();
         mInquiry = (Inquiry) intent.getSerializableExtra(INQUIRY);
-        mTempInquiry = intent.getBooleanExtra(TEMP, false);
 
         // configure actionbar
         mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -220,20 +218,23 @@ public class ViewActivity extends BaseActivity {
             mListView.setSelection(0);
         }
 
-        // zobrazim prvni zobrazitelnou stranku
-        DocumentPage firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
-        if (firstShowablePage != null) {
+        DocumentPage firstShowablePage = null;
+        if (mActualPage != null) {
 
-            if (mActualPage != null) {
+            DocumentPage documentPage = mActualPage.documentPage;
+            if (documentPage != null && documentPage.show) {
 
-                DocumentPage documentPage = mActualPage.documentPage;
-                if (documentPage != null && documentPage.show) {
-
-                    firstShowablePage = documentPage;
-                }
+                firstShowablePage = documentPage;
             }
-            showHtml(document, firstShowablePage);
         }
+
+        if (firstShowablePage == null) {
+
+            // zobrazim prvni zobrazitelnou stranku
+            firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
+        }
+
+        showHtml(document, firstShowablePage);
     }
 
 
@@ -290,7 +291,7 @@ public class ViewActivity extends BaseActivity {
      */
     private void showInlineInquiryInfo() {
 
-        if (!mTempInquiry) {
+        if (!mInquiry.temporary) {
 
             if (mInfoWebView == null) {
 
@@ -423,7 +424,7 @@ public class ViewActivity extends BaseActivity {
             saveActualPage(mActualPage);
             // disablujem vsechny editacni policka
             disableContentEditable();
-            mActualPage = null;
+            //mActualPage = null;
         }
         mActionBar.setDisplayOptions(mActionBarDisplayOptions);
         refreshSideBar();
@@ -461,6 +462,25 @@ public class ViewActivity extends BaseActivity {
     private void refreshSideBar() {
 
         if (mPageViewMode) {
+
+            if (mActualPage != null && mActualPage.documentPage != null) {
+
+                DocumentPage documentPage = DocumentPage.findObjectById(DocumentPage.class, mActualPage.documentPage.id);
+                if (documentPage != null) {
+
+                    mActualPage.documentPage.show = documentPage.show;
+                }
+
+                // zoom-outujem aktualni webview na defaultni zoom
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        while (mActualPage.webview.zoomOut()) {
+                        }
+                    }
+                });
+            }
 
             fillSideBar(mDocument);
         } else {
@@ -500,10 +520,12 @@ public class ViewActivity extends BaseActivity {
     @Override
     public void onBackPressed() {
 
-        if (mActualPage.webview != null && mActualPage.webview.canGoBack()) {
+        if (mActualPage != null
+                && mActualPage.webview != null
+                && mActualPage.webview.canGoBack()) {
 
             mActualPage.webview.goBack();
-        } else  if (mEditMode) {
+        } else if (mEditMode) {
 
             switch2ViewMode();
         } else if (mPageViewMode) {
@@ -519,7 +541,7 @@ public class ViewActivity extends BaseActivity {
     @Override
     public void finish() {
 
-        if (mTempInquiry) {
+        if (mInquiry.temporary) {
 
             mInquiry.delete();
         }

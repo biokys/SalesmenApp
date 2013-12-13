@@ -19,6 +19,7 @@ public class ConnectionHelper {
 
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("POST");
+        //urlConnection.setRequestProperty("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
 
 
         OutputStream os = urlConnection.getOutputStream();

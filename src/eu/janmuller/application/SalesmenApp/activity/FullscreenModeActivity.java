@@ -3,7 +3,6 @@ package eu.janmuller.application.salesmenapp.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.speech.RecognitionService;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
@@ -31,7 +30,7 @@ import java.util.List;
 @ContentView(R.layout.fullscreen_activity)
 public class FullscreenModeActivity extends BaseActivity {
 
-    public static final String DOCUMENT = "document";
+    public static final String DOCUMENT          = "document";
     public static final String CURRENT_PAGE_CODE = "curren_page";
 
     @InjectView(R.id.previous)
@@ -52,7 +51,8 @@ public class FullscreenModeActivity extends BaseActivity {
     private Document             mDocument;
     private List<DocumentPage>   mDocumentPages;
     private SparseArray<WebView> mWebViewSparseArray;
-    private int mCurrentPage;
+    private WebView              mCurrentWebView;
+    private int                  mCurrentPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +102,7 @@ public class FullscreenModeActivity extends BaseActivity {
             public void onPageSelected(int position) {
 
                 mCurrentPage = position;
+                mCurrentWebView = mWebViewSparseArray.get(position);
                 setArrowsVisibility(position);
             }
         });
@@ -180,9 +181,15 @@ public class FullscreenModeActivity extends BaseActivity {
     @Override
     public void onBackPressed() {
 
-        Intent intent = new Intent();
-        intent.putExtra(CURRENT_PAGE_CODE, mCurrentPage);
-        setResult(RESULT_OK, intent);
-        finish();
+        if (mCurrentWebView != null && mCurrentWebView.canGoBack()) {
+
+            mCurrentWebView.goBack();
+        } else {
+
+            Intent intent = new Intent();
+            intent.putExtra(CURRENT_PAGE_CODE, mCurrentPage);
+            setResult(RESULT_OK, intent);
+            finish();
+        }
     }
 }

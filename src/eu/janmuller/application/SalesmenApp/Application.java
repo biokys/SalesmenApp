@@ -12,7 +12,7 @@ import eu.janmuller.application.salesmenapp.model.db.*;
 public class Application extends android.app.Application {
 
     public static final String APP_DB  = "app_db";
-    public static final int    VERSION = 34;
+    public static final int    VERSION = 37;
 
     @Override
     public void onCreate() {
@@ -26,6 +26,7 @@ public class Application extends android.app.Application {
         SimpleDroidDao.registerModelClass(DocumentTag.class);
         SimpleDroidDao.registerModelClass(Inquiry.class);
         SimpleDroidDao.registerModelClass(Document.class);
+        SimpleDroidDao.registerModelClass(SendQueue.class);
         SimpleDroidDao.initialize(this, APP_DB, VERSION, null);
     }
 }

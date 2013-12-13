@@ -54,7 +54,7 @@ public class DownloadService {
      *
      * @return velikost vsech sablon
      */
-    public Template[] downloadTemplatesJson(DownloadData.IProgressCallback callback) throws Exception {
+    public Template[] downloadTemplatesJson(DownloadData.IProgressCallback callback) throws IOException {
 
         // nacteme z resourcu cast html s JS pro zmenu classy EDIT
         mHtmlWithJs = Helper.loadJsHtml(mContext);
@@ -73,39 +73,58 @@ public class DownloadService {
      * @param templates
      * @param callback
      */
-    public void downloadTemplatesData(Template[] templates, DownloadData.IProgressCallback callback) throws Exception {
+    public void downloadTemplatesData(Template[] templates, DownloadData.IProgressCallback callback) throws IOException {
 
         downloadAndSaveTemplateFiles(templates, callback);
     }
 
+    public int downloadAndSaveInquiries() throws IOException {
+
+        return downloadAndSaveInquiries(null);
+    }
     /**
      * Stahne a ulozi data poptavek do databaze
      *
      * @param callback
+     * @return pocet nove prijatych poptavek
      */
-    public void downloadAndSaveInquiries(DownloadData.IProgressCallback callback) throws Exception {
+    public int downloadAndSaveInquiries(DownloadData.IProgressCallback callback) throws IOException {
 
-        callback.onProgressUpdate(INQUIRIES_JSON, 0, 100);
+        if (callback != null) {
+
+            callback.onProgressUpdate(INQUIRIES_JSON, 0, 100);
+        }
+
         URL url = new URL(String.format(mInquiriesJsonUrl, Helper.getUniqueId(mContext)));
         HttpURLConnection urlConnection = getConnectionFromUrl(url);
         InputStream inputStream = urlConnection.getInputStream();
         final Gson gson = new Gson();
         final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         InquiriesEnvelope inquiriesEnvelope = gson.fromJson(reader, InquiriesEnvelope.class);
+        int newInquiryCounter = 0;
         for (Inquiry inquiry : inquiriesEnvelope.inquiries) {
 
-            // pokud inquiry jiz v DB je, pak preskocime
+            // pokud inquiry jiz v DB je, pak ho zmergujeme
+            // data ze serveru maji prioritu pri mergovani, jedine co se zachovava je STATE
+            // pokud ze serveru prijde NEW, pak nechame NEW, pokud neco jineho, pak nastavime OPEN, tzn. ze pokud je
+            // na tabletu stav COMPLETE, vrati se do stavu OPEN
             List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "serverId=" + inquiry.serverId);
             if (list.size() > 0) {
+
                 Inquiry existingInquiry = list.get(0);
                 existingInquiry.mergeWith(inquiry);
                 continue;
             }
+            newInquiryCounter++;
             inquiry.attachments = "";
             inquiry.state = Inquiry.State.NEW;
             inquiry.save();
         }
-        callback.onProgressUpdate(INQUIRIES_JSON, 100, 100);
+        if (callback != null) {
+
+            callback.onProgressUpdate(INQUIRIES_JSON, 100, 100);
+        }
+        return newInquiryCounter;
     }
 
     /**
@@ -113,7 +132,7 @@ public class DownloadService {
      *
      * @return pole sablon
      */
-    private TemplatesEnvelope downloadTemplatesJson() throws Exception {
+    private TemplatesEnvelope downloadTemplatesJson() throws IOException {
 
         URL url = new URL(String.format(mTemplateJsonUrl, Helper.getUniqueId(mContext)));
         HttpURLConnection urlConnection = getConnectionFromUrl(url);
@@ -169,7 +188,7 @@ public class DownloadService {
      * @param templates
      * @throws Exception
      */
-    private void downloadAndSaveTemplateFiles(Template[] templates, DownloadData.IProgressCallback callback) throws Exception {
+    private void downloadAndSaveTemplateFiles(Template[] templates, DownloadData.IProgressCallback callback) throws IOException {
 
         for (Template template : templates) {
 
@@ -183,7 +202,7 @@ public class DownloadService {
         }
     }
 
-    private void downloadFile(Template template, String fileName, DownloadData.IProgressCallback progressCallback) throws Exception {
+    private void downloadFile(Template template, String fileName, DownloadData.IProgressCallback progressCallback) throws IOException {
 
         URL url = new URL(template.baseUrl + fileName);
         File parentFolder = Helper.getTemplateFolderAsFile(template);
@@ -216,7 +235,7 @@ public class DownloadService {
 
     }
 
-    private HttpURLConnection getConnectionFromUrl(URL url) throws Exception {
+    private HttpURLConnection getConnectionFromUrl(URL url) throws IOException {
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("GET");

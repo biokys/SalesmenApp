@@ -12,10 +12,13 @@ import android.widget.TextView;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.SendQueue;
 import roboguice.util.Ln;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,9 +30,12 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
 
     private IInquiryAdapterCallback mInquiryAdapterCallback;
 
+    private Map<String, SendQueue> mSendQueueMap;
+
     public InquiriesAdapter(Context context) {
 
         super(context, R.layout.inquirelistview);
+        mSendQueueMap = new HashMap<String, SendQueue>();
     }
 
     public void setCallbackListener(IInquiryAdapterCallback callback) {
@@ -61,7 +67,7 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
         companyName.setText(inquiry.company);
         title.setText(inquiry.title);
         attachments.setText(inquiry.attachments);
-        state.setText(inquiry.state.getText());
+
         try {
 
             Date created = Helper.sSdf.parse(inquiry.created);
@@ -69,6 +75,17 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
         } catch (Exception e) {
 
             Ln.e(e);
+        }
+
+        SendQueue sendQueue = mSendQueueMap.get(inquiry.serverId);
+        if (sendQueue != null) {
+
+            state.setTextColor(Color.parseColor("#aa0000"));
+            state.setText("Neodeslaná zpráva");
+        } else {
+
+            state.setTextColor(Color.parseColor("#000000"));
+            state.setText(inquiry.state.getText());
         }
 
         close.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +99,15 @@ public class InquiriesAdapter extends ArrayAdapter<Inquiry> {
             }
         });
         return view;
+    }
+
+    public void fillSendQueueMap() {
+
+        mSendQueueMap.clear();
+        for (SendQueue sendQueue : SendQueue.getAllObjects(SendQueue.class)) {
+
+            mSendQueueMap.put(sendQueue.inquiryServerId, sendQueue);
+        }
     }
 
     public interface IInquiryAdapterCallback {

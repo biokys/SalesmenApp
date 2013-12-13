@@ -1,8 +1,7 @@
 package eu.janmuller.application.salesmenapp.activity;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,19 +10,22 @@ import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.GridView;
+import android.widget.Toast;
 import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.SendQueue;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -74,13 +76,56 @@ public class SendActivity extends BaseActivity {
 
             mEmailAddress.setText(mInquiry.mail);
         }
-
         mDocuments = mInquiry.getDocumentsByInquiry();
 
         DocumentAdapter documentAdapter = new DocumentAdapter(this);
         documentAdapter.setEditMode(true);
         mGridLayout.setAdapter(documentAdapter);
         documentAdapter.addAll(mDocuments);
+        lookForPostponedMessage();
+    }
+
+    private void lookForPostponedMessage() {
+
+        List<SendQueue> sendQueues = SendQueue.getByQuery(SendQueue.class, "inquiryServerId='" + mInquiry.serverId + "'");
+        if (sendQueues.size() > 0) {
+
+            final SendQueue sendQueue = sendQueues.get(0);
+            AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
+            builder.setNegativeButton("Vytvořit novou", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                    sendQueue.delete();
+                }
+            });
+            builder.setPositiveButton("Odeslat", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                    Inquiry inquiry = Inquiry.getByServerId(sendQueue.inquiryServerId);
+                    send(inquiry, sendQueue.mail,
+                            sendQueue.title,
+                            sendQueue.text,
+                            sendQueue.json, new ISendMessageCallback() {
+                        @Override
+                        public void onSentSuccess() {
+
+                            sendQueue.delete();
+                        }
+
+                        @Override
+                        public void onSentFail() {
+
+                            finish();
+                        }
+                    });
+                }
+            });
+            builder.setTitle("Neodeslaná zpráva");
+            builder.setMessage("Při posledním odeslání nebyla zpráva odeslána. Chcete tuto zprávu odeslat nyní?");
+            builder.create().show();
+        }
     }
 
     @Override
@@ -108,7 +153,6 @@ public class SendActivity extends BaseActivity {
     }
 
 
-
     private void sendMessage() {
 
         if (!validateMessage()) {
@@ -122,41 +166,10 @@ public class SendActivity extends BaseActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
-                final Handler handler = new Handler();
-                new Thread() {
-
-                    @Override
-                    public void run() {
-
-                        try {
-
-                            // odeslu zpravu
-                            mServerService.send(mInquiry, mEmailAddress.getText().toString(),
-                                    mSubject.getText().toString(),
-                                    mBody.getText().toString(),
-                                    mDocuments);
-
-                            // pokud nedoslo k chybe, zobrazim followup dialog
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    showFollowUpDialog();
-                                }
-                            });
-                        } catch (final ConnectionException e) {
-
-                            // v pripade chyby zobrazim chybovou hlasku
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    Toast.makeText(SendActivity.this, "Při odesílání zprávy došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                    }
-                }.start();
+                send(mInquiry, mEmailAddress.getText().toString(),
+                        mSubject.getText().toString(),
+                        mBody.getText().toString(),
+                        mDocuments, null);
             }
         });
         builder.setTitle("Odeslání zprávy");
@@ -164,8 +177,82 @@ public class SendActivity extends BaseActivity {
         builder.create().show();
     }
 
-    DatePicker mDatePicker;
-    EditText   mEditText;
+    private void send(final Inquiry inquiry,
+                      final String email,
+                      final String subject,
+                      final String body,
+                      final Object object,
+                      final ISendMessageCallback sendMessageCallback) {
+
+        final ProgressDialog progressDialog = ProgressDialog.show(this, null, "Odesílám...");
+        final Handler handler = new Handler();
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                try {
+
+                    // odeslu zpravu
+                    if (object instanceof List) {
+
+                        mServerService.send(inquiry, email, subject, body, (List) object);
+                    } else if (object instanceof String) {
+
+                        mServerService.send(inquiry, email, subject, body, (String) object);
+                    }
+
+                    // pokud nedoslo k chybe, zobrazim followup dialog
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            progressDialog.dismiss();
+
+                            if (sendMessageCallback != null) {
+
+                                sendMessageCallback.onSentSuccess();
+                            }
+
+                            // followup zobrazime jen pokud vendor ma poptavky
+                            if (getResources().getBoolean(R.bool.has_inquiries)) {
+
+                                showFollowUpDialog();
+                            } else {
+
+                                finish();
+                            }
+                        }
+                    });
+                } catch (final ConnectionException e) {
+
+                    // v pripade chyby zobrazim chybovou hlasku
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            progressDialog.dismiss();
+                            Toast.makeText(SendActivity.this, "Při odesílání zprávy došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
+                            if (sendMessageCallback != null) {
+
+                                sendMessageCallback.onSentFail();
+                            }
+                        }
+                    });
+                }
+            }
+        }.start();
+    }
+
+    private interface ISendMessageCallback {
+
+        public void onSentSuccess();
+        public void onSentFail();
+    }
+
+    // vztazene k followup dialogu
+    private DatePicker mDatePicker;
+    private EditText   mEditText;
 
     /**
      * Zobrazeni followup dialogu
@@ -176,7 +263,14 @@ public class SendActivity extends BaseActivity {
 
         View view = getLayoutInflater().inflate(R.layout.followup_dialog, null);
         builder.setView(view);
-        builder.setNegativeButton(R.string.cancel, null);
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                // pokud kliknu na zrusit followup dialog pak ukoncim sendactivitu
+                finish();
+            }
+        });
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -241,6 +335,7 @@ public class SendActivity extends BaseActivity {
     /**
      * Validace vstupniho formulare
      * Validujeme email a predmet. V pripade problemu, zobrazime toast + requestujeme focus na konkretni edittext
+     *
      * @return true = vsechno OK
      */
     private boolean validateMessage() {

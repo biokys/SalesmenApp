@@ -36,9 +36,10 @@ public class DownloadData {
     private Template[]            mTemplates;
     private IDownloadDataCallback mDownloadDataCallback;
 
-    public void run(IDownloadDataCallback downloadDataCallback) {
+    public void run(IDownloadDataCallback downloadDataCallback, boolean downloadInquiries) {
 
         mDownloadDataCallback = downloadDataCallback;
+        mDownloadInquiries = downloadInquiries;
         download();
     }
 
@@ -65,7 +66,7 @@ public class DownloadData {
                     showDownloadTemplateDataDialog(size);
                 } else {
 
-                    mDownloadDataCallback.onNoNewTemplatesFound();
+                    mDownloadDataCallback.onTemplatesDownloaded();
                 }
             }
         }).execute();
@@ -222,8 +223,6 @@ public class DownloadData {
         public void onInquiriesDownloaded();
 
         public void onTemplatesDownloaded();
-
-        public void onNoNewTemplatesFound();
 
         public void onProgressUpdate(int total, int progress, String message);
 

@@ -1,6 +1,9 @@
 package eu.janmuller.application.salesmenapp.activity;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +16,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Config;
+import eu.janmuller.application.salesmenapp.Helper;
+import eu.janmuller.application.salesmenapp.NewInquiriesService;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.InquiriesAdapter;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
@@ -21,6 +26,7 @@ import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -28,6 +34,9 @@ import java.util.List;
  */
 @ContentView(R.layout.main)
 public class InquiryListActivity extends BaseActivity {
+
+    // hodinovy interval
+    public static final int NEW_INQUIRIES_SERVICE_CHECK_INTERVAL_IN_MS = 60 * 60 * 1000;
 
     private InquiriesAdapter mInquiriesAdapter;
 
@@ -50,14 +59,32 @@ public class InquiryListActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        prepareListAdapter();
+
+        if (getResources().getBoolean(R.bool.has_inquiries)) {
+
+            scheduleInquiryDownloadService();
+            prepareListAdapter();
+        }
     }
 
     @Override
     protected void onStart() {
 
         super.onStart();
-        fillInquiriesTable();
+
+        if (getResources().getBoolean(R.bool.has_inquiries)) {
+
+            fillInquiriesTable();
+        }
+    }
+
+    private void scheduleInquiryDownloadService() {
+
+        Calendar cal = Calendar.getInstance();
+        Intent intent = new Intent(this, NewInquiriesService.class);
+        PendingIntent pintent = PendingIntent.getService(this, 0, intent, 0);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis() + NEW_INQUIRIES_SERVICE_CHECK_INTERVAL_IN_MS, NEW_INQUIRIES_SERVICE_CHECK_INTERVAL_IN_MS, pintent);
     }
 
     private void prepareListAdapter() {
@@ -103,6 +130,7 @@ public class InquiryListActivity extends BaseActivity {
     private void fillInquiriesTable() {
 
         mInquiriesAdapter.clear();
+        mInquiriesAdapter.fillSendQueueMap();
         List<Inquiry> inquiries = Inquiry.getInquiriesWithAttachments();
         mInquiriesAdapter.addAll(inquiries);
         mNoItems.setVisibility(inquiries.size() > 0 ? View.GONE : View.VISIBLE);
@@ -112,6 +140,8 @@ public class InquiryListActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_open_web);
+        menuItem.setVisible(getResources().getBoolean(R.bool.show_web_icon));
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -155,25 +185,30 @@ public class InquiryListActivity extends BaseActivity {
             }
 
             @Override
-            public void onNoNewTemplatesFound() {
-
-                progressDialog.dismiss();
-                fillInquiriesTable();
-            }
-
-            @Override
             public void onTemplatesDownloaded() {
 
                 progressDialog.dismiss();
                 fillInquiriesTable();
+                /*InquiryActivityHelper.resendMessages(mServerService, new InquiryActivityHelper.IResendMessageCallback() {
+                    @Override
+                    public void onMesagesSent(int count) {
+
+                        Toast.makeText(InquiryListActivity.this, "Počet odeslaných zpráv: " + count, Toast.LENGTH_SHORT).show();
+                        fillInquiriesTable();
+                    }
+                });*/
             }
-        });
+        }, true);
     }
 
     private void openWeb() {
 
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.web_url)));
-        startActivity(browserIntent);
+        String url = Helper.getWebUrl(this);
+        if (url != null) {
+
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(browserIntent);
+        }
 
     }
 

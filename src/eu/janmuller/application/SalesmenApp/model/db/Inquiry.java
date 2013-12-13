@@ -105,6 +105,9 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     @SerializedName("Contacts")
     public String contact;
 
+    @GenericModel.DataType(type = DataTypeEnum.BOOLEAN)
+    public boolean temporary;
+
     @GenericModel.DataType(type = DataTypeEnum.ENUM)
     public State state;
 
@@ -116,6 +119,17 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
         inquiryFromServer.state = state == State.NEW ? state : State.OPEN;
         inquiryFromServer.attachments = attachments;
         inquiryFromServer.save();
+    }
+
+    public static Inquiry getByServerId(String serverId) {
+
+        List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "serverId='" + serverId + "'");
+        if (list.size() > 0) {
+
+            return list.get(0);
+        }
+
+        return null;
     }
 
     public List<Document> getDocumentsByInquiry() {
