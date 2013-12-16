@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="eu.janmuller.application.salesmenapp"
-          android:versionCode="5"
+          android:versionCode="6"
           android:versionName="1.0">
 
     <uses-sdk android:minSdkVersion="16"/>
@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
             android:name=".Application"
@@ -44,5 +45,17 @@
                 android:name=".activity.FullscreenModeActivity"
                 android:configChanges="screenSize|orientation|keyboardHidden"
                 android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"/>
+
+        <service android:name=".NewInquiriesService" android:enabled="true"/>
+
+        <receiver
+                android:name=".StartupReceiver"
+                android:enabled="true"
+                android:exported="true"
+                android:label="StartupReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

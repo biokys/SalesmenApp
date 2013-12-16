@@ -1,7 +1,9 @@
 package eu.janmuller.application.salesmenapp;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import com.google.inject.Inject;
@@ -11,6 +13,7 @@ import roboguice.service.RoboIntentService;
 import roboguice.util.Ln;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,6 +22,9 @@ import java.io.IOException;
  * Time: 21:42
  */
 public class NewInquiriesService extends RoboIntentService {
+
+    // minuta v ms
+    public static final int ONE_MINUTE = 60 * 1000;
 
     @Inject
     private DownloadService mDownloadService;
@@ -42,6 +48,10 @@ public class NewInquiriesService extends RoboIntentService {
 
     private void showNotification(int count) {
 
+        if (count == 0) {
+
+            return;
+        }
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(android.R.drawable.stat_notify_sdcard_prepare)
@@ -64,5 +74,15 @@ public class NewInquiriesService extends RoboIntentService {
                 resultIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
+    }
+
+    public static void scheduleInquiryDownloadService(Context context) {
+
+        Calendar cal = Calendar.getInstance();
+        Intent intent = new Intent(context, NewInquiriesService.class);
+        PendingIntent pintent = PendingIntent.getService(context, 0, intent, 0);
+        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        int minutes = context.getResources().getInteger(R.integer.new_inquiries_update_period_in_minutes) * ONE_MINUTE;
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis() + minutes, minutes, pintent);
     }
 }

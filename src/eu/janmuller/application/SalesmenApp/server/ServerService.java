@@ -1,6 +1,7 @@
 package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
+import android.util.Base64;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
@@ -21,7 +22,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -261,7 +261,9 @@ public class ServerService {
 
                     SendDataObject.Document.Page.Tag tag = new SendDataObject.Document.Page.Tag();
                     tag.ident = documentTag.tagIdent;
-                    tag.value = StringEscapeUtils.escapeJava(documentTag.value);
+                    tag.value = documentTag.value;
+                    //tag.value = Base64.encode(documentTag.value.getBytes(), Base64.DEFAULT);
+                    //tag.value = // base64 StringEscapeUtils.escapeJava(documentTag.value);
                     tags[tagLoop++] = tag;
                 }
                 page.id = documentPage.file;

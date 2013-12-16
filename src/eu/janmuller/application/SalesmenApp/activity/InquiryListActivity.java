@@ -35,9 +35,6 @@ import java.util.List;
 @ContentView(R.layout.main)
 public class InquiryListActivity extends BaseActivity {
 
-    // hodinovy interval
-    public static final int NEW_INQUIRIES_SERVICE_CHECK_INTERVAL_IN_MS = 60 * 60 * 1000;
-
     private InquiriesAdapter mInquiriesAdapter;
 
     @InjectView(R.id.list)
@@ -45,6 +42,9 @@ public class InquiryListActivity extends BaseActivity {
 
     @InjectView(R.id.no_inquiries)
     private TextView mNoItems;
+
+    @InjectView(R.id.device_id)
+    private TextView mDeviceId;
 
     @Inject
     private ServerService mServerService;
@@ -62,9 +62,11 @@ public class InquiryListActivity extends BaseActivity {
 
         if (getResources().getBoolean(R.bool.has_inquiries)) {
 
-            scheduleInquiryDownloadService();
+            NewInquiriesService.scheduleInquiryDownloadService(this);
             prepareListAdapter();
         }
+
+        mDeviceId.setText(Helper.getUniqueId(this));
     }
 
     @Override
@@ -76,15 +78,6 @@ public class InquiryListActivity extends BaseActivity {
 
             fillInquiriesTable();
         }
-    }
-
-    private void scheduleInquiryDownloadService() {
-
-        Calendar cal = Calendar.getInstance();
-        Intent intent = new Intent(this, NewInquiriesService.class);
-        PendingIntent pintent = PendingIntent.getService(this, 0, intent, 0);
-        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis() + NEW_INQUIRIES_SERVICE_CHECK_INTERVAL_IN_MS, NEW_INQUIRIES_SERVICE_CHECK_INTERVAL_IN_MS, pintent);
     }
 
     private void prepareListAdapter() {

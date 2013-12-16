@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Trida slouzici pro stahovani POPTAVEK a SABLON
+ *
  * Created with IntelliJ IDEA.
  * Coder: Jan Müller
  * Date: 19.10.13
@@ -78,10 +80,6 @@ public class DownloadService {
         downloadAndSaveTemplateFiles(templates, callback);
     }
 
-    public int downloadAndSaveInquiries() throws IOException {
-
-        return downloadAndSaveInquiries(null);
-    }
     /**
      * Stahne a ulozi data poptavek do databaze
      *
@@ -202,6 +200,13 @@ public class DownloadService {
         }
     }
 
+    /**
+     * Stahuje konkretni soubor
+     * @param template sablona, ktera soubor obsahuje
+     * @param fileName jmeno souboru
+     * @param progressCallback callback informujici o progressu
+     * @throws IOException
+     */
     private void downloadFile(Template template, String fileName, DownloadData.IProgressCallback progressCallback) throws IOException {
 
         URL url = new URL(template.baseUrl + fileName);
@@ -242,17 +247,5 @@ public class DownloadService {
         urlConnection.setDoOutput(true);
         urlConnection.connect();
         return urlConnection;
-    }
-
-    void deleteRecursive(File fileOrDirectory) {
-
-        if (fileOrDirectory.isDirectory())
-
-            for (File child : fileOrDirectory.listFiles()) {
-
-                deleteRecursive(child);
-            }
-
-        fileOrDirectory.delete();
     }
 }

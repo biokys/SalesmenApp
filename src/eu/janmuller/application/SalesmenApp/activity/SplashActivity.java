@@ -180,6 +180,7 @@ public class SplashActivity extends RoboSplashActivity {
                         public void run() {
 
                             Toast.makeText(SplashActivity.this, "Během ověřování zařízení došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
+                            finish();
                         }
                     });
                 }

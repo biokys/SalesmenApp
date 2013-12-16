@@ -214,8 +214,8 @@ public class SendActivity extends BaseActivity {
                                 sendMessageCallback.onSentSuccess();
                             }
 
-                            // followup zobrazime jen pokud vendor ma poptavky
-                            if (getResources().getBoolean(R.bool.has_inquiries)) {
+                            // followup zobrazime jen pokud vendor ma poptavky a zaroven se nejedna o docasnou poptavku
+                            if (!mInquiry.temporary && getResources().getBoolean(R.bool.has_inquiries)) {
 
                                 showFollowUpDialog();
                             } else {
