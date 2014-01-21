@@ -75,7 +75,16 @@ public class DownloadData {
     private void showDownloadTemplateDataDialog(int dataSize) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setNegativeButton("Později", null);
+        builder.setNegativeButton("Později", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (mDownloadDataCallback != null) {
+
+                    mDownloadDataCallback.onTemplatesDownloadPostponed();
+                }
+            }
+        });
         builder.setPositiveButton("Aktualizovat teď", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -223,6 +232,8 @@ public class DownloadData {
         public void onInquiriesDownloaded();
 
         public void onTemplatesDownloaded();
+
+        public void onTemplatesDownloadPostponed();
 
         public void onProgressUpdate(int total, int progress, String message);
 

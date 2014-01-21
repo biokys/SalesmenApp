@@ -1,10 +1,11 @@
 package eu.janmuller.application.salesmenapp.activity;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -26,7 +27,6 @@ import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -78,12 +78,30 @@ public class InquiryListActivity extends BaseActivity {
 
             fillInquiriesTable();
         }
+        resendMessage();
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
+        registerReceiver(mConnectivityReceiver, filter);
+    }
+
+    public void onPause() {
+
+        super.onPause();
+        unregisterReceiver(mConnectivityReceiver);
     }
 
     private void prepareListAdapter() {
 
         mInquiriesAdapter = new InquiriesAdapter(this);
         mInquiriesAdapter.setCallbackListener(new InquiriesAdapter.IInquiryAdapterCallback() {
+
             @Override
             public void onInquirySelect(Inquiry inquiry) {
 
@@ -101,6 +119,7 @@ public class InquiryListActivity extends BaseActivity {
         View footer = getLayoutInflater().inflate(R.layout.inquiry_footer, null);
         Button buttonTemplates = (Button) header.findViewById(R.id.button_templates);
         buttonTemplates.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
@@ -110,6 +129,7 @@ public class InquiryListActivity extends BaseActivity {
         mListView.addHeaderView(header);
         mListView.addFooterView(footer);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
@@ -159,8 +179,14 @@ public class InquiryListActivity extends BaseActivity {
 
         final ProgressDialog progressDialog = ProgressDialog.show(this, "Aktualizace", "Stahuji šablony");
         mDownloadData.run(new DownloadData.IDownloadDataCallback() {
+
             @Override
             public void onInquiriesDownloaded() {
+
+            }
+
+            @Override
+            public void onTemplatesDownloadPostponed() {
 
             }
 
@@ -213,4 +239,40 @@ public class InquiryListActivity extends BaseActivity {
             finish();
         }
     }
+
+    private void resendMessage() {
+
+        InquiryActivityHelper.resendMessages(mServerService, new InquiryActivityHelper.IResendMessageCallback() {
+
+            @Override
+            public void onMesagesSent(int count) {
+
+                fillInquiriesTable();
+                mInquiriesAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private BroadcastReceiver mConnectivityReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            final ConnectivityManager connMgr = (ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            final android.net.NetworkInfo wifi = connMgr
+                    .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+            final android.net.NetworkInfo mobile = connMgr
+                    .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+            if (wifi.isAvailable() || mobile.isAvailable()) {
+
+                resendMessage();
+            }
+        }
+
+    };
+
 }

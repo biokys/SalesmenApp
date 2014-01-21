@@ -5,15 +5,15 @@
         var i = editable.length;
         while (--i > -1) {
             if (mode == 'edit') {
-                editable[i].classList.add("editing");
+                editable[i].classList.add('editing');
                 editable[i].setAttribute('contenteditable', true);
-                editable[i].style.backgroundColor = '#FFF8E7';
-                editable[i].style.border = '2pt solid #aa0000 ';
+                /*editable[i].style.backgroundColor = '#FFF8E7';
+                editable[i].style.border = '2pt solid #aa0000 ';*/
             } else {
-                editable[i].classList.remove("editing");
+                editable[i].classList.remove('editing');
                 editable[i].removeAttribute('contenteditable');
-                editable[i].style.backgroundColor = 'transparent';
-                editable[i].style.border = '';
+                /*editable[i].style.backgroundColor = 'transparent';
+                editable[i].style.border = '';*/
             }
         }
 

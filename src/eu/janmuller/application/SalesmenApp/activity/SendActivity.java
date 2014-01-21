@@ -76,6 +76,10 @@ public class SendActivity extends BaseActivity {
 
             mEmailAddress.setText(mInquiry.mail);
         }
+        if (mInquiry.company != null) {
+
+            setSubject(mInquiry);
+        }
         mDocuments = mInquiry.getDocumentsByInquiry();
 
         DocumentAdapter documentAdapter = new DocumentAdapter(this);
@@ -83,6 +87,11 @@ public class SendActivity extends BaseActivity {
         mGridLayout.setAdapter(documentAdapter);
         documentAdapter.addAll(mDocuments);
         lookForPostponedMessage();
+    }
+
+    private void setSubject(Inquiry inquiry) {
+
+        mSubject.setText(String.format("Nabídka %s pro %s", getString(R.string.app_name), inquiry.company));
     }
 
     private void lookForPostponedMessage() {

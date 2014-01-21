@@ -55,7 +55,7 @@
 
         <TextView
                 style="@style/TableTextStyle"
-                android:layout_width="100dp"
+                android:layout_width="200dp"
                 android:id="@+id/state"/>
     </LinearLayout>
 

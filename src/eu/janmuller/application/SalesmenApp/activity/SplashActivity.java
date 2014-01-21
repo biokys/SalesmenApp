@@ -197,6 +197,12 @@ public class SplashActivity extends RoboSplashActivity {
             }
 
             @Override
+            public void onTemplatesDownloadPostponed() {
+
+                finish();
+            }
+
+            @Override
             public void onDownloadTypeChanged(String action) {
 
                 mTextAction.setText(action);
