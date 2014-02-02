@@ -169,7 +169,7 @@ public class ServerService {
             if (inquiry != null) {
 
                 send(inquiry, sendQueue.mail, sendQueue.title, sendQueue.text, sendQueue.json);
-                inquiry.delete();
+                sendQueue.delete();
                 count++;
             }
         }

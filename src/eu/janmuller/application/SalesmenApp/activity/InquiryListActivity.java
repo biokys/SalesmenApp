@@ -66,7 +66,7 @@ public class InquiryListActivity extends BaseActivity {
             prepareListAdapter();
         }
 
-        mDeviceId.setText(Helper.getUniqueId(this));
+        //mDeviceId.setText(Helper.getUniqueId(this));
     }
 
     @Override
@@ -147,6 +147,7 @@ public class InquiryListActivity extends BaseActivity {
         List<Inquiry> inquiries = Inquiry.getInquiriesWithAttachments();
         mInquiriesAdapter.addAll(inquiries);
         mNoItems.setVisibility(inquiries.size() > 0 ? View.GONE : View.VISIBLE);
+        mInquiriesAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -248,7 +249,6 @@ public class InquiryListActivity extends BaseActivity {
             public void onMesagesSent(int count) {
 
                 fillInquiriesTable();
-                mInquiriesAdapter.notifyDataSetChanged();
             }
         });
     }

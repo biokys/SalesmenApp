@@ -25,6 +25,7 @@ import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
+import roboguice.util.Ln;
 
 import java.util.Date;
 import java.util.List;
@@ -241,11 +242,13 @@ public class SendActivity extends BaseActivity {
                         public void run() {
 
                             progressDialog.dismiss();
-                            Toast.makeText(SendActivity.this, "Při odesílání zprávy došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
+                            Ln.w(String.format("Při odesílání zprávy došlo k chybě [%s]", e.getMessage()));
+                            Toast.makeText(SendActivity.this, "Zpráva nebyla odeslána", Toast.LENGTH_SHORT).show();
                             if (sendMessageCallback != null) {
 
                                 sendMessageCallback.onSentFail();
                             }
+                            finish();
                         }
                     });
                 }
