@@ -56,6 +56,7 @@ public class ViewActivity extends BaseActivity {
     private boolean                    mEditMode;
     private boolean                    mPageViewMode;
     private int                        mActionBarDisplayOptions;
+    private int                        mCurrentNumber;
     private Map<DocumentPage, WebView> mWebViewMap;
     private PageContainer              mActualPage;
     private WebView                    mInfoWebView;
@@ -121,6 +122,7 @@ public class ViewActivity extends BaseActivity {
     private void handleListViewItemClicks() {
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
@@ -138,6 +140,7 @@ public class ViewActivity extends BaseActivity {
      */
     private void setPage(int position) {
 
+        mCurrentNumber = position;
         ISidebarShowable item = mDocumentAdapter.getItem(position);
         if (mPageViewMode) {
 
@@ -152,6 +155,7 @@ public class ViewActivity extends BaseActivity {
 
             // zoom-outujem aktualni webview na defaultni zoom
             mHandler.post(new Runnable() {
+
                 @Override
                 public void run() {
 
@@ -252,37 +256,46 @@ public class ViewActivity extends BaseActivity {
 
             webView = new WebView(ViewActivity.this);
             ViewActivityHelper.configureWebView(webView);
-            Helper.showHtml(webView, document, page);
+            Helper.showHtml(webView, document, page, new WebViewClient() {
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+
+                    modifyHtml(view, page);
+                }
+            });
             mWebViewMap.put(page, webView);
+        } else {
+
+            modifyHtml(webView, page);
         }
 
         mActualPage = new PageContainer(webView, page);
-        final WebView _webview = webView;
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-
-                List<DocumentTag> list = page.getDocumentTagsByPage();
-                for (DocumentTag documentTag : list) {
-
-                    if (documentTag.tagIdent != null && documentTag.tagIdent.length() > 0) {
-                        ViewActivityHelper.setCustomText(_webview, documentTag);
-                    }
-                }
-
-                if (mEditMode) {
-
-                    ViewActivityHelper.setEditHtmlCellsVisibility(_webview, true);
-                }
-            }
-        });
-
         mWebViewContainer.removeAllViews();
         mWebViewContainer.addView(webView);
     }
 
     /**
-     * Metoda, ktera zobrazuje uvodni obrazovku pri zobrazeni dokumentuuu v poptavce
+     * Modifikuje html podle aktualni situace. Nahrazuje tagy v html, nebo povoluje/zakazuje editace
+     */
+    private void modifyHtml(WebView webView, DocumentPage page) {
+
+        List<DocumentTag> list = page.getDocumentTagsByPage();
+        for (DocumentTag documentTag : list) {
+
+            if (documentTag.tagIdent != null && documentTag.tagIdent.length() > 0) {
+                ViewActivityHelper.setCustomText(webView, documentTag);
+            }
+        }
+
+        if (mEditMode) {
+
+            ViewActivityHelper.setEditHtmlCellsVisibility(webView, true);
+        }
+    }
+
+    /**
+     * Metoda, ktera zobrazuje uvodni obrazovku pri zobrazeni dokumentu v poptavce
      * Pokud se jedna o regulerni poptavku, pak se zde zobrazi informace o poptavce
      * Vezme se sablona a do ni se vsadi informace s poptavky
      * <p/>
@@ -396,6 +409,7 @@ public class ViewActivity extends BaseActivity {
 
         View view = getLayoutInflater().inflate(R.layout.action_bar_done, null);
         view.findViewById(R.id.done).setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
@@ -473,6 +487,7 @@ public class ViewActivity extends BaseActivity {
 
                 // zoom-outujem aktualni webview na defaultni zoom
                 mHandler.post(new Runnable() {
+
                     @Override
                     public void run() {
 
@@ -514,6 +529,7 @@ public class ViewActivity extends BaseActivity {
 
         Intent intent = new Intent(this, FullscreenModeActivity.class);
         intent.putExtra(FullscreenModeActivity.DOCUMENT, mDocument);
+        intent.putExtra(FullscreenModeActivity.CURRENT_PAGE_CODE, mCurrentNumber);
         startActivityForResult(intent, FULLSCREEN_REQUEST_CODE);
     }
 

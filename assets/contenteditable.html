@@ -7,13 +7,9 @@
             if (mode == 'edit') {
                 editable[i].classList.add('editing');
                 editable[i].setAttribute('contenteditable', true);
-                /*editable[i].style.backgroundColor = '#FFF8E7';
-                editable[i].style.border = '2pt solid #aa0000 ';*/
             } else {
                 editable[i].classList.remove('editing');
                 editable[i].removeAttribute('contenteditable');
-                /*editable[i].style.backgroundColor = 'transparent';
-                editable[i].style.border = '';*/
             }
         }
 
@@ -33,6 +29,9 @@
     function setCustomText(id, text) {
 
         var section = document.getElementById(id);
+        if (text != null && text.length > 0) {
+            section.classList.remove("empty");
+        }
         section.innerHTML = text;
     }
 

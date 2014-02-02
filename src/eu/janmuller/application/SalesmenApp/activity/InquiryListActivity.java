@@ -227,6 +227,7 @@ public class InquiryListActivity extends BaseActivity {
         if (url != null) {
 
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            browserIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(browserIntent);
         }
 

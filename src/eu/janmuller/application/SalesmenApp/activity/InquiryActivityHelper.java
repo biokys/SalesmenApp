@@ -60,7 +60,8 @@ public class InquiryActivityHelper {
                                 @Override
                                 public void run() {
 
-                                    Toast.makeText(activity, "Během uzavírání došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
+                                    Ln.w(String.format("Během uzavírání došlo k chybě [%s]", e.getMessage()));
+                                    Toast.makeText(activity, "Uzavírání poptávky se nezdařilo", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -74,7 +75,7 @@ public class InquiryActivityHelper {
         builder.create().show();
     }
 
-    public static void resendMessages(final ServerService serverService,
+    public static synchronized void resendMessages(final ServerService serverService,
                                       final IResendMessageCallback resendMessageCallback) {
 
         final Handler handler = new Handler();

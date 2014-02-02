@@ -31,7 +31,7 @@ import java.util.List;
 public class FullscreenModeActivity extends BaseActivity {
 
     public static final String DOCUMENT          = "document";
-    public static final String CURRENT_PAGE_CODE = "curren_page";
+    public static final String CURRENT_PAGE_CODE = "current_page";
 
     @InjectView(R.id.previous)
     private View previousSlide;
@@ -75,6 +75,7 @@ public class FullscreenModeActivity extends BaseActivity {
         getPages(mDocument);
 
         previousSlide.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
@@ -86,6 +87,7 @@ public class FullscreenModeActivity extends BaseActivity {
         });
 
         nextSlide.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
@@ -108,6 +110,7 @@ public class FullscreenModeActivity extends BaseActivity {
         });
 
         mViewPager.setAdapter(new PagerAdapter() {
+
             @Override
             public int getCount() {
 
@@ -133,6 +136,11 @@ public class FullscreenModeActivity extends BaseActivity {
         });
 
         setArrowsVisibility(0);
+        if (intent.hasExtra(CURRENT_PAGE_CODE)) {
+
+            int position2Show = intent.getIntExtra(CURRENT_PAGE_CODE, 0);
+            mViewPager.setCurrentItem(position2Show, false);
+        }
 
     }
 
@@ -149,6 +157,7 @@ public class FullscreenModeActivity extends BaseActivity {
 
             final WebView _webview = webView;
             new Handler().post(new Runnable() {
+
                 @Override
                 public void run() {
 
