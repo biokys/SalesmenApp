@@ -268,7 +268,8 @@ public class InquiryListActivity extends BaseActivity {
             final android.net.NetworkInfo mobile = connMgr
                     .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-            if (wifi.isAvailable() || mobile.isAvailable()) {
+            if ((wifi != null && wifi.isAvailable()) ||
+                    (mobile != null && mobile.isAvailable())) {
 
                 resendMessage();
             }
