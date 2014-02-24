@@ -36,6 +36,10 @@ public class WebAppInterface {
         String id = split[1];
         String text = split[2];
 
+        if (id.equals("post-it") && (text.equals("\n\n") || text.equals("<br>"))) {
+            text = "";
+        }
+
         List<DocumentTag> documentTags = DocumentTag.getByQuery(DocumentTag.class,
                 "documentPageId=" + Long.decode(pageid) + " and tagIdent='" + id + "'");
 

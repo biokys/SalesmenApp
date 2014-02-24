@@ -3,6 +3,7 @@ package eu.janmuller.application.salesmenapp.activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -83,6 +84,11 @@ public class ViewActivityHelper {
 
     public static void replaceTagByInquiryData(Inquiry inquiry, Tag tag) {
 
+        if (inquiry.temporary) {
+
+            tag.value = "";
+            return;
+        }
         String value = tag.value;
 
         Matcher matcher = TAG_REPLACE_REGEX.matcher(value);

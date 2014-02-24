@@ -139,8 +139,8 @@ public class InquiryActivityHelper {
 
         Inquiry inquiry = new Inquiry();
         inquiry.temporary = true;
-        inquiry.title = "Dočasná poptávka";
-        inquiry.company = "Společnost";
+        inquiry.title = "Vzorové dokumenty";
+        inquiry.company = "";
         inquiry.created = Helper.sSdf.format(new Date());
         inquiry.state = Inquiry.State.NEW;
         inquiry.save();

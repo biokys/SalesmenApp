@@ -2,6 +2,7 @@ package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
 import android.util.Base64;
+import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
@@ -15,10 +16,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import roboguice.util.Ln;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -73,6 +71,33 @@ public class ServerService {
 
                 urlConnection.disconnect();
             }
+        }
+    }
+
+    public void downloadSplashScreen(String splashUrl) {
+
+        try {
+            URL url = new URL(splashUrl);
+            HttpURLConnection connectionFromUrl = (HttpURLConnection) url.openConnection();
+            if (connectionFromUrl.getResponseCode() == 200) {
+
+                File fileForSplashImage = Helper.getFileForSplashImage();
+                Files.createParentDirs(fileForSplashImage);
+
+                FileOutputStream fileOutput = new FileOutputStream(fileForSplashImage);
+
+                byte[] buffer = new byte[8192];
+                int bufferLength;
+
+                InputStream inputStream = connectionFromUrl.getInputStream();
+                while ((bufferLength = inputStream.read(buffer)) > 0) {
+
+                    fileOutput.write(buffer, 0, bufferLength);
+                }
+                fileOutput.close();
+            }
+        } catch (IOException e) {
+            Ln.e(e);
         }
     }
 
@@ -281,6 +306,7 @@ public class ServerService {
 
         public boolean status;
         public String url;
+        public String splash_logo;
     }
 
     public static class SendDataObject {

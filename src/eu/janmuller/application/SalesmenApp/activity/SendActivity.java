@@ -243,7 +243,7 @@ public class SendActivity extends BaseActivity {
 
                             progressDialog.dismiss();
                             Ln.w(String.format("Při odesílání zprávy došlo k chybě [%s]", e.getMessage()));
-                            Toast.makeText(SendActivity.this, "Zpráva nebyla odeslána", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SendActivity.this, "Zpráva nebyla odeslána.", Toast.LENGTH_SHORT).show();
                             if (sendMessageCallback != null) {
 
                                 sendMessageCallback.onSentFail();
@@ -335,7 +335,7 @@ public class SendActivity extends BaseActivity {
                         @Override
                         public void run() {
 
-                            Toast.makeText(SendActivity.this, "Odeslání připomeutí se nezdařilo [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SendActivity.this, "Odeslání připomenutí se nezdařilo [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

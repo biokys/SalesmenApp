@@ -3,6 +3,7 @@ package eu.janmuller.application.salesmenapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.provider.Settings;
 import android.webkit.WebView;
@@ -42,6 +43,21 @@ public class Helper {
         String dir = template.ident + "_" + template.version;
         String completePath = Config.sActualVendor + File.separator + dir;
         return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), completePath);
+    }
+
+    /**
+     * @return The folder, where splash image is stored.
+     */
+    public static File getFileForSplashImage() {
+
+        String completePath = Config.sActualVendor + File.separator + "splash.png";
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), completePath);
+    }
+
+    public static Drawable getSplashDrawable() {
+
+        File file = getFileForSplashImage();
+        return file.exists() ? Drawable.createFromPath(file.getAbsolutePath()) : null;
     }
 
     /**

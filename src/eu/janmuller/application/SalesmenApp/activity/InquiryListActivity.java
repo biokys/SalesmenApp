@@ -236,7 +236,7 @@ public class InquiryListActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (Config.sActualVendor.equals(Config.VENDOR_MAFRA)) {
+        if (!getResources().getBoolean(R.bool.has_inquiries)) {
 
             finish();
         }

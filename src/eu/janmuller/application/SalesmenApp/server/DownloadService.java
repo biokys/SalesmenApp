@@ -13,6 +13,7 @@ import eu.janmuller.application.salesmenapp.model.db.Inquiry;
 import eu.janmuller.application.salesmenapp.model.db.Template;
 import eu.janmuller.application.salesmenapp.model.db.TemplatePage;
 import eu.janmuller.application.salesmenapp.model.db.TemplateTag;
+import roboguice.util.Ln;
 
 import java.io.*;
 import java.net.HttpURLConnection;

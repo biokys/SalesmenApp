@@ -99,6 +99,7 @@ public class DownloadData {
             }
         });
         builder.setTitle("Aktualizace šablon");
+        builder.setCancelable(false);
 
         int dataSizeInKb = dataSize / 1024;
         String formattedSize = dataSizeInKb + "kB";

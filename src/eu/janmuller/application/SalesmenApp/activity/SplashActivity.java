@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +55,14 @@ public class SplashActivity extends RoboSplashActivity {
         mTextProgress = (TextView) findViewById(R.id.text_progress);
         mTextAction = (TextView) findViewById(R.id.text_action);
         mProgressBar = (ProgressBar) findViewById(R.id.progress);
+        ImageView splash = (ImageView) findViewById(R.id.splash_logo);
+
+        Drawable splashDrawable = Helper.getSplashDrawable();
+        if (splashDrawable != null) {
+
+            splash.setImageDrawable(splashDrawable);
+        }
+
         mProgressBar.setMax(STARTUP_DURATION_IN_MS);
         Config.sActualVendor = getString(R.string.vendor);
 
@@ -153,8 +163,10 @@ public class SplashActivity extends RoboSplashActivity {
                             Helper.setWebUrl(SplashActivity.this, deviceRegistered.url);
                         }
 
-                        // odesleme nafrontovane zpravy, pokud nejake jsou
-                        //mServerService.sendFromSendQueue();
+                        if (deviceRegistered.splash_logo != null) {
+
+                            mServerService.downloadSplashScreen(deviceRegistered.splash_logo);
+                        }
 
                         handler.post(new Runnable() {
                             @Override
@@ -199,6 +211,7 @@ public class SplashActivity extends RoboSplashActivity {
             @Override
             public void onTemplatesDownloadPostponed() {
 
+                Toast.makeText(SplashActivity.this, "Aplikace nemůže pracovat bez stažených šablon", Toast.LENGTH_SHORT).show();
                 finish();
             }
 

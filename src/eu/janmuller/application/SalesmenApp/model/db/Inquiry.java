@@ -6,6 +6,7 @@ import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -145,8 +146,15 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     public static List<Inquiry> getInquiriesWithAttachments() {
 
         List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "state < " + State.COMPLETE.ordinal() + " order by state asc");
-        for (Inquiry inquiry : list) {
+        Iterator<Inquiry> iterator = list.iterator();
+        while (iterator.hasNext()) {
 
+            Inquiry inquiry = iterator.next();
+            if (inquiry.temporary) {
+                inquiry.delete();
+                iterator.remove();
+                continue;
+            }
             if (inquiry.state == State.NEW) {
 
                 inquiry.attachments = "-";
