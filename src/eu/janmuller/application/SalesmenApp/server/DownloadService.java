@@ -162,7 +162,7 @@ public class DownloadService {
         }
         for (Template template : templatesInDb) {
             Ln.d("Deleting template %s [version %f], which is not in received json", template.ident, template.version);
-            //template.delete();
+            template.delete();
         }
         return list.toArray(new Template[list.size()]);
     }
@@ -177,7 +177,7 @@ public class DownloadService {
         }
         for (Template template : templateList) {
             Ln.d("Deleting template %s [version %f], which is not in received json", template.ident, template.version);
-            //template.delete();
+            template.delete();
         }
     }
 
