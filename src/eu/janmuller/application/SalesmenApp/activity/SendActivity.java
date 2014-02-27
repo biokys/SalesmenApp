@@ -20,6 +20,7 @@ import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
+import eu.janmuller.application.salesmenapp.model.db.FollowUpQueue;
 import eu.janmuller.application.salesmenapp.model.db.SendQueue;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
@@ -203,16 +204,25 @@ public class SendActivity extends BaseActivity {
 
                 try {
 
+                    boolean failedSend = false;
                     // odeslu zpravu
                     if (object instanceof List) {
 
-                        mServerService.send(inquiry, email, subject, body, (List) object);
+                        try {
+                            // tato metoda reseni frontovani pri neuspesnem pokusu o odeslani
+                            mServerService.send(inquiry, email, subject, body, (List) object);
+                        } catch (ConnectionException e) {
+                            failedSend = true;
+                            Ln.w(String.format("Při odesílání zprávy došlo k chybě [%s], nicmene zprava " +
+                                    "byla vlozena do fronty", e.getMessage()));
+                        }
                     } else if (object instanceof String) {
 
                         mServerService.send(inquiry, email, subject, body, (String) object);
                     }
 
                     // pokud nedoslo k chybe, zobrazim followup dialog
+                    final boolean _failedSend = failedSend;
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -227,9 +237,13 @@ public class SendActivity extends BaseActivity {
                             // followup zobrazime jen pokud vendor ma poptavky a zaroven se nejedna o docasnou poptavku
                             if (!mInquiry.temporary && getResources().getBoolean(R.bool.has_inquiries)) {
 
-                                showFollowUpDialog();
+                                showFollowUpDialog(_failedSend);
                             } else {
 
+                                if (_failedSend) {
+
+                                    Toast.makeText(SendActivity.this, "Zpráva bude odeslána po připojení k internetu.", Toast.LENGTH_SHORT).show();
+                                }
                                 finish();
                             }
                         }
@@ -243,7 +257,7 @@ public class SendActivity extends BaseActivity {
 
                             progressDialog.dismiss();
                             Ln.w(String.format("Při odesílání zprávy došlo k chybě [%s]", e.getMessage()));
-                            Toast.makeText(SendActivity.this, "Zpráva nebyla odeslána.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SendActivity.this, "Zpráva bude odeslána po připojení k internetu.", Toast.LENGTH_SHORT).show();
                             if (sendMessageCallback != null) {
 
                                 sendMessageCallback.onSentFail();
@@ -269,7 +283,7 @@ public class SendActivity extends BaseActivity {
     /**
      * Zobrazeni followup dialogu
      */
-    private void showFollowUpDialog() {
+    private void showFollowUpDialog(final boolean failedSave) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -290,8 +304,16 @@ public class SendActivity extends BaseActivity {
                 // nactu datum z datepickeru
                 Date date = new Date(mDatePicker.getCalendarView().getDate());
 
-                // zobrazim followup dialog
-                sendFollowUpRequest(date, mEditText.getText().toString());
+                // pokud selhalo odeslani zpravy, pak zafrontujeme postpone
+                if (failedSave) {
+
+                    FollowUpQueue.push(mInquiry.serverId, mEditText.getText().toString(), date);
+                    Toast.makeText(SendActivity.this, "Zpráva bude odeslána po připojení k internetu.", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+
+                    sendFollowUpRequest(mInquiry, date, mEditText.getText().toString());
+                }
             }
         });
         builder.setTitle("Nastavení připomenutí");
@@ -305,7 +327,7 @@ public class SendActivity extends BaseActivity {
     /**
      * Poslani follow up requestu
      */
-    private void sendFollowUpRequest(final Date date, final String message) {
+    private void sendFollowUpRequest(final Inquiry inquiry, final Date date, final String message) {
 
         final Handler handler = new Handler();
         new Thread() {
@@ -317,7 +339,7 @@ public class SendActivity extends BaseActivity {
                 try {
 
                     // odeslu followup na server
-                    mServerService.followUp(mInquiry, strDate, message);
+                    mServerService.followUp(inquiry, strDate, message);
 
                     // zobrazim hlasku o uspechu
                     handler.post(new Runnable() {
