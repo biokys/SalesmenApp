@@ -4,8 +4,8 @@
     <bool name="show_web_icon">true</bool>
     <bool name="has_inquiries">false</bool>
 
-    <string name="vendor">comfor</string>
-    <string name="app_name">Comfor</string>
-    <string name="base_url">http://api-comfor.sb2000.cz/service.ashx</string>
+    <string name="vendor">demo_aplikace</string>
+    <string name="app_name">Mobilní dokumenty</string>
+    <string name="base_url">http://api-doc.sb2000.cz/service.ashx</string>
     <string name="web_url">http://comfor.sb2000.cz/index.html</string>
 </resources>
