@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Trida slouzici pro stahovani POPTAVEK a SABLON
- *
+ * <p/>
  * Created with IntelliJ IDEA.
  * Coder: Jan Müller
  * Date: 19.10.13
@@ -187,24 +187,27 @@ public class DownloadService {
      * @param templates
      * @throws Exception
      */
-    private void downloadAndSaveTemplateFiles(Template[] templates, DownloadData.IProgressCallback callback) throws IOException {
+    private void downloadAndSaveTemplateFiles(Template[] templates, DownloadData.IProgressCallback callback) {
 
+        int counter = 0;
         for (Template template : templates) {
-
-            String[] files = template.files;
-
-            for (String fileName : files) {
-
-                downloadFile(template, fileName, callback);
+            try {
+                String[] files = template.files;
+                for (String fileName : files) {
+                    downloadFile(template, fileName, callback);
+                }
+                saveTemplateMetadata2Db(template);
+            } catch (IOException e) {
+                Ln.w(e, "Error while downloading template");
             }
-            saveTemplateMetadata2Db(template);
         }
     }
 
     /**
      * Stahuje konkretni soubor
-     * @param template sablona, ktera soubor obsahuje
-     * @param fileName jmeno souboru
+     *
+     * @param template         sablona, ktera soubor obsahuje
+     * @param fileName         jmeno souboru
      * @param progressCallback callback informujici o progressu
      * @throws IOException
      */
