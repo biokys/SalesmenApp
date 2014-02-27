@@ -435,6 +435,9 @@ public class ViewActivity extends BaseActivity {
      */
     private void switch2ViewMode() {
 
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Prosím čekejte...");
+        progressDialog.show();
         mEditMode = false;
 
         if (mPageViewMode) {
@@ -446,7 +449,15 @@ public class ViewActivity extends BaseActivity {
             //mActualPage = null;
         }
         mActionBar.setDisplayOptions(mActionBarDisplayOptions);
-        refreshSideBar();
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                progressDialog.dismiss();
+                refreshSideBar();
+            }
+        }, 500);
     }
 
     /**
@@ -564,9 +575,30 @@ public class ViewActivity extends BaseActivity {
 
         if (mInquiry.temporary) {
 
-            mInquiry.delete();
+
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage("Prosím čekejte...");
+            progressDialog.show();
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    mInquiry.delete();
+                    mHandler.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            progressDialog.dismiss();
+                            ViewActivity.super.finish();
+                        }
+                    });
+                }
+            }).start();
+        } else {
+
+            super.finish();
         }
-        super.finish();
     }
 
     @Override

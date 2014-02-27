@@ -204,7 +204,7 @@ public class SendActivity extends BaseActivity {
 
         final ProgressDialog progressDialog = ProgressDialog.show(this, null, "Odesílám...");
 
-        final Semaphore semaphore = new Semaphore(1);
+        /*final Semaphore semaphore = new Semaphore(1);
 
         if (object instanceof List) {
             for (Document document : (List<Document>) object) {
@@ -222,14 +222,14 @@ public class SendActivity extends BaseActivity {
                             //modifyHtml(view, page);
                         }
                     });
-                    /*try {
+                    *//*try {
                         semaphore.acquire();
                     } catch (InterruptedException e) {
                         Ln.e(e);
-                    }*/
+                    }*//*
                 }
             }
-        }
+        }*/
 
         final Handler handler = new Handler();
         new Thread() {
