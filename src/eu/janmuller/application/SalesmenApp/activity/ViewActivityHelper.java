@@ -45,7 +45,12 @@ public class ViewActivityHelper {
      */
     static void createDocuments(List<Document> documents, Inquiry inquiry) {
 
-        List<Template> templates = Template.getByQuery(Template.class, "type='Doc'");
+        float maxVersion = -1;
+        for (Template t : Template.getByQuery(Template.class, "type='Doc'")) {
+            maxVersion = Math.max(maxVersion, t.version);
+        }
+
+        List<Template> templates = Template.getByQuery(Template.class, "version=" + maxVersion + " and type='Doc'");
         try {
 
             GenericModel.beginTx();
@@ -146,11 +151,13 @@ public class ViewActivityHelper {
         return "";
     }
 
-    static void configureWebView(WebView webView) {
+    public static void configureWebView(WebView webView) {
 
         webView.setWebViewClient(new WebViewClient());
+        webView.requestFocus(View.FOCUS_DOWN);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setLightTouchEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
 

@@ -1,6 +1,9 @@
 package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
+import android.os.Handler;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -10,6 +13,7 @@ import com.google.inject.Singleton;
 import eu.janmuller.android.dao.api.UUIDId;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.activity.ViewActivityHelper;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -20,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -264,7 +269,7 @@ public class ServerService {
     private SendDataObject getSendDataObject(List<Document> documents) {
 
         // list obsahuujici jen viditelne dokumenty
-        List<Document> filteredList = new ArrayList<Document>();
+        final List<Document> filteredList = new ArrayList<Document>();
         for (Document document : documents) {
 
             if (document.show) {
@@ -272,6 +277,7 @@ public class ServerService {
                 filteredList.add(document);
             }
         }
+
         SendDataObject sendDataObject = new SendDataObject();
         SendDataObject.Document[] sendDocuments = new SendDataObject.Document[filteredList.size()];
         int mainLoop = 0;
@@ -285,7 +291,7 @@ public class ServerService {
             int loop = 0;
             for (DocumentPage documentPage : documentPages) {
 
-                SendDataObject.Document.Page page = new SendDataObject.Document.Page();
+                final SendDataObject.Document.Page page = new SendDataObject.Document.Page();
                 List<DocumentTag> documentTags = documentPage.getDocumentTagsByPage();
                 SendDataObject.Document.Page.Tag[] tags = new SendDataObject.Document.Page.Tag[documentTags.size()];
                 int tagLoop = 0;
@@ -294,8 +300,6 @@ public class ServerService {
                     SendDataObject.Document.Page.Tag tag = new SendDataObject.Document.Page.Tag();
                     tag.ident = documentTag.tagIdent;
                     tag.value = documentTag.value;
-                    //tag.value = Base64.encode(documentTag.value.getBytes(), Base64.DEFAULT);
-                    //tag.value = // base64 StringEscapeUtils.escapeJava(documentTag.value);
                     tags[tagLoop++] = tag;
                 }
                 page.id = documentPage.file;

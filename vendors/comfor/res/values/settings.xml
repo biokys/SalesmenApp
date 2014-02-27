@@ -2,7 +2,7 @@
 <resources>
 
     <bool name="show_web_icon">true</bool>
-    <bool name="has_inquiries">false</bool>
+    <bool name="has_inquiries">true</bool>
 
     <string name="vendor">demo_aplikace</string>
     <string name="app_name">Mobilní dokumenty</string>

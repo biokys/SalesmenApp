@@ -6,10 +6,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -18,10 +21,7 @@ import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
-import eu.janmuller.application.salesmenapp.model.db.Document;
-import eu.janmuller.application.salesmenapp.model.db.Inquiry;
-import eu.janmuller.application.salesmenapp.model.db.FollowUpQueue;
-import eu.janmuller.application.salesmenapp.model.db.SendQueue;
+import eu.janmuller.application.salesmenapp.model.db.*;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.ServerService;
 import roboguice.inject.ContentView;
@@ -30,6 +30,7 @@ import roboguice.util.Ln;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -104,6 +105,7 @@ public class SendActivity extends BaseActivity {
             final SendQueue sendQueue = sendQueues.get(0);
             AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
             builder.setNegativeButton("Vytvořit novou", new DialogInterface.OnClickListener() {
+
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -111,6 +113,7 @@ public class SendActivity extends BaseActivity {
                 }
             });
             builder.setPositiveButton("Odeslat", new DialogInterface.OnClickListener() {
+
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -119,6 +122,7 @@ public class SendActivity extends BaseActivity {
                             sendQueue.title,
                             sendQueue.text,
                             sendQueue.json, new ISendMessageCallback() {
+
                         @Override
                         public void onSentSuccess() {
 
@@ -174,6 +178,7 @@ public class SendActivity extends BaseActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(SendActivity.this);
         builder.setNegativeButton(R.string.cancel, null);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -188,6 +193,8 @@ public class SendActivity extends BaseActivity {
         builder.create().show();
     }
 
+    int mCounter = 0;
+
     private void send(final Inquiry inquiry,
                       final String email,
                       final String subject,
@@ -196,6 +203,34 @@ public class SendActivity extends BaseActivity {
                       final ISendMessageCallback sendMessageCallback) {
 
         final ProgressDialog progressDialog = ProgressDialog.show(this, null, "Odesílám...");
+
+        final Semaphore semaphore = new Semaphore(1);
+
+        if (object instanceof List) {
+            for (Document document : (List<Document>) object) {
+                for (final DocumentPage documentPage : document.getDocumentPagesByDocument(true)) {
+
+                    WebView webView = new WebView(this);
+                    ViewActivityHelper.configureWebView(webView);
+                    Helper.showHtml(webView, document, documentPage, new WebViewClient() {
+
+                        @Override
+                        public void onPageFinished(WebView view, String url) {
+
+                            ViewActivityHelper.getAndSaveTags(view, documentPage);
+                            //semaphore.release();
+                            //modifyHtml(view, page);
+                        }
+                    });
+                    /*try {
+                        semaphore.acquire();
+                    } catch (InterruptedException e) {
+                        Ln.e(e);
+                    }*/
+                }
+            }
+        }
+
         final Handler handler = new Handler();
         new Thread() {
 
@@ -224,6 +259,7 @@ public class SendActivity extends BaseActivity {
                     // pokud nedoslo k chybe, zobrazim followup dialog
                     final boolean _failedSend = failedSend;
                     handler.post(new Runnable() {
+
                         @Override
                         public void run() {
 
@@ -252,6 +288,7 @@ public class SendActivity extends BaseActivity {
 
                     // v pripade chyby zobrazim chybovou hlasku
                     handler.post(new Runnable() {
+
                         @Override
                         public void run() {
 
@@ -273,6 +310,7 @@ public class SendActivity extends BaseActivity {
     private interface ISendMessageCallback {
 
         public void onSentSuccess();
+
         public void onSentFail();
     }
 
@@ -290,6 +328,7 @@ public class SendActivity extends BaseActivity {
         View view = getLayoutInflater().inflate(R.layout.followup_dialog, null);
         builder.setView(view);
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -298,6 +337,7 @@ public class SendActivity extends BaseActivity {
             }
         });
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -343,6 +383,7 @@ public class SendActivity extends BaseActivity {
 
                     // zobrazim hlasku o uspechu
                     handler.post(new Runnable() {
+
                         @Override
                         public void run() {
 
@@ -354,6 +395,7 @@ public class SendActivity extends BaseActivity {
 
                     // v pripade chyby zobrazim chybovou hlasku
                     handler.post(new Runnable() {
+
                         @Override
                         public void run() {
 
