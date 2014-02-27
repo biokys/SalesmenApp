@@ -1,17 +1,16 @@
 package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
-import android.util.Base64;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import eu.janmuller.android.dao.api.UUIDId;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.db.*;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import roboguice.util.Ln;
@@ -197,6 +196,14 @@ public class ServerService {
                 sendQueue.delete();
                 count++;
             }
+        }
+
+        for (FollowUpQueue followUpQueue : FollowUpQueue.getAllObjects(FollowUpQueue.class)) {
+
+            String strDate = Helper.sSdf.format(followUpQueue.date);
+            Inquiry inquiry = Inquiry.getByServerId(followUpQueue.inquiryServerId);
+            followUp(inquiry, strDate, followUpQueue.text);
+            followUpQueue.delete();
         }
 
         return count;

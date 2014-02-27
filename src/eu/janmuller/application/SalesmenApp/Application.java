@@ -27,6 +27,7 @@ public class Application extends android.app.Application {
         SimpleDroidDao.registerModelClass(Inquiry.class);
         SimpleDroidDao.registerModelClass(Document.class);
         SimpleDroidDao.registerModelClass(SendQueue.class);
+        SimpleDroidDao.registerModelClass(FollowUpQueue.class);
         SimpleDroidDao.initialize(this, APP_DB, VERSION, null);
     }
 }
