@@ -121,6 +121,28 @@ public class Template extends BaseDateModel<Template> {
     }
 
     @Override
+    public boolean equals(Object o) {
+
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Template template = (Template) o;
+
+        if (Float.compare(template.version, version) != 0) return false;
+        if (!ident.equals(template.ident)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+
+        int result = ident.hashCode();
+        result = 31 * result + (version != +0.0f ? Float.floatToIntBits(version) : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
 
         return name;

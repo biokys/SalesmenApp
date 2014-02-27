@@ -1,12 +1,18 @@
 package eu.janmuller.application.salesmenapp.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
+import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -241,7 +247,6 @@ public class ViewActivity extends BaseActivity {
         showHtml(document, firstShowablePage);
     }
 
-
     /**
      * Metoda slouzi k zobrazeni stranky dokumentu do webview
      * Webview se cachuji a tak se inicializuji pouze pri prvnim prohlizeni.
@@ -254,7 +259,7 @@ public class ViewActivity extends BaseActivity {
 
         if (webView == null) {
 
-            webView = new WebView(ViewActivity.this);
+            webView = new MyWebView(ViewActivity.this);
             ViewActivityHelper.configureWebView(webView);
             Helper.showHtml(webView, document, page, new WebViewClient() {
 
@@ -584,6 +589,30 @@ public class ViewActivity extends BaseActivity {
 
             this.webview = webview;
             this.documentPage = documentPage;
+        }
+    }
+
+    private static class MyWebView extends WebView {
+
+        private MyWebView(Context context) {
+
+            super(context);
+        }
+
+        private MyWebView(Context context, AttributeSet attrs) {
+
+            super(context, attrs);
+        }
+
+        private MyWebView(Context context, AttributeSet attrs, int defStyle) {
+
+            super(context, attrs, defStyle);
+        }
+
+        @Override
+        public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+
+            return new BaseInputConnection(this, false);
         }
     }
 }

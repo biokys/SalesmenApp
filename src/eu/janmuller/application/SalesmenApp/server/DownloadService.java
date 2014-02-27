@@ -149,17 +149,36 @@ public class DownloadService {
      */
     private Template[] getOnlyNewTemplates(Template[] templates) {
 
+        List<Template> templatesInDb = Template.getAllObjects(Template.class);
         List<Template> list = new ArrayList<Template>();
         for (Template template : templates) {
 
             // pokud dana sablona uz v db je, pak ji neukladame
-            if (Template.getCountByQuery(Template.class, "version=" + template.version + " and ident='" + template.ident + "'") > 0) {
-
+            if (templatesInDb.contains(template)) {
+                templatesInDb.remove(template);
                 continue;
             }
             list.add(template);
         }
+        for (Template template : templatesInDb) {
+            Ln.d("Deleting template %s [version %f], which is not in received json", template.ident, template.version);
+            //template.delete();
+        }
         return list.toArray(new Template[list.size()]);
+    }
+
+    private void deleteTemplatesDeletedOnServer(Template[] templates) {
+
+        List<Template> templateList = Template.getAllObjects(Template.class);
+        for (Template template : templates) {
+            if (templateList.contains(template)) {
+                templateList.remove(template);
+            }
+        }
+        for (Template template : templateList) {
+            Ln.d("Deleting template %s [version %f], which is not in received json", template.ident, template.version);
+            //template.delete();
+        }
     }
 
     /**
@@ -189,7 +208,6 @@ public class DownloadService {
      */
     private void downloadAndSaveTemplateFiles(Template[] templates, DownloadData.IProgressCallback callback) {
 
-        int counter = 0;
         for (Template template : templates) {
             try {
                 String[] files = template.files;
