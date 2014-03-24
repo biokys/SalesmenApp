@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <bool name="show_web_icon">true</bool>
-    <bool name="has_inquiries">true</bool>
+    <bool name="show_web_icon">false</bool>
+    <bool name="has_inquiries">false</bool>
 
-    <string name="vendor">dallmayr</string>
-    <string name="app_name">Dallmayr</string>
-    <string name="base_url">http://api-dallmayr.sb2000.cz/service.ashx</string>
-    <string name="web_url">http://cz.dallmayr.com/index.html</string>
+    <string name="vendor">mafra</string>
+    <string name="app_name">Mafra</string>
+    <string name="base_url">http://api-mafra.sb2000.cz/service.ashx</string>
+    <string name="web_url">http://www.mafra.cz/cs/default.asp</string>
 </resources>

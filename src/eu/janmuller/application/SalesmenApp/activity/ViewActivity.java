@@ -641,10 +641,10 @@ public class ViewActivity extends BaseActivity {
             super(context, attrs, defStyle);
         }
 
-        @Override
+        /*@Override
         public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
 
             return new BaseInputConnection(this, false);
-        }
+        }*/
     }
 }

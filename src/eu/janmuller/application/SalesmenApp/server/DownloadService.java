@@ -19,6 +19,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -142,7 +143,7 @@ public class DownloadService {
     }
 
     /**
-     * Vraci jen ty, ktere jeste nejsou ulozeny v DB
+     * Vraci jen ty, ktere jeste nejsou ulozeny v DB a zaroven maze vsechny z DB, ktere jsou jiz neaktualni
      *
      * @param templates
      * @return
@@ -151,34 +152,30 @@ public class DownloadService {
 
         List<Template> templatesInDb = Template.getAllObjects(Template.class);
         List<Template> list = new ArrayList<Template>();
+        boolean skip;
         for (Template template : templates) {
 
-            // pokud dana sablona uz v db je, pak ji neukladame
-            if (templatesInDb.contains(template)) {
-                templatesInDb.remove(template);
+            skip = false;
+            for (Template templateInDb : templatesInDb) {
+                if (templateInDb.ident.equals(template.ident)) {
+                    skip = true;
+                    if (template.version > templateInDb.version) {
+
+                        Ln.i("Deleting old template %s [version %f]", templateInDb.ident, templateInDb.version);
+                        templateInDb.delete();
+                        list.add(template);
+                    }
+                }
+            }
+
+            if (skip) {
                 continue;
             }
+            Ln.i("Adding new template %s [version %f]", template.ident, template.version);
             list.add(template);
-        }
-        for (Template template : templatesInDb) {
-            Ln.d("Deleting template %s [version %f], which is not in received json", template.ident, template.version);
-            template.delete();
+
         }
         return list.toArray(new Template[list.size()]);
-    }
-
-    private void deleteTemplatesDeletedOnServer(Template[] templates) {
-
-        List<Template> templateList = Template.getAllObjects(Template.class);
-        for (Template template : templates) {
-            if (templateList.contains(template)) {
-                templateList.remove(template);
-            }
-        }
-        for (Template template : templateList) {
-            Ln.d("Deleting template %s [version %f], which is not in received json", template.ident, template.version);
-            template.delete();
-        }
     }
 
     /**
