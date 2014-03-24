@@ -162,7 +162,7 @@ public class DownloadService {
                     if (template.version > templateInDb.version) {
 
                         Ln.i("Deleting old template %s [version %f]", templateInDb.ident, templateInDb.version);
-                        templateInDb.delete();
+                        templateInDb.deleteCompleteTemplate();
                         list.add(template);
                     }
                 }

@@ -115,8 +115,7 @@ public class Template extends BaseDateModel<Template> {
         this.type = template.type;
     }
 
-    @Override
-    public void delete() {
+    public void deleteCompleteTemplate() {
 
         for (TemplatePage templatePage : getTemplatePagesByTemplate()) {
             for (TemplateTag templateTag : templatePage.getTemplateTagsByPage()) {

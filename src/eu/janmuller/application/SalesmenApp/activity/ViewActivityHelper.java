@@ -45,12 +45,7 @@ public class ViewActivityHelper {
      */
     static void createDocuments(List<Document> documents, Inquiry inquiry) {
 
-        float maxVersion = -1;
-        for (Template t : Template.getByQuery(Template.class, "type='Doc'")) {
-            maxVersion = Math.max(maxVersion, t.version);
-        }
-
-        List<Template> templates = Template.getByQuery(Template.class, "version=" + maxVersion + " and type='Doc'");
+        List<Template> templates = Template.getByQuery(Template.class, "type='Doc'");
         try {
 
             GenericModel.beginTx();
