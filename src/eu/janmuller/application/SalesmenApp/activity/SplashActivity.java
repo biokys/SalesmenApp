@@ -12,7 +12,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.inject.Inject;
-import eu.janmuller.application.salesmenapp.Config;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
@@ -64,7 +63,6 @@ public class SplashActivity extends RoboSplashActivity {
         }
 
         mProgressBar.setMax(STARTUP_DURATION_IN_MS);
-        Config.sActualVendor = getString(R.string.vendor);
 
         final Handler handler = new Handler();
         new Thread() {

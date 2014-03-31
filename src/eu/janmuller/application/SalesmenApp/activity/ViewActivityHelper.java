@@ -155,6 +155,7 @@ public class ViewActivityHelper {
         webSettings.setLightTouchEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
+        webSettings.setBuiltInZoomControls(true);
 
         webView.addJavascriptInterface(new WebAppInterface(), "Android");
     }
@@ -166,13 +167,17 @@ public class ViewActivityHelper {
 
     static void setCustomText(WebView webView, Tag documentTag) {
 
-        String text = StringEscapeUtils.escapeJava(documentTag.value);
-        webView.loadUrl("javascript:setCustomText('" + documentTag.tagIdent + "','" + text + "')");
+        if (documentTag != null) {
+            String text = StringEscapeUtils.escapeJava(documentTag.value);
+            webView.loadUrl("javascript:setCustomText('" + documentTag.tagIdent + "','" + text + "')");
+        }
     }
 
     static void getAndSaveTags(WebView webView, DocumentPage documentPage) {
 
-        webView.loadUrl("javascript:getAllEditableElements('" + documentPage.id.getId().toString() + "')");
+        if (documentPage != null) {
+            webView.loadUrl("javascript:getAllEditableElements('" + documentPage.id.getId().toString() + "')");
+        }
     }
 
     public static void manageVisibility(boolean editMode, View view, ImageView imageView,
@@ -209,12 +214,12 @@ public class ViewActivityHelper {
         }
     }
 
-    private static void hideDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
+    public static void hideDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
 
         changeDocumentVisibility(document, false, callback);
     }
 
-    private static void showDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
+    public static void showDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
 
         changeDocumentVisibility(document, true, callback);
     }
@@ -226,8 +231,9 @@ public class ViewActivityHelper {
 
             ((BaseDateModel) document).save();
         }
-        callback.onVisibilityChanged();
-
+        if (callback != null) {
+            callback.onVisibilityChanged();
+        }
     }
 
     public static ImageView getThumbnailImage(View view, Document document, String filename) {

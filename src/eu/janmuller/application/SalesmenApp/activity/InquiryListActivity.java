@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.google.inject.Inject;
-import eu.janmuller.application.salesmenapp.Config;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.NewInquiriesService;
 import eu.janmuller.application.salesmenapp.R;

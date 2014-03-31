@@ -16,6 +16,7 @@ import android.view.inputmethod.InputConnection;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import eu.janmuller.application.salesmenapp.Helper;
@@ -54,6 +55,15 @@ public class ViewActivity extends BaseActivity {
     @InjectView(R.id.listview)
     private ListView mListView;
 
+    @InjectView(R.id.button_hide)
+    private Button mButtonHide;
+
+    @InjectView(R.id.button_show)
+    private Button mButtonShow;
+
+    @InjectView(R.id.layout_visibility)
+    private LinearLayout mLayoutButtonsVisibility;
+
     private Handler mHandler = new Handler();
 
     private Inquiry                    mInquiry;
@@ -84,7 +94,33 @@ public class ViewActivity extends BaseActivity {
         mActionBar.setDisplayShowTitleEnabled(true);
         mActionBar.setTitle(mInquiry.title);
 
+        mButtonHide.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                manageVisibility(false);
+            }
+        });
+
+        mButtonShow.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                manageVisibility(true);
+            }
+        });
+
         setUp();
+    }
+
+    private void manageVisibility(boolean show) {
+        mButtonHide.setEnabled(false);
+        mButtonShow.setEnabled(false);
+        mDocumentAdapter.setAllObjectsVisibility(show);
+        mButtonHide.setEnabled(true);
+        mButtonShow.setEnabled(true);
     }
 
     /**
@@ -285,6 +321,9 @@ public class ViewActivity extends BaseActivity {
      */
     private void modifyHtml(WebView webView, DocumentPage page) {
 
+        if (page == null) {
+            return;
+        }
         List<DocumentTag> list = page.getDocumentTagsByPage();
         for (DocumentTag documentTag : list) {
 
@@ -409,6 +448,7 @@ public class ViewActivity extends BaseActivity {
     private void switch2EditMode() {
 
         mEditMode = true;
+        mLayoutButtonsVisibility.setVisibility(View.VISIBLE);
         refreshSideBar();
 
 
@@ -439,11 +479,14 @@ public class ViewActivity extends BaseActivity {
         progressDialog.setMessage("Prosím čekejte...");
         progressDialog.show();
         mEditMode = false;
+        mLayoutButtonsVisibility.setVisibility(View.GONE);
 
         if (mPageViewMode) {
 
             // pri prechodu z editace ulozime zmeny v aktualnim webview
-            saveActualPage(mActualPage);
+            if (mActualPage != null) {
+                saveActualPage(mActualPage);
+            }
             // disablujem vsechny editacni policka
             disableContentEditable();
             //mActualPage = null;
@@ -574,7 +617,6 @@ public class ViewActivity extends BaseActivity {
     public void finish() {
 
         if (mInquiry.temporary) {
-
 
             final ProgressDialog progressDialog = new ProgressDialog(this);
             progressDialog.setMessage("Prosím čekejte...");

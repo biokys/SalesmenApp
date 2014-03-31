@@ -34,6 +34,20 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
         mEditMode = editMode;
     }
 
+    public void setAllObjectsVisibility(boolean show) {
+
+        for (int i = 0; i < getCount(); i++) {
+
+            ISidebarShowable sidebarShowable = getItem(i);
+            if (show) {
+                ViewActivityHelper.showDocument(sidebarShowable, null);
+            } else {
+                ViewActivityHelper.hideDocument(sidebarShowable, null);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 

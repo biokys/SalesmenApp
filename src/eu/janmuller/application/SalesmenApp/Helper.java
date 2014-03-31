@@ -41,7 +41,7 @@ public class Helper {
     public static File getTemplateFolderAsFile(Template template) {
 
         String dir = template.ident + "_" + template.version;
-        String completePath = Config.sActualVendor + File.separator + dir;
+        String completePath = Application.getVendorAsString() + File.separator + dir;
         return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), completePath);
     }
 
@@ -50,7 +50,7 @@ public class Helper {
      */
     public static File getFileForSplashImage() {
 
-        String completePath = Config.sActualVendor + File.separator + "splash.png";
+        String completePath = Application.getVendorAsString() + File.separator + "splash.png";
         return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), completePath);
     }
 
@@ -159,6 +159,8 @@ public class Helper {
 
             webView.setWebViewClient(webViewClient);
         }
-        webView.loadUrl("file://" + getBaseUrl(template) + File.separator + page.file);
+        if (page != null) {
+            webView.loadUrl("file://" + getBaseUrl(template) + File.separator + page.file);
+        }
     }
 }
