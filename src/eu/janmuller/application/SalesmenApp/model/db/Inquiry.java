@@ -99,6 +99,10 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     public String sellerZIP;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("SellerPosition")
+    public String pozice;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Mail")
     public String mail;
 

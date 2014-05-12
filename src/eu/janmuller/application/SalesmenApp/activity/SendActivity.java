@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 import roboguice.util.Ln;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -188,8 +190,16 @@ public class SendActivity extends BaseActivity {
                         mDocuments, null);
             }
         });
+        List<String> attachments = new ArrayList<String>();
+        for (Document document : mDocuments) {
+            if (document.show) {
+                attachments.add(document.getTitle());
+            }
+        }
+        String text = TextUtils.join(", ", attachments);
+
         builder.setTitle("Odeslání zprávy");
-        builder.setMessage("Opravdu si přejete odeslat zprávu?");
+        builder.setMessage("Opravdu si přejete odeslat zprávu? Obsahuje tyto přílohy: " + text);
         builder.create().show();
     }
 
