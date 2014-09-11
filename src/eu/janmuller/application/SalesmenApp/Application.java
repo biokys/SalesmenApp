@@ -1,6 +1,7 @@
 package eu.janmuller.application.salesmenapp;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import eu.janmuller.android.dao.api.SimpleDroidDao;
 import eu.janmuller.application.salesmenapp.model.db.*;
 
@@ -13,7 +14,7 @@ import eu.janmuller.application.salesmenapp.model.db.*;
 public class Application extends android.app.Application {
 
     public static final String APP_DB  = "app_db";
-    public static final int    VERSION = 37;
+    public static final int    VERSION = 38;
 
     private static Context sContext;
 
@@ -32,7 +33,18 @@ public class Application extends android.app.Application {
         SimpleDroidDao.registerModelClass(Document.class);
         SimpleDroidDao.registerModelClass(SendQueue.class);
         SimpleDroidDao.registerModelClass(FollowUpQueue.class);
-        SimpleDroidDao.initialize(this, APP_DB, VERSION, null);
+        SimpleDroidDao.initialize(this, APP_DB, VERSION, new SimpleDroidDao.IUpgradeHandler() {
+
+            @Override
+            public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+
+                switch (oldVersion) {
+                    case 37:
+                        sqLiteDatabase.execSQL("ALTER TABLE inquiries ADD COLUMN pozice text;");
+                    break;
+                }
+            }
+        });
     }
 
     public static Context getContext() {
