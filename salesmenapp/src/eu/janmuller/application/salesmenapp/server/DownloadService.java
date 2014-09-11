@@ -18,9 +18,7 @@ import roboguice.util.Ln;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Trida slouzici pro stahovani POPTAVEK a SABLON
@@ -128,6 +126,25 @@ public class DownloadService {
     }
 
     /**
+     * Iterate over all the files in all templates and checking it against file storage, if the file exists.
+     *
+     * @return true, if everything is ok, otherwise false.
+     */
+    public boolean testDataConsistency() throws IOException {
+
+        for (Template template : Template.getAllObjects(Template.class)) {
+            File parentFolder = Helper.getTemplateFolderAsFile(template);
+            for (String filename : readFromByteArray(template.fileNamesAsByteArray)) {
+                File file = new File(parentFolder, filename);
+                if (!file.exists()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Stahne ze serveru JSON obsahujici data sablon a deserializuje na objektovou strukturu
      *
      * @return pole sablon
@@ -154,24 +171,27 @@ public class DownloadService {
         List<Template> list = new ArrayList<Template>();
         boolean skip;
         for (Template template : templates) {
-
             skip = false;
             for (Template templateInDb : templatesInDb) {
                 if (templateInDb.ident.equals(template.ident)) {
-                    skip = true;
-                    if (template.version > templateInDb.version) {
+                    // we have the same id already on the device, so we should decide whether to skip saving, or to
+                    // upgrade minor or major version
 
-                        Ln.i("Deleting old template %s [version %f]", templateInDb.ident, templateInDb.version);
-                        templateInDb.deleteCompleteTemplate();
-                        list.add(template);
+                    // versions are same, so skip saving
+                    if (template.version.equals(templateInDb.version)) {
+                        skip = true;
+
+                    } else if (template.getMajorVersion() > templateInDb.getMajorVersion()) {
+                        moveToNextMajorVersion();
+                    } else if (template.getMinorVersion() > templateInDb.getMinorVersion()) {
+                        moveToNextMinorVersion();
                     }
                 }
             }
-
             if (skip) {
                 continue;
             }
-            Ln.i("Adding new template %s [version %f]", template.ident, template.version);
+            Ln.i("Adding new template %s [version %s]", template.ident, template.version);
             list.add(template);
 
         }
@@ -179,21 +199,53 @@ public class DownloadService {
     }
 
     /**
+     * Called when only minor change occurred. Download documents and update current on file system.
+     */
+    private void moveToNextMinorVersion() {
+        /*Ln.i("Deleting old template %s [version %f]", templateInDb.ident, templateInDb.version);
+        templateInDb.deleteCompleteTemplate();
+        list.add(template);*/
+    }
+
+    /**
+     * Downloads bright new documents and store them to file system next to older version.
+     */
+    private void moveToNextMajorVersion() {
+
+    }
+
+    /**
      * Ulozi nove sablony
      */
     private void saveTemplateMetadata2Db(Template template) {
 
-        template.save();
-        for (TemplatePage page : template.pages) {
+        try {
+            convertFileNamesToByteArray(template);
+            template.save();
+            for (TemplatePage page : template.pages) {
 
-            page.templateId = template.id;
-            page.save();
-            for (TemplateTag tag : page.tags) {
+                page.templateId = template.id;
+                page.save();
+                for (TemplateTag tag : page.tags) {
 
-                tag.pageId = page.id;
-                tag.save();
+                    tag.pageId = page.id;
+                    tag.save();
+                }
             }
+        } catch (IOException e) {
+            Ln.e(e);
         }
+    }
+
+    /**
+     * Converts filename array to byte array.
+     *
+     * @param template The template.
+     */
+    private void convertFileNamesToByteArray(Template template) throws IOException {
+
+        List<String> list = Arrays.asList(template.files);
+        template.fileNamesAsByteArray = writeToByteArray(list);
     }
 
     /**
@@ -266,5 +318,39 @@ public class DownloadService {
         urlConnection.setDoOutput(true);
         urlConnection.connect();
         return urlConnection;
+    }
+
+    /**
+     * Write string list to byte array.
+     *
+     * @param list The list.
+     */
+    private byte[] writeToByteArray(List<String> list) throws IOException {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(baos);
+        for (String element : list) {
+            out.writeUTF(element);
+        }
+        return baos.toByteArray();
+    }
+
+    /**
+     * Read from byte array.
+     *
+     * @param bytes The data bytes.
+     * @return List of strings.
+     * @throws IOException
+     */
+    private List<String> readFromByteArray(byte[] bytes) throws IOException {
+
+        List<String> list = new ArrayList<String>();
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        DataInputStream in = new DataInputStream(bais);
+        while (in.available() > 0) {
+            String element = in.readUTF();
+            list.add(element);
+        }
+        return list;
     }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Zrušit</string>
+
+    <string name="show_all">Zobrazit vše</string>
+    <string name="hide_all">Schovat vše</string>
+    <string name="inquiry_was_closed">Poptávka byla uzavřena</string>
+    <string name="error_while_closing_inquiry">Během uzavírání došlo k chybě [%s]</string>
+    <string name="info">Info</string>
+    <string name="do_you_want_to_close_inquiry">Chcete opravdu uzavřít poptávku </string>
+    <string name="template_documents">Vzorové dokumenty</string>
+    <string name="actualization">Aktualizace</string>
+    <string name="downloading_templates">Stahuji šablony</string>
+    <string name="send_message_title">Odeslání zprávy</string>
+    <string name="send_message_body">Opravdu si přejete odeslat zprávu? Obsahuje tyto přílohy: </string>
+    <string name="sending">Odesílám…</string>
+    <string name="message_sends_failed_putting_to_queue">Při odesílání zprávy došlo k chybě [%s], nicméně zpráva byla vložena do fronty</string>
+    <string name="error_while_authorization">Během ověřování zařízení došlo k chybě [%s]</string>
+    <string name="no_downloaded_templates">Aplikace nemůže pracovat bez stažených šablon</string>
+    <string name="device_id">Id zařízení</string>
+    <string name="please_wait">Prosím čekejte…</string>
+
+    <plurals name="new_inquiries_count">
+        <item quantity="zero">Žádná nová poptávka</item>
+        <item quantity="one">1 nová poptávka</item>
+        <item quantity="two">2 nové poptávky</item>
+        <item quantity="few">%d nové poptávky</item>
+        <item quantity="other">%d nových poptávek</item>
+    </plurals>
+
+
+</resources>

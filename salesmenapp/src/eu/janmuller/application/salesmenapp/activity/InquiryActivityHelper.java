@@ -24,6 +24,8 @@ import java.util.Date;
  */
 public class InquiryActivityHelper {
 
+    public static final String EMPTY_STRING = "";
+
     public static void closeInquiry(final Activity activity, final Inquiry inquiry,
                                     final ServerService serverService, final ArrayAdapter listAdapter) {
 
@@ -40,9 +42,7 @@ public class InquiryActivityHelper {
                     public void run() {
 
                         try {
-
                             serverService.closeInquiry(inquiry);
-
                             inquiry.state = Inquiry.State.COMPLETE;
                             inquiry.save();
                             handler.post(new Runnable() {
@@ -51,7 +51,8 @@ public class InquiryActivityHelper {
 
                                     listAdapter.remove(inquiry);
                                     listAdapter.notifyDataSetChanged();
-                                    Toast.makeText(activity, "Poptávka byla uzavřena", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(activity, activity.getString(R.string.inquiry_was_closed),
+                                            Toast.LENGTH_SHORT).show();
                                 }
                             });
                         } catch (final ConnectionException e) {
@@ -60,18 +61,19 @@ public class InquiryActivityHelper {
                                 @Override
                                 public void run() {
 
-                                    Ln.w(String.format("Během uzavírání došlo k chybě [%s]", e.getMessage()));
-                                    Toast.makeText(activity, "Uzavírání poptávky se nezdařilo", Toast.LENGTH_SHORT).show();
+                                    Ln.w(String.format(activity.getString(R.string.error_while_closing_inquiry), e.getMessage()));
+                                    Toast.makeText(activity,
+                                            String.format(activity.getString(R.string.error_while_closing_inquiry),
+                                                    e.getMessage()), Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
                     }
                 }.start();
-
             }
         });
-        builder.setTitle("Info");
-        builder.setMessage("Chcete opravdu uzavřít poptávku " + inquiry.title);
+        builder.setTitle(activity.getString(R.string.info));
+        builder.setMessage(activity.getString(R.string.do_you_want_to_close_inquiry) + inquiry.title);
         builder.create().show();
     }
 
@@ -139,8 +141,8 @@ public class InquiryActivityHelper {
 
         Inquiry inquiry = new Inquiry();
         inquiry.temporary = true;
-        inquiry.title = "Vzorové dokumenty";
-        inquiry.company = "";
+        inquiry.title = activity.getString(R.string.template_documents);
+        inquiry.company = EMPTY_STRING;
         inquiry.created = Helper.sSdf.format(new Date());
         inquiry.state = Inquiry.State.NEW;
         inquiry.save();

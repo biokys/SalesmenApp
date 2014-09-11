@@ -16,6 +16,8 @@ import java.util.List;
  */
 public class WebAppInterface {
 
+    public static final String POST_IT = "post-it";
+
     /**
      * Pri ukonceni editace nad nejakou strankou se z JS vola teto metoda pro kazdy
      * nalezeny element obsahujici edit class.
@@ -36,7 +38,7 @@ public class WebAppInterface {
         String id = split[1];
         String text = split[2];
 
-        if (id.equals("post-it") && (text.equals("\n\n") || text.equals("<br>"))) {
+        if (id.equals(POST_IT) && (text.equals("\n\n") || text.equals("<br>"))) {
             text = "";
         }
 

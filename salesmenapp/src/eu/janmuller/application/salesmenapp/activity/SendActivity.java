@@ -198,8 +198,8 @@ public class SendActivity extends BaseActivity {
         }
         String text = TextUtils.join(", ", attachments);
 
-        builder.setTitle("Odeslání zprávy");
-        builder.setMessage("Opravdu si přejete odeslat zprávu? Obsahuje tyto přílohy: " + text);
+        builder.setTitle(getString(R.string.send_message_title));
+        builder.setMessage(getString(R.string.send_message_body) + text);
         builder.create().show();
     }
 
@@ -212,7 +212,7 @@ public class SendActivity extends BaseActivity {
                       final Object object,
                       final ISendMessageCallback sendMessageCallback) {
 
-        final ProgressDialog progressDialog = ProgressDialog.show(this, null, "Odesílám...");
+        final ProgressDialog progressDialog = ProgressDialog.show(this, null, getString(R.string.sending));
 
         /*final Semaphore semaphore = new Semaphore(1);
 
@@ -258,8 +258,8 @@ public class SendActivity extends BaseActivity {
                             mServerService.send(inquiry, email, subject, body, (List) object);
                         } catch (ConnectionException e) {
                             failedSend = true;
-                            Ln.w(String.format("Při odesílání zprávy došlo k chybě [%s], nicmene zprava " +
-                                    "byla vlozena do fronty", e.getMessage()));
+                            Ln.w(String.format(getString(R.string.message_sends_failed_putting_to_queue),
+                                    e.getMessage()));
                         }
                     } else if (object instanceof String) {
 

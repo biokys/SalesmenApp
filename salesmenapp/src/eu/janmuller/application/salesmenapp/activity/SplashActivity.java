@@ -110,7 +110,7 @@ public class SplashActivity extends RoboSplashActivity {
                 checkIfPaired();
             }
         });
-        builder.setTitle("ID zařízení");
+        builder.setTitle(getString(R.string.device_id));
         builder.setMessage(deviceId);
         builder.setCancelable(false);
 
@@ -189,7 +189,7 @@ public class SplashActivity extends RoboSplashActivity {
                         @Override
                         public void run() {
 
-                            Toast.makeText(SplashActivity.this, "Během ověřování zařízení došlo k chybě [" + e.getMessage() + "]", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SplashActivity.this, String.format(getString(R.string.error_while_authorization), e.getMessage()), Toast.LENGTH_SHORT).show();
                             finish();
                         }
                     });
@@ -209,7 +209,7 @@ public class SplashActivity extends RoboSplashActivity {
             @Override
             public void onTemplatesDownloadPostponed() {
 
-                Toast.makeText(SplashActivity.this, "Aplikace nemůže pracovat bez stažených šablon", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SplashActivity.this, getString(R.string.no_downloaded_templates), Toast.LENGTH_SHORT).show();
                 finish();
             }
 

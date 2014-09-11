@@ -34,6 +34,8 @@ import java.util.List;
 @ContentView(R.layout.main)
 public class InquiryListActivity extends BaseActivity {
 
+    public static final String ANDROID_NET_CONN_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CHANGE";
+    public static final String ANDROID_NET_WIFI_WIFI_STATE_CHANGED = "android.net.wifi.WIFI_STATE_CHANGED";
     private InquiriesAdapter mInquiriesAdapter;
 
     @InjectView(R.id.list)
@@ -85,8 +87,8 @@ public class InquiryListActivity extends BaseActivity {
 
         super.onResume();
         IntentFilter filter = new IntentFilter();
-        filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
-        filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
+        filter.addAction(ANDROID_NET_CONN_CONNECTIVITY_CHANGE);
+        filter.addAction(ANDROID_NET_WIFI_WIFI_STATE_CHANGED);
         registerReceiver(mConnectivityReceiver, filter);
     }
 
@@ -177,7 +179,8 @@ public class InquiryListActivity extends BaseActivity {
 
     private void refreshData() {
 
-        final ProgressDialog progressDialog = ProgressDialog.show(this, "Aktualizace", "Stahuji šablony");
+        final ProgressDialog progressDialog = ProgressDialog.show(this, getString(R.string.actualization),
+                getString(R.string.downloading_templates));
         mDownloadData.run(new DownloadData.IDownloadDataCallback() {
 
             @Override

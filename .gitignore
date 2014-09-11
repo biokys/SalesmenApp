@@ -2,11 +2,13 @@ bin/
 gen/
 png/
 target/
+build/
+.gradle
 .settings/
 .classpath
 *.class
 *.log
 *.iml
 .DS_Store
-local.properties
+.idea/
 

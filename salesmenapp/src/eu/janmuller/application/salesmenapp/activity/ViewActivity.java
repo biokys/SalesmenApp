@@ -132,7 +132,7 @@ public class ViewActivity extends BaseActivity {
         mDocumentAdapter = new DocumentAdapter(this);
         mListView.setAdapter(mDocumentAdapter);
         handleListViewItemClicks();
-        mProgressDialog = ProgressDialog.show(this, null, "Pracuji...");
+        mProgressDialog = ProgressDialog.show(this, null, getString(R.string.please_wait));
 
         new RoboAsyncTask<Void>(this) {
 
@@ -476,7 +476,7 @@ public class ViewActivity extends BaseActivity {
     private void switch2ViewMode() {
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Prosím čekejte...");
+        progressDialog.setMessage(getString(R.string.please_wait));
         progressDialog.show();
         mEditMode = false;
         mLayoutButtonsVisibility.setVisibility(View.GONE);
@@ -619,7 +619,7 @@ public class ViewActivity extends BaseActivity {
         if (mInquiry.temporary) {
 
             final ProgressDialog progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage("Prosím čekejte...");
+            progressDialog.setMessage(getString(R.string.please_wait));
             progressDialog.show();
             new Thread(new Runnable() {
 
