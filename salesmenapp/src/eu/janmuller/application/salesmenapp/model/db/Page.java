@@ -17,6 +17,17 @@ import java.util.List;
 
 abstract public class Page<T extends Page> extends BaseDateModel<T> {
 
+    public static final String PAGE_TYPE_SLIDE = "slide";
+    public static final String PAGE_TYPE_GROUP = "group";
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("Type")
+    public String type;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("Name")
+    public String name;
+
     @GenericModel.DataType(type = DataTypeEnum.INTEGER)
     @SerializedName("Order")
     public int position;
@@ -29,32 +40,23 @@ abstract public class Page<T extends Page> extends BaseDateModel<T> {
     @SerializedName("Thumbnail")
     public String thumbnail;
 
+    @GenericModel.DataType(type = DataTypeEnum.LONG)
+    public long parentId;
+
     @SerializedName("Tags")
     public TemplateTag[] tags;
 
-    protected Page() {
+    public Page() {
     }
 
-    protected Page(Page page) {
+    public Page(Page page) {
 
         this.position = page.position;
         this.file = page.file;
         this.thumbnail = page.thumbnail;
         this.tags = page.tags;
+        this.name = page.name;
+        this.parentId = -1;
+        this.type = page.type;
     }
-
-    /**
-     * Smaze stranku a odkazy na ni (Tags)
-     * @throws DaoConstraintException
-     */
-    /*@Override
-    public void delete() throws DaoConstraintException {
-
-        List<Tag> tagList = Tag.getByQuery(Tag.class, "pageId=" + id.getId());
-        for (Tag tag : tagList) {
-
-            tag.delete();
-        }
-        super.delete();
-    }*/
 }

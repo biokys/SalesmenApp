@@ -60,7 +60,7 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
 
         ISidebarShowable document = getItem(position);
         TextView textView = (TextView) view.findViewById(R.id.text);
-        textView.setText(String.valueOf(document.getTitle()));
+        textView.setText(document.getTitle());
 
         ImageView imageView = ViewActivityHelper.getThumbnailImage(view, document.getDocument(), document.getImagePath());
         ViewActivityHelper.manageVisibility(mEditMode, view, imageView, document, new ViewActivityHelper.IVisibilityChangeCallback() {

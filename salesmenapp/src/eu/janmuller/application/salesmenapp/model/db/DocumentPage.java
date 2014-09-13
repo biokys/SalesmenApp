@@ -25,12 +25,12 @@ final public class DocumentPage extends Page<DocumentPage> implements ISidebarSh
 
     public Document parentDocument;
 
+    public List<DocumentPage> versions;
+
     /**
      * Implicitni konstruktor
      */
-    public DocumentPage() {
-
-    }
+    public DocumentPage() {}
 
     public DocumentPage(TemplatePage templatePage, Document document) {
 
@@ -61,7 +61,7 @@ final public class DocumentPage extends Page<DocumentPage> implements ISidebarSh
     @Override
     public String getTitle() {
 
-        return String.valueOf(position);
+        return name;
     }
 
     @Override

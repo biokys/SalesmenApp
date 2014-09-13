@@ -1,11 +1,16 @@
 package eu.janmuller.application.salesmenapp.model.db;
 
+import android.util.LongSparseArray;
+
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Konkretni dokument, ktery vznika vytvorenim (kopie) sablony
@@ -50,10 +55,8 @@ final public class Document extends Template implements ISidebarShowable {
     public void delete() throws DaoConstraintException {
 
         for (DocumentPage documentPage : DocumentPage.getByQuery(DocumentPage.class, "documentId=" + id.getId())) {
-
             documentPage.delete();
         }
-
         super.delete();
     }
 
@@ -62,10 +65,37 @@ final public class Document extends Template implements ISidebarShowable {
         return getDocumentPagesByDocument(false);
     }
 
+    /**
+     * Get pages from particular document. It also build parent/child object structure
+     * @param onlyVisible Returns only visible items.
+     * @return The list od {@link eu.janmuller.application.salesmenapp.model.db.DocumentPage} instances.
+     */
     public List<DocumentPage> getDocumentPagesByDocument(boolean onlyVisible) {
 
         String visibleSql = onlyVisible ? " and show=1" : "";
-        return DocumentPage.getByQuery(DocumentPage.class, "documentId=" + this.id.getId() + visibleSql);
+        LongSparseArray<List<DocumentPage>> map = new LongSparseArray<List<DocumentPage>>();
+        List<DocumentPage> documentPages = DocumentPage.getByQuery(DocumentPage.class, "documentId=" + this.id.getId() + visibleSql);
+        List<DocumentPage> newDocumentPages = new ArrayList<DocumentPage>();
+        for (DocumentPage documentPage : documentPages) {
+            long parentId = documentPage.parentId;
+            if (parentId > -1) {
+                List<DocumentPage> dpList = map.get(parentId);
+                if (dpList == null) {
+                    dpList = new ArrayList<DocumentPage>();
+                    map.put(parentId, dpList);
+                }
+                dpList.add(documentPage);
+            } else {
+                newDocumentPages.add(documentPage);
+            }
+        }
+        for (DocumentPage documentPage : newDocumentPages) {
+            List<DocumentPage> list = map.get((Long)documentPage.id.getId());
+            if (list != null) {
+                documentPage.versions = list;
+            }
+        }
+        return newDocumentPages;
     }
 
     @Override

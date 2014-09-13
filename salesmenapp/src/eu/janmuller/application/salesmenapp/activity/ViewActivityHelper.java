@@ -22,7 +22,9 @@ import roboguice.util.Ln;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,7 @@ public class ViewActivityHelper {
         List<Template> templates = Template.getByQuery(Template.class, "type='Doc'");
         try {
 
+            Map<Long, Long> bindMap = new HashMap<Long, Long>();
             GenericModel.beginTx();
             for (Template template : templates) {
 
@@ -57,16 +60,27 @@ public class ViewActivityHelper {
                 List<TemplatePage> pageList = template.getTemplatePagesByTemplate();
                 for (TemplatePage templatePage : pageList) {
 
+                    if (templatePage.parentId != -1) {
+                        continue;
+                    }
+                    // only parent documents
                     DocumentPage documentPage = new DocumentPage(templatePage, document);
                     documentPage.save();
+                    bindMap.put((Long) templatePage.id.getId(), (Long) documentPage.id.getId());
+                    saveDocumentTags(templatePage, documentPage, inquiry);
+                }
 
-                    List<TemplateTag> tagList = templatePage.getTemplateTagsByPage();
-                    for (TemplateTag tag : tagList) {
+                for (TemplatePage templatePage : pageList) {
 
-                        DocumentTag documentTag = new DocumentTag(tag, documentPage);
-                        replaceTagByInquiryData(inquiry, documentTag);
-                        documentTag.save();
+                    if (templatePage.parentId == -1) {
+                        continue;
                     }
+                    // only child documents
+                    DocumentPage documentPage = new DocumentPage(templatePage, document);
+                    documentPage.parentId = bindMap.get(templatePage.parentId);
+                    documentPage.save();
+                    saveDocumentTags(templatePage, documentPage, inquiry);
+
                 }
                 documents.add(document);
             }
@@ -79,6 +93,16 @@ public class ViewActivityHelper {
         } finally {
 
             GenericModel.endTx();
+        }
+    }
+
+    private static void saveDocumentTags(TemplatePage templatePage, DocumentPage documentPage, Inquiry inquiry) {
+        List<TemplateTag> tagList = templatePage.getTemplateTagsByPage();
+        for (TemplateTag tag : tagList) {
+
+            DocumentTag documentTag = new DocumentTag(tag, documentPage);
+            replaceTagByInquiryData(inquiry, documentTag);
+            documentTag.save();
         }
     }
 

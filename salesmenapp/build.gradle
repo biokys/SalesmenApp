@@ -49,7 +49,7 @@ android {
     }
 
     defaultConfig {
-    	applicationId "com.droid4you.application.wallet"
+    	applicationId "eu.janmuller.application.salesmenapp"
         minSdkVersion 16
         targetSdkVersion 20
         versionCode 100
