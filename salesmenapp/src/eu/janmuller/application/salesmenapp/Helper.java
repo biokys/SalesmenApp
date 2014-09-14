@@ -156,7 +156,6 @@ public class Helper {
     public static void showHtml(WebView webView, Template template, Page page, WebViewClient webViewClient) {
 
         if (webViewClient != null) {
-
             webView.setWebViewClient(webViewClient);
         }
         if (page != null) {

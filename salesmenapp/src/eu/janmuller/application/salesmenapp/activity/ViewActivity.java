@@ -5,24 +5,30 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.InputType;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.BaseInputConnection;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
+import eu.janmuller.application.salesmenapp.component.viewpager.CirclePageIndicator;
+import eu.janmuller.application.salesmenapp.component.viewpager.MyViewPager;
+import eu.janmuller.application.salesmenapp.component.viewpager.MyWebView;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
@@ -45,7 +51,7 @@ import java.util.Map;
 public class ViewActivity extends BaseActivity {
 
     public static final String INQUIRY = "inquiry";
-    public static final String TEMP    = "temp";
+    public static final String TEMP = "temp";
 
     public static final int FULLSCREEN_REQUEST_CODE = 1999;
 
@@ -66,18 +72,18 @@ public class ViewActivity extends BaseActivity {
 
     private Handler mHandler = new Handler();
 
-    private Inquiry                    mInquiry;
-    private List<Document>             mDocuments;
-    private Document                   mDocument;
-    private boolean                    mEditMode;
-    private boolean                    mPageViewMode;
-    private int                        mActionBarDisplayOptions;
-    private int                        mCurrentNumber;
-    private Map<DocumentPage, WebView> mWebViewMap;
-    private PageContainer              mActualPage;
-    private WebView                    mInfoWebView;
-    private DocumentAdapter            mDocumentAdapter;
-    private ProgressDialog             mProgressDialog;
+    private Inquiry mInquiry;
+    private List<Document> mDocuments;
+    private Document mDocument;
+    private boolean mEditMode;
+    private boolean mPageViewMode;
+    private int mActionBarDisplayOptions;
+    private int mCurrentNumber;
+    private Map<DocumentPage, PageContainer> mPageContainerMap;
+    private PageContainer mActualPage;
+    private WebView mInfoWebView;
+    private DocumentAdapter mDocumentAdapter;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +134,7 @@ public class ViewActivity extends BaseActivity {
      */
     private void setUp() {
 
-        mWebViewMap = new HashMap<DocumentPage, WebView>();
+        mPageContainerMap = new HashMap<DocumentPage, PageContainer>();
         mDocumentAdapter = new DocumentAdapter(this);
         mListView.setAdapter(mDocumentAdapter);
         handleListViewItemClicks();
@@ -186,7 +192,7 @@ public class ViewActivity extends BaseActivity {
         ISidebarShowable item = mDocumentAdapter.getItem(position);
         if (mPageViewMode) {
 
-            final WebView lastWebView = mActualPage.webview;
+            WebView lastWebView = mActualPage.getWebView();
 
             if (mEditMode) {
 
@@ -196,12 +202,15 @@ public class ViewActivity extends BaseActivity {
             showHtml(item.getDocument(), (DocumentPage) item);
 
             // zoom-outujem aktualni webview na defaultni zoom
+            final WebView _webview = lastWebView;
             mHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
 
-                    while (lastWebView.zoomOut()) {
+                    if (_webview != null) {
+                        while (_webview.zoomOut()) {
+                        }
                     }
                 }
             });
@@ -291,51 +300,50 @@ public class ViewActivity extends BaseActivity {
      */
     private void showHtml(Document document, final DocumentPage page) {
 
-        WebView webView = mWebViewMap.get(page);
+        List<DocumentPage> versions = page.versions;
+        PageContainer pageContainer = mPageContainerMap.get(page);
+        ViewGroup view;
+        if (pageContainer == null) {
+            if (versions != null) {
+                view = createViewPager(document, page);
+                pageContainer = new PageContainer(view, page);
+            } else {
+                WebView webView = new MyWebView(ViewActivity.this);
+                ViewActivityHelper.configureWebView(webView);
+                Helper.showHtml(webView, document, page, new WebViewClient() {
 
-        if (webView == null) {
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
 
-            webView = new MyWebView(ViewActivity.this);
-            ViewActivityHelper.configureWebView(webView);
-            Helper.showHtml(webView, document, page, new WebViewClient() {
+                        ViewActivityHelper.modifyHtml(mEditMode, view, page);
+                    }
+                });
 
-                @Override
-                public void onPageFinished(WebView view, String url) {
-
-                    modifyHtml(view, page);
-                }
-            });
-            mWebViewMap.put(page, webView);
+                pageContainer = new PageContainer(webView, page);
+                view = webView;
+            }
+            mPageContainerMap.put(page, pageContainer);
         } else {
-
-            modifyHtml(webView, page);
+            pageContainer.modifyWebView();
+            view = pageContainer.getView();
         }
-
-        mActualPage = new PageContainer(webView, page);
+        mActualPage = pageContainer;
         mWebViewContainer.removeAllViews();
-        mWebViewContainer.addView(webView);
+        mWebViewContainer.addView(view);
     }
 
-    /**
-     * Modifikuje html podle aktualni situace. Nahrazuje tagy v html, nebo povoluje/zakazuje editace
-     */
-    private void modifyHtml(WebView webView, DocumentPage page) {
+    private ViewGroup createViewPager(final Document document, final DocumentPage parentPage) {
 
-        if (page == null) {
-            return;
-        }
-        List<DocumentTag> list = page.getDocumentTagsByPage();
-        for (DocumentTag documentTag : list) {
-
-            if (documentTag.tagIdent != null && documentTag.tagIdent.length() > 0) {
-                ViewActivityHelper.setCustomText(webView, documentTag);
-            }
+        final List<DocumentPage> versions = parentPage.versions;
+        if (versions == null) {
+            return null;
         }
 
-        if (mEditMode) {
-
-            ViewActivityHelper.setEditHtmlCellsVisibility(webView, true);
-        }
+        ViewGroup layout = (ViewGroup)LayoutInflater.from(this).inflate(R.layout.view_page_layout, null);
+        MyViewPager viewPager = (MyViewPager) layout.findViewById(R.id.horizontal_view_pager);
+        CirclePageIndicator pageIndicator = (CirclePageIndicator) layout.findViewById(R.id.page_indicator);
+        viewPager.setData(pageIndicator, document, parentPage, mEditMode);
+        return layout;
     }
 
     /**
@@ -349,18 +357,14 @@ public class ViewActivity extends BaseActivity {
     private void showInlineInquiryInfo() {
 
         if (!mInquiry.temporary) {
-
             if (mInfoWebView == null) {
-
                 mInfoWebView = new WebView(ViewActivity.this);
                 ViewActivityHelper.configureWebView(mInfoWebView);
                 List<Template> templates = Template.getByQuery(Template.class, "type='Info'");
                 if (templates.size() > 0) {
-
                     final Template template = templates.get(0);
                     List<TemplatePage> pages = template.getTemplatePagesByTemplate();
                     if (pages.size() > 0) {
-
                         final Page page = pages.get(0);
                         Helper.showHtml(mInfoWebView, template, page, new WebViewClient() {
 
@@ -381,9 +385,7 @@ public class ViewActivity extends BaseActivity {
             }
             mWebViewContainer.addView(mInfoWebView);
         } else {
-
             if (mWebViewContainer.getChildCount() == 0) {
-
                 getLayoutInflater().inflate(R.layout.view_splash, mWebViewContainer);
             }
             dismissStartupDialog();
@@ -397,16 +399,11 @@ public class ViewActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.view_menu, menu);
-
         for (int i = 0; i < menu.size(); i++) {
-
             MenuItem item = menu.getItem(i);
-
             if (item.getItemId() == R.id.menu_fullscreen) {
-
                 item.setVisible(!mEditMode && mPageViewMode);
             } else {
-
                 item.setVisible(!mEditMode);
             }
         }
@@ -420,21 +417,16 @@ public class ViewActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-
             case android.R.id.home:
-
                 onBackPressed();
                 break;
             case R.id.menu_send:
-
                 openSendActivity();
                 break;
             case R.id.menu_edit:
-
                 switch2EditMode();
                 break;
             case R.id.menu_fullscreen:
-
                 openFullscreenModeActivity();
                 break;
         }
@@ -450,8 +442,6 @@ public class ViewActivity extends BaseActivity {
         mEditMode = true;
         mLayoutButtonsVisibility.setVisibility(View.VISIBLE);
         refreshSideBar();
-
-
         View view = getLayoutInflater().inflate(R.layout.action_bar_done, null);
         view.findViewById(R.id.done).setOnClickListener(new View.OnClickListener() {
 
@@ -512,8 +502,8 @@ public class ViewActivity extends BaseActivity {
 
         if (pageContainer != null) {
 
-            ViewActivityHelper.getAndSaveTags(pageContainer.webview, pageContainer.documentPage);
-            ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.webview, false);
+            ViewActivityHelper.getAndSaveTags(pageContainer.getWebView(), pageContainer.documentPage);
+            ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
         }
     }
 
@@ -523,42 +513,33 @@ public class ViewActivity extends BaseActivity {
      */
     private void disableContentEditable() {
 
-        Iterator<DocumentPage> iterator = mWebViewMap.keySet().iterator();
-        while (iterator.hasNext()) {
-
-            DocumentPage page = iterator.next();
-            WebView webView = mWebViewMap.get(page);
-            ViewActivityHelper.setEditHtmlCellsVisibility(webView, false);
+        for (DocumentPage page : mPageContainerMap.keySet()) {
+            PageContainer pageContainer = mPageContainerMap.get(page);
+            ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
         }
     }
 
     private void refreshSideBar() {
 
         if (mPageViewMode) {
-
             if (mActualPage != null && mActualPage.documentPage != null) {
-
                 DocumentPage documentPage = DocumentPage.findObjectById(DocumentPage.class, mActualPage.documentPage.id);
                 if (documentPage != null) {
-
                     mActualPage.documentPage.show = documentPage.show;
                 }
-
                 // zoom-outujem aktualni webview na defaultni zoom
                 mHandler.post(new Runnable() {
 
                     @Override
                     public void run() {
 
-                        while (mActualPage.webview.zoomOut()) {
+                        while (mActualPage.getWebView().zoomOut()) {
                         }
                     }
                 });
             }
-
             fillSideBar(mDocument);
         } else {
-
             fillSideBar(mDocuments);
         }
     }
@@ -566,7 +547,6 @@ public class ViewActivity extends BaseActivity {
     private void dismissStartupDialog() {
 
         if (mProgressDialog.isShowing()) {
-
             mProgressDialog.dismiss();
         }
     }
@@ -596,10 +576,32 @@ public class ViewActivity extends BaseActivity {
     public void onBackPressed() {
 
         if (mActualPage != null
-                && mActualPage.webview != null
-                && mActualPage.webview.canGoBack()) {
-
-            mActualPage.webview.goBack();
+                && mActualPage.viewGroup != null) {
+            WebView webView = mActualPage.getWebView();
+            // we stay on viewpager
+            if (mActualPage.isViewPager()) {
+                MyViewPager pager = mActualPage.getViewPager();
+                // can we go back on web page?
+                if (webView.canGoBack()) {
+                    // go back
+                    webView.goBack();
+                } else {
+                    // already on the first item, back to inquiries!
+                    if (pager.getCurrentItem() == 0) {
+                        super.onBackPressed();
+                    } else {
+                        // go to first item
+                        pager.setCurrentItem(0);
+                    }
+                }
+            } else {
+                //no we stay on webview, so just check if we can go back, otherwise finish activity
+                if (webView.canGoBack()) {
+                    webView.goBack();
+                } else {
+                    super.onBackPressed();
+                }
+            }
         } else if (mEditMode) {
 
             switch2ViewMode();
@@ -656,37 +658,44 @@ public class ViewActivity extends BaseActivity {
 
     private class PageContainer {
 
-        final public WebView      webview;
-        final public DocumentPage documentPage;
+        final private ViewGroup viewGroup;
+        final private DocumentPage documentPage;
 
-        private PageContainer(WebView webview, DocumentPage documentPage) {
+        private PageContainer(ViewGroup viewGroup, DocumentPage documentPage) {
 
-            this.webview = webview;
+            this.viewGroup = viewGroup;
             this.documentPage = documentPage;
         }
+
+        public boolean isViewPager() {
+            return documentPage.hasVersions();
+        }
+
+        public ViewGroup getView() {
+            return viewGroup;
+        }
+
+        public void modifyWebView() {
+            ViewActivityHelper.modifyHtml(mEditMode, getWebView(), documentPage);
+        }
+
+        public MyViewPager getViewPager() {
+
+            if (documentPage.hasVersions()) {
+                return (MyViewPager)viewGroup.findViewById(R.id.horizontal_view_pager);
+            }
+            return null;
+        }
+        public WebView getWebView() {
+
+            if (documentPage.hasVersions()) {
+                MyViewPager myViewPager= (MyViewPager)viewGroup.findViewById(R.id.horizontal_view_pager);
+                return myViewPager.getCurrentWebView();
+            } else {
+                return (WebView) viewGroup;
+            }
+        }
     }
 
-    private static class MyWebView extends WebView {
 
-        private MyWebView(Context context) {
-
-            super(context);
-        }
-
-        private MyWebView(Context context, AttributeSet attrs) {
-
-            super(context, attrs);
-        }
-
-        private MyWebView(Context context, AttributeSet attrs, int defStyle) {
-
-            super(context, attrs, defStyle);
-        }
-
-        /*@Override
-        public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-
-            return new BaseInputConnection(this, false);
-        }*/
-    }
 }

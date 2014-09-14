@@ -19,6 +19,7 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar', exclude: 'commons-codec-1.3.jar')
+    compile 'com.github.castorflex.verticalviewpager:library:19.0.1'
     compile 'com.google.android.gms:play-services:5.+'
     compile 'com.android.support:gridlayout-v7:18.0.+'
 }

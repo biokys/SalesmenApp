@@ -1,6 +1,8 @@
 package eu.janmuller.application.salesmenapp.activity;
 
 
+import android.webkit.JavascriptInterface;
+
 import eu.janmuller.android.dao.api.LongId;
 import eu.janmuller.application.salesmenapp.model.db.DocumentTag;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -25,6 +27,7 @@ public class WebAppInterface {
      * Prichozi text se ulozi do db vcetne idcka elementu
      * @param result
      */
+    @JavascriptInterface
     public void saveTag(String result) {
 
         Ln.d("saveTag: " + result);

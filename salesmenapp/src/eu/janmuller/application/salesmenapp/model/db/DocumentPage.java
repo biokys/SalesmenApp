@@ -39,6 +39,10 @@ final public class DocumentPage extends Page<DocumentPage> implements ISidebarSh
         this.show = true;
     }
 
+    public boolean hasVersions() {
+        return versions != null;
+    }
+
     @Override
     public void setVisibility(boolean visible) {
 

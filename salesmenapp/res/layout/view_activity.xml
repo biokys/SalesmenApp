@@ -41,6 +41,10 @@
             android:layout_height="fill_parent"/>
     </LinearLayout>
 
+    <!--<fr.castorflex.android.verticalviewpager.VerticalViewPager
+        android:id="@+id/verticalviewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>-->
     <LinearLayout
         android:orientation="vertical"
         android:background="#fff"

@@ -307,6 +307,28 @@ public class ViewActivityHelper {
     }
 
     /**
+     * Modifikuje html podle aktualni situace. Nahrazuje tagy v html, nebo povoluje/zakazuje editace
+     */
+    public static void modifyHtml(boolean editMode, WebView webView, DocumentPage page) {
+
+        if (page == null) {
+            return;
+        }
+        List<DocumentTag> list = page.getDocumentTagsByPage();
+        for (DocumentTag documentTag : list) {
+
+            if (documentTag.tagIdent != null && documentTag.tagIdent.length() > 0) {
+                ViewActivityHelper.setCustomText(webView, documentTag);
+            }
+        }
+
+        if (editMode) {
+
+            ViewActivityHelper.setEditHtmlCellsVisibility(webView, true);
+        }
+    }
+
+    /**
      * Rozhoduje o viditelnosti polozky - polozka se nezobrazi pokud se jedna o normalni mod a zaroven je polozka
      * skryta. Naopak zobrazi se, pokud je polozka oznacena jako sktryta ale jsme v editacnim rezimu
      * @param hideAble polozka implentujici ISidebarShowable interface
