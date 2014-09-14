@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
 
     private boolean mEditMode;
+    private int mSelectedItemIndex;
 
     public DocumentAdapter(Context context) {
 
@@ -32,6 +33,11 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
     public void setEditMode(boolean editMode) {
 
         mEditMode = editMode;
+    }
+
+    public void setSelectedItemIndex(int selectedItemIndex) {
+        mSelectedItemIndex = selectedItemIndex;
+        //notifyDataSetChanged();
     }
 
     public void setAllObjectsVisibility(boolean show) {
@@ -61,6 +67,11 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
         ISidebarShowable document = getItem(position);
         TextView textView = (TextView) view.findViewById(R.id.text);
         textView.setText(document.getTitle());
+
+        view.findViewById(R.id.selection).setVisibility(View.VISIBLE);
+        /*view.findViewById(R.id.selectection).setVisibility(position == mSelectedItemIndex
+                ? View.VISIBLE
+                : View.INVISIBLE);*/
 
         ImageView imageView = ViewActivityHelper.getThumbnailImage(view, document.getDocument(), document.getImagePath());
         ViewActivityHelper.manageVisibility(mEditMode, view, imageView, document, new ViewActivityHelper.IVisibilityChangeCallback() {

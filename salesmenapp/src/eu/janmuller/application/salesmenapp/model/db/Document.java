@@ -77,6 +77,7 @@ final public class Document extends Template implements ISidebarShowable {
         List<DocumentPage> documentPages = DocumentPage.getByQuery(DocumentPage.class, "documentId=" + this.id.getId() + visibleSql);
         List<DocumentPage> newDocumentPages = new ArrayList<DocumentPage>();
         for (DocumentPage documentPage : documentPages) {
+            documentPage.parentDocument = this;
             long parentId = documentPage.parentId;
             if (parentId > -1) {
                 List<DocumentPage> dpList = map.get(parentId);

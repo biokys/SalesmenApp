@@ -11,8 +11,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.ImageView;
+
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.DocumentPage;
 import eu.janmuller.application.salesmenapp.model.db.DocumentTag;
@@ -30,29 +32,14 @@ import java.util.List;
 @ContentView(R.layout.fullscreen_activity)
 public class FullscreenModeActivity extends BaseActivity {
 
-    public static final String DOCUMENT          = "document";
+    public static final String DOCUMENT = "document";
     public static final String CURRENT_PAGE_CODE = "current_page";
 
-    @InjectView(R.id.previous)
-    private View previousSlide;
+    @InjectView(R.id.vertical_viewpager)
+    private VerticalDocumentPager mVerticalDocumentPager;
 
-    @InjectView(R.id.next)
-    private View nextSlide;
-
-    @InjectView(R.id.icon_next)
-    private ImageView mImageViewNext;
-
-    @InjectView(R.id.icon_previous)
-    private ImageView mImageViewPrev;
-
-    @InjectView(R.id.pager)
-    private ViewPager mViewPager;
-
-    private Document             mDocument;
-    private List<DocumentPage>   mDocumentPages;
-    private SparseArray<WebView> mWebViewSparseArray;
-    private WebView              mCurrentWebView;
-    private int                  mCurrentPage;
+    private Document mDocument;
+    private int mCurrentPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,141 +47,37 @@ public class FullscreenModeActivity extends BaseActivity {
         // nastavime fullscreen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
         mDocument = (Document) intent.getSerializableExtra(DOCUMENT);
         if (mDocument == null) {
-
             finish();
             return;
         }
 
-        getPages(mDocument);
-
-        previousSlide.setOnClickListener(new View.OnClickListener() {
-
+        List<DocumentPage> pages = mDocument.getDocumentPagesByDocument();
+        mVerticalDocumentPager.setData(mDocument, ViewActivityHelper.filterHiddenItems(pages, false));
+        mVerticalDocumentPager.setVerticalDocumentPagerCallback(new VerticalDocumentPager.VerticalDocumentPagerCallback() {
             @Override
-            public void onClick(View view) {
-
-                if (mViewPager.getCurrentItem() > 0) {
-
-                    mViewPager.setCurrentItem(mViewPager.getCurrentItem() - 1);
-                }
+            public void onPageChanged(int index, DocumentPage documentPage) {
+                mCurrentPage = index;
             }
         });
 
-        nextSlide.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-
-                if (mViewPager.getCurrentItem() < mDocumentPages.size() - 1) {
-
-                    mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1);
-                }
-            }
-        });
-
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-
-            @Override
-            public void onPageSelected(int position) {
-
-                mCurrentPage = position;
-                mCurrentWebView = mWebViewSparseArray.get(position);
-                setArrowsVisibility(position);
-            }
-        });
-
-        mViewPager.setAdapter(new PagerAdapter() {
-
-            @Override
-            public int getCount() {
-
-                return mDocumentPages.size();
-            }
-
-            @Override
-            public boolean isViewFromObject(View view, Object o) {
-
-                return view == o;
-            }
-
-            @Override
-            public void destroyItem(ViewGroup container, int position, Object object) {
-
-            }
-
-            @Override
-            public Object instantiateItem(ViewGroup container, int position) {
-
-                return showPage(container, position);
-            }
-        });
-
-        setArrowsVisibility(0);
         if (intent.hasExtra(CURRENT_PAGE_CODE)) {
-
             int position2Show = intent.getIntExtra(CURRENT_PAGE_CODE, 0);
-            mViewPager.setCurrentItem(position2Show, false);
+            mVerticalDocumentPager.setCurrentPage(position2Show, false);
         }
-
-    }
-
-    private WebView showPage(ViewGroup container, final int position) {
-
-        WebView webView = mWebViewSparseArray.get(position);
-
-        if (webView == null) {
-
-            webView = new WebView(FullscreenModeActivity.this);
-            ViewActivityHelper.configureWebView(webView);
-            Helper.showHtml(webView, mDocument, mDocumentPages.get(position));
-            container.addView(webView);
-
-            final WebView _webview = webView;
-            new Handler().post(new Runnable() {
-
-                @Override
-                public void run() {
-
-                    DocumentPage documentPage = mDocumentPages.get(position);
-                    List<DocumentTag> list = documentPage.getDocumentTagsByPage();
-                    for (DocumentTag documentTag : list) {
-
-                        ViewActivityHelper.setCustomText(_webview, documentTag);
-                    }
-                }
-            });
-            mWebViewSparseArray.put(position, webView);
-        }
-        return webView;
-    }
-
-    private void setArrowsVisibility(int position) {
-
-        mImageViewNext.setVisibility(position < mDocumentPages.size() - 1 ? View.VISIBLE : View.INVISIBLE);
-        mImageViewPrev.setVisibility(position > 0 ? View.VISIBLE : View.INVISIBLE);
-    }
-
-    private void getPages(Document document) {
-
-        mDocumentPages = DocumentPage.getByQuery(
-                DocumentPage.class, "show=1 and documentId=" + document.id.getId());
-        mWebViewSparseArray = new SparseArray<WebView>(mDocumentPages.size());
     }
 
     @Override
     public void onBackPressed() {
 
-        if (mCurrentWebView != null && mCurrentWebView.canGoBack()) {
-
-            mCurrentWebView.goBack();
+        PageContainer currentPageContainer = mVerticalDocumentPager.getCurrentPageContainer();
+        if (currentPageContainer != null && currentPageContainer.getWebView().canGoBack()) {
+            currentPageContainer.getWebView().goBack();
         } else {
-
             Intent intent = new Intent();
             intent.putExtra(CURRENT_PAGE_CODE, mCurrentPage);
             setResult(RESULT_OK, intent);

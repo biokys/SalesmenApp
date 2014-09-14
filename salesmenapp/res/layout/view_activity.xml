@@ -41,14 +41,9 @@
             android:layout_height="fill_parent"/>
     </LinearLayout>
 
-    <!--<fr.castorflex.android.verticalviewpager.VerticalViewPager
-        android:id="@+id/verticalviewpager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>-->
-    <LinearLayout
-        android:orientation="vertical"
+    <eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager
+        android:id="@+id/vertical_viewpager"
         android:background="#fff"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/webview_container"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </LinearLayout>

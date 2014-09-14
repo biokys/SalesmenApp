@@ -42,4 +42,10 @@
             android:visibility="gone"
             android:id="@+id/show"/>
 
+    <View
+        android:id="@+id/selection"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:background="@color/blue_button_normal"
+        android:layout_alignParentLeft="true"/>
 </RelativeLayout>

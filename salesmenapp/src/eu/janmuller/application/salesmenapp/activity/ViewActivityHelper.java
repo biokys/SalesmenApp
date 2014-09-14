@@ -292,7 +292,7 @@ public class ViewActivityHelper {
      * @param items vstupni list polozek
      * @return pouze polozky ktere se maji zobrazit
      */
-    static List<ISidebarShowable> filterHiddenItems(List items, boolean editMode) {
+    static List filterHiddenItems(List items, boolean editMode) {
 
         List<ISidebarShowable> visibleItems = new ArrayList<ISidebarShowable>();
         for (ISidebarShowable item : (List<ISidebarShowable>) items) {
