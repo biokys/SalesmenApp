@@ -39,6 +39,15 @@ public class MyViewPager extends ViewPager {
         pageIndicator.setViewPager(this);
     }
 
+    public void setData(CirclePageIndicator pageIndicator, Document document, List<DocumentPage> pages,
+                        boolean editMode) {
+        setOffscreenPageLimit(pages.size());
+        mEditMode = editMode;
+        mPagerAdapter = new MyPagerAdapter(document, pages);
+        setAdapter(mPagerAdapter);
+        pageIndicator.setViewPager(this);
+    }
+
     public WebView getCurrentWebView() {
         return mPagerAdapter.getWebView(getCurrentItem());
     }
@@ -52,6 +61,12 @@ public class MyViewPager extends ViewPager {
         private MyPagerAdapter(Document document, DocumentPage parentPage) {
             mWebViewSparseArray = new SparseArray<WebView>();
             mVersions = parentPage.versions;
+            mDocument = document;
+        }
+
+        private MyPagerAdapter(Document document, List<DocumentPage> documentPages) {
+            mWebViewSparseArray = new SparseArray<WebView>();
+            mVersions = documentPages;
             mDocument = document;
         }
 

@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/app_background">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
-              android:background="@color/app_background"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    <eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager
+        android:id="@+id/vertical_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/left_menu"
+        android:background="#fff"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/static_container"
+        android:layout_toRightOf="@+id/left_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#fff"
+        android:visibility="gone"/>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/left_menu"
+        android:layout_width="@dimen/sidebar_width"
         android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
         android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/layout_visibility"
-            android:layout_margin="5dp"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:orientation="horizontal"
             android:visibility="gone">
 
@@ -23,27 +38,21 @@
                 android:id="@+id/button_show"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/show_all"
-                android:layout_weight="0.5"/>
+                android:layout_weight="0.5"
+                android:text="@string/show_all"/>
 
             <Button
                 android:id="@+id/button_hide"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/hide_all"
-                android:layout_weight="0.5"/>
+                android:layout_weight="0.5"
+                android:text="@string/hide_all"/>
 
         </LinearLayout>
 
         <ListView
             android:id="@+id/listview"
-            android:layout_width="@dimen/sidebar_width"
+            android:layout_width="match_parent"
             android:layout_height="fill_parent"/>
     </LinearLayout>
-
-    <eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager
-        android:id="@+id/vertical_viewpager"
-        android:background="#fff"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</LinearLayout>
+</RelativeLayout>

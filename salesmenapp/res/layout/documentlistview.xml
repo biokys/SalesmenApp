@@ -44,6 +44,7 @@
 
     <View
         android:id="@+id/selection"
+        android:visibility="gone"
         android:layout_width="50dp"
         android:layout_height="match_parent"
         android:background="@color/blue_button_normal"

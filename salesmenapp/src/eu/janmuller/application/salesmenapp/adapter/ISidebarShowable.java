@@ -1,5 +1,6 @@
 package eu.janmuller.application.salesmenapp.adapter;
 
+import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.application.salesmenapp.model.db.Document;
 
 /**
@@ -19,4 +20,8 @@ public interface ISidebarShowable {
     public void setVisibility(boolean visible);
 
     public boolean isVisible();
+
+    public Id getId();
+
+    public boolean hasChildren();
 }

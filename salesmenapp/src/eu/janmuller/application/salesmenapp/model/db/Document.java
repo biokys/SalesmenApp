@@ -122,4 +122,14 @@ final public class Document extends Template implements ISidebarShowable {
 
         return thumbnail;
     }
+
+    @Override
+    public Id getId() {
+        return id;
+    }
+
+    @Override
+    public boolean hasChildren() {
+        return false;
+    }
 }

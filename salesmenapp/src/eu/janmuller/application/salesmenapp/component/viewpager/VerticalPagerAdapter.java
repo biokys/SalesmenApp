@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ class VerticalPagerAdapter extends PagerAdapter {
 
         final DocumentPage page = mDocumentPages.get(position);
         List<DocumentPage> versions = page.versions;
-        PageContainer pageContainer = mPageContainerMap.get(page);
+        PageContainer pageContainer = null;// mPageContainerMap.get(page);
         ViewGroup view;
         if (pageContainer == null) {
             if (versions != null) {
@@ -112,10 +113,17 @@ class VerticalPagerAdapter extends PagerAdapter {
             return null;
         }
 
+        List<DocumentPage> filteredPages = new ArrayList<DocumentPage>();
+        for (DocumentPage documentPage : parentPage.versions) {
+            if (documentPage.isVisible()) {
+                filteredPages.add(documentPage);
+            }
+        }
+
         ViewGroup layout = (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.view_page_layout, null);
         MyViewPager viewPager = (MyViewPager) layout.findViewById(R.id.horizontal_view_pager);
         CirclePageIndicator pageIndicator = (CirclePageIndicator) layout.findViewById(R.id.page_indicator);
-        viewPager.setData(pageIndicator, document, parentPage, mEditMode);
+        viewPager.setData(pageIndicator, document, filteredPages, mEditMode);
         return layout;
     }
 }

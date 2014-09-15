@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.activity.ViewActivityHelper;
@@ -55,6 +57,11 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
     }
 
     @Override
+    public int getItemViewType(int position) {
+        return super.getItemViewType(position);
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
         View view = convertView;
@@ -68,7 +75,7 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
         TextView textView = (TextView) view.findViewById(R.id.text);
         textView.setText(document.getTitle());
 
-        view.findViewById(R.id.selection).setVisibility(View.VISIBLE);
+        //view.findViewById(R.id.selection).setVisibility(View.VISIBLE);
         /*view.findViewById(R.id.selectection).setVisibility(position == mSelectedItemIndex
                 ? View.VISIBLE
                 : View.INVISIBLE);*/
@@ -81,6 +88,7 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
                 notifyDataSetChanged();
             }
         });
+
         return view;
     }
 }

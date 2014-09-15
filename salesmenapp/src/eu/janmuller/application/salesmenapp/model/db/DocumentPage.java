@@ -75,6 +75,16 @@ final public class DocumentPage extends Page<DocumentPage> implements ISidebarSh
     }
 
     @Override
+    public Id getId() {
+        return id;
+    }
+
+    @Override
+    public boolean hasChildren() {
+        return versions != null && versions.size() > 0;
+    }
+
+    @Override
     public void delete() throws DaoConstraintException {
 
         DocumentTag.deleteByQuery(DocumentTag.class, "documentPageId=" + id.getId());

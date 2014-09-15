@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -21,6 +22,7 @@ import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
 import eu.janmuller.application.salesmenapp.component.viewpager.MyViewPager;
 import eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager;
 import eu.janmuller.application.salesmenapp.model.db.*;
+import it.sephiroth.android.library.widget.HListView;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 import roboguice.util.RoboAsyncTask;
@@ -42,6 +44,7 @@ public class ViewActivity extends BaseActivity {
     public static final String TEMP = "temp";
 
     public static final int FULLSCREEN_REQUEST_CODE = 1999;
+    public static final String TAG_CHILD_CONTAINER = "test";
 
     @InjectView(R.id.vertical_viewpager)
     private VerticalDocumentPager mVerticalDocumentPager;
@@ -58,6 +61,9 @@ public class ViewActivity extends BaseActivity {
     @InjectView(R.id.layout_visibility)
     private LinearLayout mLayoutButtonsVisibility;
 
+    @InjectView(R.id.static_container)
+    private LinearLayout mStaticContainer;
+
     private Handler mHandler = new Handler();
 
     private Inquiry mInquiry;
@@ -67,10 +73,12 @@ public class ViewActivity extends BaseActivity {
     private boolean mPageViewMode;
     private int mActionBarDisplayOptions;
     private int mCurrentNumber;
-    //private PageContainer mActualPage;
     private WebView mInfoWebView;
     private DocumentAdapter mDocumentAdapter;
     private ProgressDialog mProgressDialog;
+    private List<DocumentPage> mPages;
+    private DocumentAdapter mChildPagesAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,17 +140,14 @@ public class ViewActivity extends BaseActivity {
         mListView.setAdapter(mDocumentAdapter);
         handleListViewItemClicks();
         mProgressDialog = ProgressDialog.show(this, null, getString(R.string.please_wait));
-
         new RoboAsyncTask<Void>(this) {
 
             @Override
             public Void call() throws Exception {
 
                 mDocuments = mInquiry.getDocumentsByInquiry();
-
                 // pokud otevirame poptavku poprve, pak k ni priradime vsechny sablony
                 if (mDocuments.size() == 0) {
-
                     ViewActivityHelper.createDocuments(mDocuments, mInquiry);
                 }
                 return null;
@@ -168,6 +173,30 @@ public class ViewActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
                 mDocumentAdapter.setSelectedItemIndex(i);
+                ISidebarShowable item = mDocumentAdapter.getItem(i);
+                ViewGroup group = ((ViewGroup) ViewActivity.this.findViewById(android.R.id.content));
+                View v = group.findViewWithTag(TAG_CHILD_CONTAINER);
+                if (v != null) {
+                    group.removeView(v);
+                }
+                if (mEditMode && item.hasChildren()) {
+                    float top = view.getY();
+                    int height = view.getHeight();
+
+                    HListView hListView = new HListView(ViewActivity.this);
+                    mChildPagesAdapter = new DocumentAdapter(ViewActivity.this);
+                    mChildPagesAdapter.setEditMode(mEditMode);
+                    List<DocumentPage> pages = mPages.get(i).versions;
+                    List filteredPages = ViewActivityHelper.filterHiddenItems(pages, mEditMode);
+                    mChildPagesAdapter.addAll(filteredPages);
+                    hListView.setAdapter(mChildPagesAdapter);
+                    hListView.setLayoutParams(new LinearLayout.LayoutParams(1000, height));
+                    hListView.setBackgroundResource(R.color.app_background);
+                    hListView.setY(top);
+                    hListView.setX(getResources().getDimensionPixelSize(R.dimen.sidebar_width));
+                    hListView.setTag(TAG_CHILD_CONTAINER);
+                    group.addView(hListView);
+                }
                 setPage(i);
             }
         });
@@ -240,22 +269,27 @@ public class ViewActivity extends BaseActivity {
      */
     private void fillSideBar(final Document document) {
 
+        mStaticContainer.setVisibility(View.GONE);
         boolean setPositionToStart = !mPageViewMode;
         mPageViewMode = true;
 
         mDocumentAdapter.clear();
         mDocumentAdapter.setEditMode(mEditMode);
+        if (mChildPagesAdapter != null) {
+            mChildPagesAdapter.setEditMode(mEditMode);
+            mChildPagesAdapter.notifyDataSetChanged();
+        }
         mDocument = document;
         invalidateOptionsMenu();
 
-        List<DocumentPage> pages = document.getDocumentPagesByDocument();
-        if (pages.size() == 0) {
+        mPages = document.getDocumentPagesByDocument();
+        if (mPages.size() == 0) {
             return;
         }
 
-        List iSidebarShowAbles = ViewActivityHelper.filterHiddenItems(pages, mEditMode);
-        mDocumentAdapter.addAll(iSidebarShowAbles);
-        mVerticalDocumentPager.setData(document, (List<DocumentPage>)iSidebarShowAbles);
+        List filteredPages = ViewActivityHelper.filterHiddenItems(mPages, mEditMode);
+        mDocumentAdapter.addAll(filteredPages);
+        mVerticalDocumentPager.setData(document, (List<DocumentPage>) filteredPages);
 
         if (setPositionToStart) {
             mListView.setSelection(0);
@@ -271,7 +305,7 @@ public class ViewActivity extends BaseActivity {
         }
         if (firstShowablePage == null) {
             // zobrazim prvni zobrazitelnou stranku
-            firstShowablePage = ViewActivityHelper.getFirstShowablePage(pages);
+            firstShowablePage = ViewActivityHelper.getFirstShowablePage(mPages);
         }
         //showHtml(document, firstShowablePage);
     }
@@ -286,6 +320,7 @@ public class ViewActivity extends BaseActivity {
      */
     private void showInlineInquiryInfo() {
 
+        mStaticContainer.setVisibility(View.VISIBLE);
         if (!mInquiry.temporary) {
             if (mInfoWebView == null) {
                 mInfoWebView = new WebView(ViewActivity.this);
@@ -312,12 +347,12 @@ public class ViewActivity extends BaseActivity {
                         });
                     }
                 }
+                mStaticContainer.addView(mInfoWebView);
             }
-            //mWebViewContainer.addView(mInfoWebView);
         } else {
-            /*if (mWebViewContainer.getChildCount() == 0) {
-                getLayoutInflater().inflate(R.layout.view_splash, mWebViewContainer);
-            }*/
+            if (mStaticContainer.getChildCount() == 0) {
+                getLayoutInflater().inflate(R.layout.view_splash, mStaticContainer);
+            }
             dismissStartupDialog();
         }
     }
@@ -399,16 +434,20 @@ public class ViewActivity extends BaseActivity {
         progressDialog.setMessage(getString(R.string.please_wait));
         progressDialog.show();
         mEditMode = false;
+
+        ViewGroup group = ((ViewGroup) ViewActivity.this.findViewById(android.R.id.content));
+        View v = group.findViewWithTag(TAG_CHILD_CONTAINER);
+        if (v != null) {
+            group.removeView(v);
+        }
         mLayoutButtonsVisibility.setVisibility(View.GONE);
 
         if (mPageViewMode) {
 
             // pri prechodu z editace ulozime zmeny v aktualnim webview
             saveActualPage(mVerticalDocumentPager.getCurrentPageContainer());
-
             // disablujem vsechny editacni policka
-            disableContentEditable();
-            //mActualPage = null;
+            mVerticalDocumentPager.setEditMode(false);
         }
         mActionBar.setDisplayOptions(mActionBarDisplayOptions);
         new Handler().postDelayed(new Runnable() {
@@ -434,20 +473,6 @@ public class ViewActivity extends BaseActivity {
             ViewActivityHelper.getAndSaveTags(pageContainer.getWebView(), pageContainer.getDocumentPage());
             ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
         }
-    }
-
-    /**
-     * U vsech stranek dokumentu odebere classu pro editaci, tzn. ze disabluje
-     * editaci techto dokumentu
-     */
-    private void disableContentEditable() {
-
-        mVerticalDocumentPager.setEditMode(false);
-
-       /* for (DocumentPage page : mPageContainerMap.keySet()) {
-            PageContainer pageContainer = mPageContainerMap.get(page);
-            ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
-        }*/
     }
 
     private void refreshSideBar() {
