@@ -76,7 +76,7 @@ public class DocumentAdapter extends ArrayAdapter<ISidebarShowable> {
         textView.setText(document.getTitle());
 
         //view.findViewById(R.id.selection).setVisibility(View.VISIBLE);
-        /*view.findViewById(R.id.selectection).setVisibility(position == mSelectedItemIndex
+        /*view.findViewById(R.id.selection).setVisibility(position == mSelectedItemIndex
                 ? View.VISIBLE
                 : View.INVISIBLE);*/
 

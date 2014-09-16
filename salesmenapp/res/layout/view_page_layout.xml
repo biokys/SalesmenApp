@@ -11,10 +11,9 @@
 
     <eu.janmuller.application.salesmenapp.component.viewpager.CirclePageIndicator
         android:id="@+id/page_indicator"
-        android:layout_margin="10dp"
         android:padding="10dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"/>
 </RelativeLayout>

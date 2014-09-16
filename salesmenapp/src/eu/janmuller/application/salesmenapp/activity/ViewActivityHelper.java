@@ -180,6 +180,7 @@ public class ViewActivityHelper {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
 
         webView.addJavascriptInterface(new WebAppInterface(), "Android");
     }

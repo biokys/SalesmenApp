@@ -4,9 +4,12 @@
     <integer name="new_inquiries_update_period_in_minutes">15</integer>
 
     <dimen name="sidebar_width">222dp</dimen>
+    <dimen name="page_image_width">192dp</dimen>
+    <dimen name="page_image_height">144dp</dimen>
     <dimen name="fullscreen_sidebar_width">65dp</dimen>
 
     <color name="app_background">#3c3c3c</color>
+    <color name="app_background_light">#acacac</color>
     <color name="blue_button_normal">#4298ba</color>
     <color name="blue_button_pressed">#347F9D</color>
 
