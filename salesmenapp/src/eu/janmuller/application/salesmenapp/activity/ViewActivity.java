@@ -73,6 +73,7 @@ public class ViewActivity extends BaseActivity {
     private boolean mPageViewMode;
     private int mActionBarDisplayOptions;
     private int mCurrentNumber;
+    private int mCurrentVisibleSubPagesIndex;
     private WebView mInfoWebView;
     private DocumentAdapter mDocumentAdapter;
     private ProgressDialog mProgressDialog;
@@ -88,6 +89,7 @@ public class ViewActivity extends BaseActivity {
         // ziskam Inquiry objekt z EXTRAS
         Intent intent = getIntent();
         mInquiry = (Inquiry) intent.getSerializableExtra(INQUIRY);
+        mCurrentVisibleSubPagesIndex = -1;
 
         // configure actionbar
         mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -179,23 +181,28 @@ public class ViewActivity extends BaseActivity {
                 if (v != null) {
                     group.removeView(v);
                 }
-                if (mEditMode && item.hasChildren()) {
-                    float top = view.getY();
-                    int height = view.getHeight();
+                if (i != mCurrentVisibleSubPagesIndex) {
+                    if (mEditMode && item.hasChildren()) {
+                        float top = view.getY();
+                        int height = view.getHeight();
 
-                    HListView hListView = new HListView(ViewActivity.this);
-                    mChildPagesAdapter = new DocumentAdapter(ViewActivity.this);
-                    mChildPagesAdapter.setEditMode(mEditMode);
-                    List<DocumentPage> pages = mPages.get(i).versions;
-                    List filteredPages = ViewActivityHelper.filterHiddenItems(pages, mEditMode);
-                    mChildPagesAdapter.addAll(filteredPages);
-                    hListView.setAdapter(mChildPagesAdapter);
-                    hListView.setLayoutParams(new LinearLayout.LayoutParams(1000, height));
-                    hListView.setBackgroundResource(R.color.app_background);
-                    hListView.setY(top);
-                    hListView.setX(getResources().getDimensionPixelSize(R.dimen.sidebar_width));
-                    hListView.setTag(TAG_CHILD_CONTAINER);
-                    group.addView(hListView);
+                        HListView hListView = new HListView(ViewActivity.this);
+                        mChildPagesAdapter = new DocumentAdapter(ViewActivity.this);
+                        mChildPagesAdapter.setEditMode(mEditMode);
+                        List<DocumentPage> pages = mPages.get(i).versions;
+                        List filteredPages = ViewActivityHelper.filterHiddenItems(pages, mEditMode);
+                        mChildPagesAdapter.addAll(filteredPages);
+                        hListView.setAdapter(mChildPagesAdapter);
+                        hListView.setLayoutParams(new LinearLayout.LayoutParams(1000, height));
+                        hListView.setBackgroundResource(R.color.app_background);
+                        hListView.setY(top);
+                        hListView.setX(getResources().getDimensionPixelSize(R.dimen.sidebar_width));
+                        hListView.setTag(TAG_CHILD_CONTAINER);
+                        group.addView(hListView);
+                        mCurrentVisibleSubPagesIndex = i;
+                    }
+                } else {
+                    mCurrentVisibleSubPagesIndex = -1;
                 }
                 setPage(i);
             }
