@@ -542,23 +542,11 @@ public class ViewActivity extends BaseActivity {
         if (pageContainer != null
                 && pageContainer.getView() != null) {
             WebView webView = pageContainer.getWebView();
-            // we stay on viewpager
-            if (pageContainer.isViewPager()) {
-                MyViewPager pager = pageContainer.getViewPager();
-                // can we go back on web page?
-                if (webView.canGoBack()) {
-                    // go back
-                    webView.goBack();
-                } else {
-                    super.onBackPressed();
-                }
+            if (webView.canGoBack()) {
+                // go back
+                webView.goBack();
             } else {
-                //no we stay on webview, so just check if we can go back, otherwise finish activity
-                if (webView.canGoBack()) {
-                    webView.goBack();
-                } else {
-                    fillSideBar(mDocuments);
-                }
+                fillSideBar(mDocuments);
             }
         } else if (mEditMode) {
             switch2ViewMode();
