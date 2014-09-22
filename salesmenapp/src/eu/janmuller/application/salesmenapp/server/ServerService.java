@@ -23,6 +23,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -287,30 +288,39 @@ public class ServerService {
             sendDocument.ident = document.ident;
             sendDocument.version = document.getMajorVersion();
             List<DocumentPage> documentPages = document.getDocumentPagesByDocument(true);
-            SendDataObject.Document.Page[] pages = new SendDataObject.Document.Page[documentPages.size()];
-            int loop = 0;
+            List<SendDataObject.Document.Page> pages = new ArrayList<SendDataObject.Document.Page>();
             for (DocumentPage documentPage : documentPages) {
 
-                final SendDataObject.Document.Page page = new SendDataObject.Document.Page();
-                List<DocumentTag> documentTags = documentPage.getDocumentTagsByPage();
-                SendDataObject.Document.Page.Tag[] tags = new SendDataObject.Document.Page.Tag[documentTags.size()];
-                int tagLoop = 0;
-                for (DocumentTag documentTag : documentTags) {
-
-                    SendDataObject.Document.Page.Tag tag = new SendDataObject.Document.Page.Tag();
-                    tag.ident = documentTag.tagIdent;
-                    tag.value = documentTag.value;
-                    tags[tagLoop++] = tag;
+                if (documentPage.hasVersions()) {
+                    for (DocumentPage version : documentPage.versions) {
+                        pages.add(processPage(version));
+                    }
+                    continue;
                 }
-                page.id = documentPage.file;
-                page.tags = tags;
-                pages[loop++] = page;
+                pages.add(processPage(documentPage));
             }
-            sendDocument.pages = pages;
+            sendDocument.pages = pages.toArray(new SendDataObject.Document.Page[pages.size()]);
             sendDocuments[mainLoop++] = sendDocument;
         }
         sendDataObject.documents = sendDocuments;
         return sendDataObject;
+    }
+
+    private SendDataObject.Document.Page processPage(DocumentPage documentPage) {
+        final SendDataObject.Document.Page page = new SendDataObject.Document.Page();
+        List<DocumentTag> documentTags = documentPage.getDocumentTagsByPage();
+        SendDataObject.Document.Page.Tag[] tags = new SendDataObject.Document.Page.Tag[documentTags.size()];
+        int tagLoop = 0;
+        for (DocumentTag documentTag : documentTags) {
+
+            SendDataObject.Document.Page.Tag tag = new SendDataObject.Document.Page.Tag();
+            tag.ident = documentTag.tagIdent;
+            tag.value = documentTag.value;
+            tags[tagLoop++] = tag;
+        }
+        page.id = documentPage.file;
+        page.tags = tags;
+        return page;
     }
 
     public class ResultObject {
