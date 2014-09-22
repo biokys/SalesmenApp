@@ -445,7 +445,10 @@ public class ViewActivity extends BaseActivity {
         if (mPageViewMode) {
 
             // pri prechodu z editace ulozime zmeny v aktualnim webview
-            saveActualPage(mVerticalDocumentPager.getCurrentPageContainer());
+            PageContainer currentPageContainer = mVerticalDocumentPager.getCurrentPageContainer();
+            if (currentPageContainer.getWebView() != null) {
+                saveActualPage(currentPageContainer);
+            }
             // disablujem vsechny editacni policka
             mVerticalDocumentPager.setEditMode(false);
         }
@@ -490,7 +493,10 @@ public class ViewActivity extends BaseActivity {
                     @Override
                     public void run() {
 
-                        while (pageContainer.getWebView().zoomOut()) {
+                        WebView webView = pageContainer.getWebView();
+                        if (webView != null) {
+                            while (webView.zoomOut()) {
+                            }
                         }
                     }
                 });

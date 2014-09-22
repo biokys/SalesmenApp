@@ -62,9 +62,9 @@ android {
         signingConfigs {
             release {
                 storeFile file("../keystore")
-                storePassword "salesmenapp"
-                keyAlias "salesmenapp"
-                keyPassword "salesmenapp"
+                storePassword "salesmanapp"
+                keyAlias "salesmanapp"
+                keyPassword "salesmanapp"
             }
         }
 

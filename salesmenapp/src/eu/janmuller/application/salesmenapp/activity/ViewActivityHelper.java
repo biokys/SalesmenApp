@@ -300,7 +300,26 @@ public class ViewActivityHelper {
 
             if (!excludeHidden(item, editMode)) {
 
-                visibleItems.add(item);
+                boolean skip = false;
+                if (item instanceof DocumentPage && !editMode) {
+                    DocumentPage documentPage = (DocumentPage)item;
+                    if (documentPage.versions != null && documentPage.versions.size() > 0) {
+                        boolean noVisibleSubPage = true;
+                        for (DocumentPage version : documentPage.versions) {
+                            if (version.isVisible()) {
+                                noVisibleSubPage = false;
+                                break;
+                            }
+                        }
+                        if (noVisibleSubPage) {
+                            skip = true;
+                        }
+
+                    }
+                }
+                if (!skip) {
+                    visibleItems.add(item);
+                }
             }
         }
 
