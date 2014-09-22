@@ -550,13 +550,7 @@ public class ViewActivity extends BaseActivity {
                     // go back
                     webView.goBack();
                 } else {
-                    // already on the first item, back to inquiries!
-                    if (pager.getCurrentItem() == 0) {
-                        super.onBackPressed();
-                    } else {
-                        // go to first item
-                        pager.setCurrentItem(0);
-                    }
+                    super.onBackPressed();
                 }
             } else {
                 //no we stay on webview, so just check if we can go back, otherwise finish activity
