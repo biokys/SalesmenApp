@@ -118,6 +118,7 @@ public class ViewActivity extends BaseActivity {
         mVerticalDocumentPager.setVerticalDocumentPagerCallback(new VerticalDocumentPager.VerticalDocumentPagerCallback() {
             @Override
             public void onPageChanged(int index, DocumentPage documentPage) {
+                mCurrentNumber = index;
                 mListView.smoothScrollToPosition(index);
                 mDocumentAdapter.setSelectedItemIndex(index);
             }
@@ -301,20 +302,14 @@ public class ViewActivity extends BaseActivity {
         if (setPositionToStart) {
             mListView.setSelection(0);
         }
-
-        DocumentPage firstShowablePage = null;
         PageContainer pageContainer = mVerticalDocumentPager.getCurrentPageContainer();
         if (pageContainer != null) {
             DocumentPage documentPage = pageContainer.getDocumentPage();
             if (documentPage != null && documentPage.show) {
-                firstShowablePage = documentPage;
+                mVerticalDocumentPager.setCurrentPage(mCurrentNumber);
+                mListView.setSelection(mCurrentNumber);
             }
         }
-        if (firstShowablePage == null) {
-            // zobrazim prvni zobrazitelnou stranku
-            firstShowablePage = ViewActivityHelper.getFirstShowablePage(mPages);
-        }
-        //showHtml(document, firstShowablePage);
     }
 
     /**
