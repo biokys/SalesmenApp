@@ -19,7 +19,6 @@ import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
-import eu.janmuller.application.salesmenapp.component.viewpager.MyViewPager;
 import eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import it.sephiroth.android.library.widget.HListView;
@@ -73,6 +72,7 @@ public class ViewActivity extends BaseActivity {
     private boolean mPageViewMode;
     private int mActionBarDisplayOptions;
     private int mCurrentNumber;
+    private int mCurrentVersionPageNumber;
     private int mCurrentVisibleSubPagesIndex;
     private WebView mInfoWebView;
     private DocumentAdapter mDocumentAdapter;
@@ -90,6 +90,7 @@ public class ViewActivity extends BaseActivity {
         Intent intent = getIntent();
         mInquiry = (Inquiry) intent.getSerializableExtra(INQUIRY);
         mCurrentVisibleSubPagesIndex = -1;
+        mCurrentVersionPageNumber = -1;
 
         // configure actionbar
         mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -281,6 +282,14 @@ public class ViewActivity extends BaseActivity {
         boolean setPositionToStart = !mPageViewMode;
         mPageViewMode = true;
 
+        PageContainer pageContainer = mVerticalDocumentPager.getCurrentPageContainer();
+        // if we are switching to edit mode and current page is a version, take current version page number
+        if (pageContainer != null && pageContainer.getViewPager() != null) {
+            mCurrentVersionPageNumber = pageContainer.getViewPager().getCurrentItem();
+        } else {
+            mCurrentVersionPageNumber = -1;
+        }
+
         mDocumentAdapter.clear();
         mDocumentAdapter.setEditMode(mEditMode);
         if (mChildPagesAdapter != null) {
@@ -297,12 +306,16 @@ public class ViewActivity extends BaseActivity {
 
         List filteredPages = ViewActivityHelper.filterHiddenItems(mPages, mEditMode);
         mDocumentAdapter.addAll(filteredPages);
-        mVerticalDocumentPager.setData(document, (List<DocumentPage>) filteredPages);
+        int[] versionPage = null;
+        if (mCurrentVersionPageNumber != -1) {
+            versionPage = new int[] {mCurrentNumber, mCurrentVersionPageNumber};
+        }
+        mVerticalDocumentPager.setData(document, (List<DocumentPage>) filteredPages, versionPage);
 
         if (setPositionToStart) {
             mListView.setSelection(0);
         }
-        PageContainer pageContainer = mVerticalDocumentPager.getCurrentPageContainer();
+        pageContainer = mVerticalDocumentPager.getCurrentPageContainer();
         if (pageContainer != null) {
             DocumentPage documentPage = pageContainer.getDocumentPage();
             if (documentPage != null && documentPage.show) {

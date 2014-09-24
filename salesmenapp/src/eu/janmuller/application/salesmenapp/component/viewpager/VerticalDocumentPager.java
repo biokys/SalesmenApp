@@ -38,8 +38,21 @@ public class VerticalDocumentPager extends VerticalViewPager {
     }
 
     public void setData(Document document, List<DocumentPage> documentPages) {
+        setData(document, documentPages, null);
+    }
+
+    /**
+     * Set the data for view pager.
+     *
+     * @param document The document.
+     * @param documentPages The documentPages.
+     * @param versionPageIndex2show The two item array, containing document page as first item,
+     *                              where should be applied page version set. The second item contains index of
+     *                              version page.
+     */
+    public void setData(Document document, List<DocumentPage> documentPages, int[] versionPageIndex2show) {
         mDocument = document;
-        mVerticalPagerAdapter.setData(document, documentPages);
+        mVerticalPagerAdapter.setData(document, documentPages, versionPageIndex2show);
         mCurrentPosition = 0;
         setAdapter(mVerticalPagerAdapter);
     }
