@@ -291,7 +291,7 @@ public class ServerService {
 
             SendDataObject.Document sendDocument = new SendDataObject.Document();
             sendDocument.ident = document.ident;
-            sendDocument.version = document.getMajorVersion();
+            sendDocument.version = document.version;
             List<DocumentPage> documentPages = document.getDocumentPagesByDocument(true);
             List<SendDataObject.Document.Page> pages = new ArrayList<SendDataObject.Document.Page>();
             for (DocumentPage documentPage : documentPages) {

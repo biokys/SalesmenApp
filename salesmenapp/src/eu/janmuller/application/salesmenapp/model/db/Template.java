@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
+import roboguice.util.Ln;
 
 import java.util.List;
 
@@ -49,9 +50,9 @@ public class Template extends BaseDateModel<Template> {
     /**
      * Version number consists of major number and minor number, eg. 2.4
      */
-    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @GenericModel.DataType(type = DataTypeEnum.FLOAT)
     @SerializedName("Version")
-    public String version;
+    public float version;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Published")
@@ -132,17 +133,20 @@ public class Template extends BaseDateModel<Template> {
         super.delete();
     }
 
+    /**
+     * Remove all the templates given by list.
+     * @param templates The list of templates.
+     */
+    public static void removeTemplates(List<Template> templates) {
+        for (Template template : templates) {
+            Ln.i("Removing old template id %s", template.ident);
+            template.deleteCompleteTemplate();
+        }
+    }
+
     public List<TemplatePage> getTemplatePagesByTemplate() {
 
         return TemplatePage.getByQuery(TemplatePage.class, "templateId=" + this.id.getId());
-    }
-
-    public int getMajorVersion() {
-        return Integer.parseInt(version.split("\\.")[0]);
-    }
-
-    public int getMinorVersion() {
-        return Integer.parseInt(version.split("\\.")[1]);
     }
 
     @Override
@@ -153,9 +157,7 @@ public class Template extends BaseDateModel<Template> {
 
         Template template = (Template) o;
 
-        if (template.getMajorVersion() != getMajorVersion()) {
-            return false;
-        }
+        if (Float.compare(template.version, version) != 0) return false;
         if (!ident.equals(template.ident)) return false;
 
         return true;
@@ -165,7 +167,7 @@ public class Template extends BaseDateModel<Template> {
     public int hashCode() {
 
         int result = ident.hashCode();
-        result = 31 * result + (getMajorVersion() != 0 ? getMajorVersion() : 0);
+        result = 31 * result + (version != +0.0f ? Float.floatToIntBits(version) : 0);
         return result;
     }
 

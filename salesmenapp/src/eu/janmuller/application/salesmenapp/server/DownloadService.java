@@ -170,25 +170,20 @@ public class DownloadService {
     private Template[] getOnlyNewTemplates(Template[] templates) {
 
         List<Template> templatesInDb = Template.getAllObjects(Template.class);
+        List<Template> templatesToDelete = new ArrayList<Template>(templatesInDb);
         List<Template> list = new ArrayList<Template>();
         boolean skip;
         for (Template template : templates) {
+            // find and remove template from list used for deleting unused templates
+            templatesToDelete.remove(template);
             skip = false;
             for (Template templateInDb : templatesInDb) {
                 if (templateInDb.ident.equals(template.ident)) {
-                    // we have the same id already on the device, so we should decide whether to skip saving, or to
-                    // upgrade minor or major version
 
                     // versions are same, so skip saving
-                    if (template.version.equals(templateInDb.version)) {
+                    if (template.version == templateInDb.version) {
                         skip = true;
                     }
-
-                    /*} else if (template.getMajorVersion() > templateInDb.getMajorVersion()) {
-                        moveToNextMajorVersion();
-                    } else if (template.getMinorVersion() > templateInDb.getMinorVersion()) {
-                        moveToNextMinorVersion();
-                    }*/
                 }
             }
             if (skip) {
@@ -196,8 +191,8 @@ public class DownloadService {
             }
             Ln.i("Adding new template %s [version %s]", template.ident, template.version);
             list.add(template);
-
         }
+        Template.removeTemplates(templatesToDelete);
         return list.toArray(new Template[list.size()]);
     }
 
