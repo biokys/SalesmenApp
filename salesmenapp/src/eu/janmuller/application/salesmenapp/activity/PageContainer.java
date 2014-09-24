@@ -19,7 +19,7 @@ public class PageContainer {
     }
 
     public boolean isViewPager() {
-        return documentPage.hasVersions();
+        return documentPage.hasChildren();
     }
 
     public ViewGroup getView() {
@@ -32,7 +32,7 @@ public class PageContainer {
 
     public MyViewPager getViewPager() {
 
-        if (documentPage.hasVersions()) {
+        if (documentPage.hasChildren()) {
             return (MyViewPager) viewGroup.findViewById(R.id.horizontal_view_pager);
         }
         return null;
@@ -40,7 +40,7 @@ public class PageContainer {
 
     public WebView getWebView() {
 
-        if (documentPage.hasVersions()) {
+        if (documentPage.hasChildren()) {
             MyViewPager myViewPager = (MyViewPager) viewGroup.findViewById(R.id.horizontal_view_pager);
             return myViewPager.getCurrentWebView();
         } else {

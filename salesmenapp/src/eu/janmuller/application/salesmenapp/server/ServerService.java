@@ -4,19 +4,23 @@ import android.content.Context;
 import android.os.Handler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import eu.janmuller.android.dao.api.UUIDId;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.activity.ViewActivityHelper;
 import eu.janmuller.application.salesmenapp.model.db.*;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+
 import roboguice.util.Ln;
 
 import java.io.*;
@@ -189,6 +193,7 @@ public class ServerService {
     /**
      * Metoda natahne frontu neodeslanych zprav z DB, vsechny postupne odesle. Pri kazdem odeslani zpravy se smaze
      * zprava z fronty
+     *
      * @throws ConnectionException
      */
     public int sendFromSendQueue() throws ConnectionException {
@@ -291,13 +296,15 @@ public class ServerService {
             List<SendDataObject.Document.Page> pages = new ArrayList<SendDataObject.Document.Page>();
             for (DocumentPage documentPage : documentPages) {
 
-                if (documentPage.hasVersions()) {
+                if (documentPage.hasChildren()) {
                     for (DocumentPage version : documentPage.versions) {
                         pages.add(processPage(version));
                     }
-                    continue;
+                } else {
+                    if (documentPage.type.equals(Page.PAGE_TYPE_SLIDE)) {
+                        pages.add(processPage(documentPage));
+                    }
                 }
-                pages.add(processPage(documentPage));
             }
             sendDocument.pages = pages.toArray(new SendDataObject.Document.Page[pages.size()]);
             sendDocuments[mainLoop++] = sendDocument;
