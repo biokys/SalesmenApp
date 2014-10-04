@@ -223,33 +223,8 @@ public class ViewActivity extends BaseActivity {
         mCurrentNumber = position;
         ISidebarShowable item = mDocumentAdapter.getItem(position);
         if (mPageViewMode) {
-
             mVerticalDocumentPager.setCurrentPage(position);
-            /*WebView lastWebView = mActualPage.getWebView();
-
-            if (mEditMode) {
-
-                saveActualPage(mActualPage);
-            }
-            // zobrazime novou stranku
-            //showHtml(item.getDocument(), (DocumentPage) item);
-
-            // zoom-outujem aktualni webview na defaultni zoom
-            final WebView _webview = lastWebView;
-            mHandler.post(new Runnable() {
-
-                @Override
-                public void run() {
-
-                    if (_webview != null) {
-                        while (_webview.zoomOut()) {
-                        }
-                    }
-                }
-            });*/
-
         } else {
-
             fillSideBar(item.getDocument());
         }
     }
