@@ -1,64 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@color/app_background">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/app_background"
+            android:orientation="vertical">
 
     <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:background="@android:color/white"
+            android:orientation="vertical"
             android:padding="20dp">
 
-        <EditText
+            <EditText
+                android:id="@+id/email"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:hint="Komu"
-                android:id="@+id/email"
-                android:textSize="18sp"
+                android:layout_marginTop="10dp"
+                android:hint="@string/send_email_to"
                 android:inputType="textEmailAddress"
-                android:layout_marginTop="10dp"/>
+                android:textSize="18sp"/>
 
-        <EditText
+            <EditText
                 android:id="@+id/subject"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:hint="Předmět"
+                android:layout_marginTop="20dp"
+                android:hint="@string/send_email_subject"
                 android:inputType="textEmailSubject"
-                android:textSize="18sp"
-                android:layout_marginTop="20dp"/>
+                android:textSize="18sp"/>
 
-        <EditText
+            <EditText
                 android:id="@+id/body"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:gravity="left|top"
-                android:minHeight="80dp"
-                android:hint="Vzkaz pro příjemce"
-                android:textSize="18sp"
-                android:minLines="3"
+                android:hint="@string/send_email_body"
                 android:lines="3"
                 android:maxLines="5"
+                android:minHeight="80dp"
+                android:minLines="3"
                 android:singleLine="false"
-                android:layout_marginTop="20dp"/>
-    </LinearLayout>
+                android:textSize="18sp"/>
+        </LinearLayout>
 
-    <View
+        <View
             android:layout_width="fill_parent"
             android:layout_height="3dp"
             android:background="#999"/>
 
-    <GridView
+        <GridView
+            android:id="@+id/grid"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:columnWidth="@dimen/sidebar_width"
-            android:numColumns="auto_fit"
-            android:verticalSpacing="10dp"
-            android:horizontalSpacing="10dp"
-            android:stretchMode="columnWidth"
             android:gravity="center"
-            android:id="@+id/grid"/>
-</LinearLayout>
+            android:horizontalSpacing="10dp"
+            android:numColumns="auto_fit"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="10dp"/>
+    </LinearLayout>
+</ScrollView>

@@ -22,6 +22,7 @@ public class VerticalDocumentPager extends VerticalViewPager {
     private VerticalPagerAdapter mVerticalPagerAdapter;
     private VerticalDocumentPagerCallback mVerticalDocumentPagerCallback;
     private int mCurrentPosition;
+    private int[] mVersionPageIndex2show;
 
     public VerticalDocumentPager(Context context) {
         super(context);
@@ -52,6 +53,7 @@ public class VerticalDocumentPager extends VerticalViewPager {
      */
     public void setData(Document document, List<DocumentPage> documentPages, int[] versionPageIndex2show) {
         mDocument = document;
+        mVersionPageIndex2show = versionPageIndex2show;
         mVerticalPagerAdapter.setData(document, documentPages, versionPageIndex2show);
         mCurrentPosition = 0;
         setAdapter(mVerticalPagerAdapter);
@@ -93,9 +95,11 @@ public class VerticalDocumentPager extends VerticalViewPager {
             @Override
             public void onPageSelected(int position) {
                 mCurrentPosition = position;
-                MyViewPager viewPager = getCurrentPageContainer().getViewPager();
-                if (viewPager != null) {
-                    viewPager.setCurrentItem(0, false);
+                if (mVersionPageIndex2show == null) {
+                    MyViewPager viewPager = getCurrentPageContainer().getViewPager();
+                    if (viewPager != null) {
+                        viewPager.setCurrentItem(0, false);
+                    }
                 }
             }
 
@@ -106,6 +110,7 @@ public class VerticalDocumentPager extends VerticalViewPager {
                         verticalDocumentPagerCallback.onPageChanged(mCurrentPosition,
                                 mVerticalPagerAdapter.getPageContainerByIndex(mCurrentPosition).getDocumentPage());
                     }
+                    mVersionPageIndex2show = null;
                 }
             }
         });

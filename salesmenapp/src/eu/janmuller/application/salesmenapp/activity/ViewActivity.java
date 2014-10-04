@@ -122,6 +122,7 @@ public class ViewActivity extends BaseActivity {
                 mCurrentNumber = index;
                 mListView.smoothScrollToPosition(index);
                 mDocumentAdapter.setSelectedItemIndex(index);
+                mCurrentVersionPageNumber = -1;
             }
         });
         setUp();

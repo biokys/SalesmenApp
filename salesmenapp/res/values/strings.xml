@@ -21,6 +21,9 @@
     <string name="no_downloaded_templates">Aplikace nemůže pracovat bez stažených šablon</string>
     <string name="device_id">Id zařízení</string>
     <string name="please_wait">Prosím čekejte…</string>
+    <string name="send_email_to">Komu</string>
+    <string name="send_email_subject">Předmět</string>
+    <string name="send_email_body">Vzkaz pro příjemce</string>
 
     <plurals name="new_inquiries_count">
         <item quantity="zero">Žádná nová poptávka</item>
