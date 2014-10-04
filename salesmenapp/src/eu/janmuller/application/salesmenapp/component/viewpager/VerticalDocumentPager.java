@@ -95,7 +95,7 @@ public class VerticalDocumentPager extends VerticalViewPager {
             @Override
             public void onPageSelected(int position) {
                 mCurrentPosition = position;
-                if (mVersionPageIndex2show == null) {
+                if (mVersionPageIndex2show == null && getCurrentPageContainer() != null) {
                     MyViewPager viewPager = getCurrentPageContainer().getViewPager();
                     if (viewPager != null) {
                         viewPager.setCurrentItem(0, false);

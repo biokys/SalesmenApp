@@ -3,7 +3,6 @@ package eu.janmuller.application.salesmenapp.activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -14,7 +13,7 @@ import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
-import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowAble;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import org.apache.commons.lang3.StringEscapeUtils;
 import roboguice.util.Ln;
@@ -206,7 +205,7 @@ public class ViewActivityHelper {
     }
 
     public static void manageVisibility(boolean editMode, View view, ImageView imageView,
-                                 final ISidebarShowable document, final IVisibilityChangeCallback callback) {
+                                 final ISidebarShowAble document, final IVisibilityChangeCallback callback) {
 
         ImageView deleteView = (ImageView) view.findViewById(R.id.delete);
         deleteView.setOnClickListener(new View.OnClickListener() {
@@ -239,17 +238,17 @@ public class ViewActivityHelper {
         }
     }
 
-    public static void hideDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
+    public static void hideDocument(ISidebarShowAble document, IVisibilityChangeCallback callback) {
 
         changeDocumentVisibility(document, false, callback);
     }
 
-    public static void showDocument(ISidebarShowable document, IVisibilityChangeCallback callback) {
+    public static void showDocument(ISidebarShowAble document, IVisibilityChangeCallback callback) {
 
         changeDocumentVisibility(document, true, callback);
     }
 
-    private static void changeDocumentVisibility(ISidebarShowable document, boolean show, IVisibilityChangeCallback callback) {
+    private static void changeDocumentVisibility(ISidebarShowAble document, boolean show, IVisibilityChangeCallback callback) {
 
         document.setVisibility(show);
         if (document instanceof BaseDateModel) {
@@ -295,8 +294,8 @@ public class ViewActivityHelper {
      */
     static List filterHiddenItems(List items, boolean editMode) {
 
-        List<ISidebarShowable> visibleItems = new ArrayList<ISidebarShowable>();
-        for (ISidebarShowable item : (List<ISidebarShowable>) items) {
+        List<ISidebarShowAble> visibleItems = new ArrayList<ISidebarShowAble>();
+        for (ISidebarShowAble item : (List<ISidebarShowAble>) items) {
 
             if (!excludeHidden(item, editMode)) {
 
@@ -355,7 +354,7 @@ public class ViewActivityHelper {
      * @param editMode rezim zobrazeni (normal/edit)
      * @return true pokud se polozka nema zobrazit
      */
-    private static boolean excludeHidden(ISidebarShowable hideAble, boolean editMode) {
+    private static boolean excludeHidden(ISidebarShowAble hideAble, boolean editMode) {
 
         return !hideAble.isVisible() && !editMode;
     }

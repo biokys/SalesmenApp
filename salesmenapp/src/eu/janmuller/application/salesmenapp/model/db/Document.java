@@ -5,12 +5,10 @@ import android.util.LongSparseArray;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
-import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowAble;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Konkretni dokument, ktery vznika vytvorenim (kopie) sablony
@@ -24,7 +22,7 @@ import java.util.Map;
  */
 @GenericModel.TableName(name = "documents")
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-final public class Document extends Template implements ISidebarShowable {
+final public class Document extends Template implements ISidebarShowAble {
 
     @GenericModel.ForeignKey(attributeClass = Inquiry.class)
     public Id inquiryId;

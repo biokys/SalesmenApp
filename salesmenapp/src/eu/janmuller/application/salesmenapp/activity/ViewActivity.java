@@ -18,7 +18,7 @@ import android.widget.ListView;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
-import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowAble;
 import eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import it.sephiroth.android.library.widget.HListView;
@@ -121,7 +121,6 @@ public class ViewActivity extends BaseActivity {
             public void onPageChanged(int index, DocumentPage documentPage) {
                 mCurrentNumber = index;
                 mListView.smoothScrollToPosition(index);
-                mDocumentAdapter.setSelectedItemIndex(index);
                 mCurrentVersionPageNumber = -1;
             }
         });
@@ -177,8 +176,7 @@ public class ViewActivity extends BaseActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                mDocumentAdapter.setSelectedItemIndex(i);
-                ISidebarShowable item = mDocumentAdapter.getItem(i);
+                ISidebarShowAble item = mDocumentAdapter.getItem(i);
                 ViewGroup group = ((ViewGroup) ViewActivity.this.findViewById(android.R.id.content));
                 View v = group.findViewWithTag(TAG_CHILD_CONTAINER);
                 if (v != null) {
@@ -189,6 +187,7 @@ public class ViewActivity extends BaseActivity {
                         float top = view.getY();
                         int height = view.getHeight();
 
+                        int buttonBarHeight = mLayoutButtonsVisibility.getHeight();
                         HListView hListView = new HListView(ViewActivity.this);
                         mChildPagesAdapter = new DocumentAdapter(ViewActivity.this);
                         mChildPagesAdapter.setEditMode(mEditMode);
@@ -198,7 +197,7 @@ public class ViewActivity extends BaseActivity {
                         hListView.setAdapter(mChildPagesAdapter);
                         hListView.setLayoutParams(new LinearLayout.LayoutParams(1000, height));
                         hListView.setBackgroundResource(R.color.app_background);
-                        hListView.setY(top);
+                        hListView.setY(top + buttonBarHeight);
                         hListView.setX(getResources().getDimensionPixelSize(R.dimen.sidebar_width));
                         hListView.setTag(TAG_CHILD_CONTAINER);
                         group.addView(hListView);
@@ -222,7 +221,7 @@ public class ViewActivity extends BaseActivity {
     private void setPage(int position) {
 
         mCurrentNumber = position;
-        ISidebarShowable item = mDocumentAdapter.getItem(position);
+        ISidebarShowAble item = mDocumentAdapter.getItem(position);
         if (mPageViewMode) {
             mVerticalDocumentPager.setCurrentPage(position);
         } else {

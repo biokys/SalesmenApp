@@ -3,7 +3,7 @@ package eu.janmuller.application.salesmenapp.model.db;
 import eu.janmuller.android.dao.api.GenericModel;
 import eu.janmuller.android.dao.api.Id;
 import eu.janmuller.android.dao.exceptions.DaoConstraintException;
-import eu.janmuller.application.salesmenapp.adapter.ISidebarShowable;
+import eu.janmuller.application.salesmenapp.adapter.ISidebarShowAble;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  */
 @GenericModel.TableName(name = "document_pages")
 @GenericModel.IdType(type = GenericModel.IdTypeEnum.LONG)
-final public class DocumentPage extends Page<DocumentPage> implements ISidebarShowable {
+final public class DocumentPage extends Page<DocumentPage> implements ISidebarShowAble {
 
     @ForeignKey(attributeClass = Document.class)
     public Id documentId;

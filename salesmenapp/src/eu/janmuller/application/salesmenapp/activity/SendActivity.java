@@ -6,14 +6,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -32,7 +30,6 @@ import roboguice.util.Ln;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -55,11 +52,16 @@ public class SendActivity extends BaseActivity {
     @InjectView(R.id.grid)
     private GridView mGridLayout;
 
+    @InjectView(R.id.button_hide_all)
+    private Button mButtonHideAll;
+
     @Inject
     private ServerService mServerService;
 
     private List<Document> mDocuments;
     private Inquiry        mInquiry;
+    private DocumentAdapter mDocumentAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,26 +78,32 @@ public class SendActivity extends BaseActivity {
             finish();
             return;
         }
-
         if (mInquiry.mail != null) {
-
             mEmailAddress.setText(mInquiry.mail);
         }
         if (mInquiry.company != null) {
-
             setSubject(mInquiry);
         }
         mDocuments = mInquiry.getDocumentsByInquiry();
-
-        DocumentAdapter documentAdapter = new DocumentAdapter(this);
-        documentAdapter.setEditMode(true);
-        mGridLayout.setAdapter(documentAdapter);
-        documentAdapter.addAll(mDocuments);
+        mDocumentAdapter = new DocumentAdapter(this);
+        mDocumentAdapter.setEditMode(true);
+        mGridLayout.setAdapter(mDocumentAdapter);
+        mDocumentAdapter.addAll(mDocuments);
         lookForPostponedMessage();
+
+        mButtonHideAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideAll();
+            }
+        });
+    }
+
+    private void hideAll() {
+        mDocumentAdapter.setAllObjectsVisibility(false);
     }
 
     private void setSubject(Inquiry inquiry) {
-
         mSubject.setText(String.format("Nabídka %s pro %s", getString(R.string.app_name), inquiry.company));
     }
 
@@ -203,8 +211,6 @@ public class SendActivity extends BaseActivity {
         builder.create().show();
     }
 
-    int mCounter = 0;
-
     private void send(final Inquiry inquiry,
                       final String email,
                       final String subject,
@@ -213,34 +219,6 @@ public class SendActivity extends BaseActivity {
                       final ISendMessageCallback sendMessageCallback) {
 
         final ProgressDialog progressDialog = ProgressDialog.show(this, null, getString(R.string.sending));
-
-        /*final Semaphore semaphore = new Semaphore(1);
-
-        if (object instanceof List) {
-            for (Document document : (List<Document>) object) {
-                for (final DocumentPage documentPage : document.getDocumentPagesByDocument(true)) {
-
-                    WebView webView = new WebView(this);
-                    ViewActivityHelper.configureWebView(webView);
-                    Helper.showHtml(webView, document, documentPage, new WebViewClient() {
-
-                        @Override
-                        public void onPageFinished(WebView view, String url) {
-
-                            ViewActivityHelper.getAndSaveTags(view, documentPage);
-                            //semaphore.release();
-                            //modifyHtml(view, page);
-                        }
-                    });
-                    *//*try {
-                        semaphore.acquire();
-                    } catch (InterruptedException e) {
-                        Ln.e(e);
-                    }*//*
-                }
-            }
-        }*/
-
         final Handler handler = new Handler();
         new Thread() {
 

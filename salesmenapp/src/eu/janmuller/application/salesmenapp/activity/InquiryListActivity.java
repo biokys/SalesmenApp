@@ -211,14 +211,6 @@ public class InquiryListActivity extends BaseActivity {
 
                 progressDialog.dismiss();
                 fillInquiriesTable();
-                /*InquiryActivityHelper.resendMessages(mServerService, new InquiryActivityHelper.IResendMessageCallback() {
-                    @Override
-                    public void onMesagesSent(int count) {
-
-                        Toast.makeText(InquiryListActivity.this, "Počet odeslaných zpráv: " + count, Toast.LENGTH_SHORT).show();
-                        fillInquiriesTable();
-                    }
-                });*/
             }
         }, true);
     }

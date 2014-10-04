@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:baselineAligned="false">
+              android:layout_height="70dp">
 
     <View
             android:layout_width="5dp"
-            android:layout_height="fill_parent"
+            android:layout_height="match_parent"
             android:background="@color/blue_button_normal"
             android:visibility="invisible"
             android:id="@+id/new_item_stripe"/>
@@ -17,7 +15,7 @@
             android:id="@+id/left_row"
             android:layout_width="fill_parent"
             android:layout_weight="1"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="horizontal">
 
         <LinearLayout
@@ -62,12 +60,12 @@
     <LinearLayout
             android:id="@+id/right_row"
             android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
+            android:layout_height="70dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
         <View
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:layout_width="1px"
                 android:background="#ddd"/>
 
@@ -77,8 +75,8 @@
                 android:id="@+id/close"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:textColor="@color/blue_button_normal"
                 android:textSize="20sp"
                 android:focusable="false"

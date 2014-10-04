@@ -9,7 +9,7 @@ import eu.janmuller.application.salesmenapp.model.db.Document;
  * Date: 05.12.13
  * Time: 15:22
  */
-public interface ISidebarShowable {
+public interface ISidebarShowAble {
 
     public String getTitle();
 

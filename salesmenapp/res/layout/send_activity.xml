@@ -22,7 +22,7 @@
                 android:id="@+id/email"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="8dp"
                 android:hint="@string/send_email_to"
                 android:inputType="textEmailAddress"
                 android:textSize="18sp"/>
@@ -31,7 +31,7 @@
                 android:id="@+id/subject"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="8dp"
                 android:hint="@string/send_email_subject"
                 android:inputType="textEmailSubject"
                 android:textSize="18sp"/>
@@ -40,7 +40,7 @@
                 android:id="@+id/body"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="8dp"
                 android:gravity="left|top"
                 android:hint="@string/send_email_body"
                 android:lines="3"
@@ -55,6 +55,13 @@
             android:layout_width="fill_parent"
             android:layout_height="3dp"
             android:background="#999"/>
+
+        <Button
+            android:layout_margin="5dp"
+            android:id="@+id/button_hide_all"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/hide_all"/>
 
         <GridView
             android:id="@+id/grid"
