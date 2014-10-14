@@ -1,9 +1,6 @@
 package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
-import android.os.Handler;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
@@ -12,10 +9,8 @@ import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import eu.janmuller.android.dao.api.UUIDId;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
-import eu.janmuller.application.salesmenapp.activity.ViewActivityHelper;
 import eu.janmuller.application.salesmenapp.model.db.*;
 
 import org.apache.http.NameValuePair;
@@ -27,9 +22,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -363,7 +356,7 @@ public class ServerService {
             public String ident;
 
             @SerializedName("version")
-            public double version;
+            public String version;
 
             @SerializedName("pages")
             public Page[] pages;

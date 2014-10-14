@@ -40,9 +40,14 @@ public class Helper {
      */
     public static File getTemplateFolderAsFile(Template template) {
 
-        String dir = template.ident + "_" + template.version;
-        String completePath = Application.getVendorAsString() + File.separator + dir;
+        String completePath = Application.getVendorAsString() + File.separator + template.getIdentForFolderName();
         return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), completePath);
+    }
+
+    public static File[] getTemplatesFolders() {
+        File rootFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                Application.getVendorAsString());
+        return rootFolder.listFiles();
     }
 
     /**

@@ -37,6 +37,9 @@ public class ViewActivityHelper {
 
     public static final Pattern TAG_REPLACE_REGEX = Pattern.compile("\\{\\{(\\w+)\\}\\}");
 
+
+    private static void filterOutOldMinorVersions(List<Template> templates) {
+    }
     /**
      * Vytvori dokumenty k poptavce ze vsech dostupnych sablon
      * Zmeni stav poptavky na Otevrenou
@@ -47,8 +50,8 @@ public class ViewActivityHelper {
     static void createDocuments(List<Document> documents, Inquiry inquiry) {
 
         List<Template> templates = Template.getByQuery(Template.class, "type='Doc'");
+        filterOutOldMinorVersions(templates);
         try {
-
             Map<Long, Long> bindMap = new HashMap<Long, Long>();
             GenericModel.beginTx();
             for (Template template : templates) {
@@ -124,18 +127,20 @@ public class ViewActivityHelper {
             // odfiltrujeme {{ a }}
             textToReplace = textToReplace.substring(2);
             textToReplace = textToReplace.substring(0, textToReplace.length() - 2);
-
+            String result = null;
             try {
-
                 // vymenime tag za skutecnou hodnotu z instance objektu Inquiry
-                textToReplace = getValueByAttributeName(inquiry, textToReplace);
+                result = getValueByAttributeName(inquiry, textToReplace);
+                if (result == null) {
+                    result = getValueFromCustomParams(inquiry, textToReplace);
+                }
             } catch (Exception e) {
 
                 Ln.e(e, "text: " + textToReplace);
             }
-            if (textToReplace != null) {
+            if (result != null) {
 
-                matcher.appendReplacement(stringBuffer, textToReplace);
+                matcher.appendReplacement(stringBuffer, result);
             }
         }
         matcher.appendTail(stringBuffer);
@@ -166,6 +171,23 @@ public class ViewActivityHelper {
             }
         }
 
+        return null;
+    }
+
+    private static String getValueFromCustomParams(Inquiry inquiry, String name) {
+        if (name == null || inquiry == null) {
+            return null;
+        }
+        for (CustomParam customParam : CustomParam.getByQuery(CustomParam.class, "inquiryId=" + inquiry.id.getId())) {
+            String key = customParam.key;
+            if (key == null) {
+                continue;
+            }
+            if (key.toLowerCase().equals(name.toLowerCase())) {
+                Ln.d("Using custom param %s : %s", key, customParam.value);
+                return customParam.value;
+            }
+        }
         return "";
     }
 

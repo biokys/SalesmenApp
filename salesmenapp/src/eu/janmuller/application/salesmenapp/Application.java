@@ -33,6 +33,7 @@ public class Application extends android.app.Application {
         SimpleDroidDao.registerModelClass(Document.class);
         SimpleDroidDao.registerModelClass(SendQueue.class);
         SimpleDroidDao.registerModelClass(FollowUpQueue.class);
+        SimpleDroidDao.registerModelClass(CustomParam.class);
         SimpleDroidDao.initialize(this, APP_DB, VERSION, new SimpleDroidDao.IUpgradeHandler() {
 
             @Override

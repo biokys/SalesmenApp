@@ -1,6 +1,7 @@
 package eu.janmuller.application.salesmenapp.server;
 
 import android.content.Context;
+
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -11,8 +12,9 @@ import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.model.InquiriesEnvelope;
 import eu.janmuller.application.salesmenapp.model.TemplatesEnvelope;
+import eu.janmuller.application.salesmenapp.model.db.CustomParam;
+import eu.janmuller.application.salesmenapp.model.db.Document;
 import eu.janmuller.application.salesmenapp.model.db.Inquiry;
-import eu.janmuller.application.salesmenapp.model.db.Page;
 import eu.janmuller.application.salesmenapp.model.db.Template;
 import eu.janmuller.application.salesmenapp.model.db.TemplatePage;
 import eu.janmuller.application.salesmenapp.model.db.TemplateTag;
@@ -25,7 +27,7 @@ import java.util.*;
 
 /**
  * Handles templates and inquires downloads.
- *
+ * <p/>
  * Coder: Jan Müller
  * Date: 19.10.13
  * Time: 16:51
@@ -40,9 +42,9 @@ public class DownloadService {
     public static final String INQUIRIES_JSON = "inquiries.json";
 
     private Context mContext;
-    private String  mHtmlWithJs;
-    private String  mTemplateJsonUrl;
-    private String  mInquiriesJsonUrl;
+    private String mHtmlWithJs;
+    private String mTemplateJsonUrl;
+    private String mInquiriesJsonUrl;
 
     @Inject
     public DownloadService(Context context) {
@@ -53,10 +55,10 @@ public class DownloadService {
     }
 
     /**
-     * 1. Stahne JSON data sablon ze serveru
-     * 2. Metadata ulozi do DB
+     * 1. Downloads JSON describing templates.
+     * 2. Save metadata to db.
      *
-     * @return velikost vsech sablon
+     * @return Array of all templates metadata.
      */
     public Template[] downloadTemplatesJson(DownloadData.IProgressCallback callback) throws IOException {
 
@@ -67,26 +69,41 @@ public class DownloadService {
         TemplatesEnvelope root = downloadTemplatesJson();
         callback.onProgressUpdate(TEMPLATES_JSON, 100, 100);
         Template[] templates = root.templates;
-        return getOnlyNewTemplates(templates);
+        return processDownloadedTemplates(templates);//getOnlyNewTemplates(templates);
     }
 
     /**
-     * 1. Stahne data pro zobrazeni HTML (html, css, obrazky)
-     * 2. Ulozi je na kartu
+     * 1. Downloads templates data in HTML (html, css, images).
+     * 2. Save them to filesystem.
+     * 3. Deletes old templates from file system.
      *
-     * @param templates
-     * @param callback
+     * @param templates Array of templates to save to db.
+     * @param callback  The progressCallback.
      */
     public void downloadTemplatesData(Template[] templates, DownloadData.IProgressCallback callback) throws IOException {
 
         downloadAndSaveTemplateFiles(templates, callback);
+
+        // find changes in minor version -> update existing document
+        for (Template templateFromServer : templates) {
+            for (Document document : Document.getAllObjects(Document.class)) {
+                if (templateFromServer.ident.equals(document.ident) &&
+                        templateFromServer.getMajorVersion() == document.getMajorVersion() &&
+                        templateFromServer.getMinorVersion() != document.getMinorVersion()) {
+                    Ln.i("Minor version changed for document %s, updating...", document.ident);
+                    updateDocumentWithNewerTemplate(templateFromServer, document);
+                }
+            }
+            Ln.i("Adding new template %s [version %s]", templateFromServer.ident, templateFromServer.version);
+        }
+        checkAndDeleteOldTemplatesFromFileSystem();
     }
 
     /**
-     * Stahne a ulozi data poptavek do databaze
+     * Downloads and saves inquiries data to db.
      *
-     * @param callback
-     * @return pocet nove prijatych poptavek
+     * @param callback The progressCallback.
+     * @return Count of newly received inquiries.
      */
     public int downloadAndSaveInquiries(DownloadData.IProgressCallback callback) throws IOException {
 
@@ -102,23 +119,32 @@ public class DownloadService {
         final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         InquiriesEnvelope inquiriesEnvelope = gson.fromJson(reader, InquiriesEnvelope.class);
         int newInquiryCounter = 0;
-        for (Inquiry inquiry : inquiriesEnvelope.inquiries) {
+        try {
+            GenericModel.beginTx();
+            for (Inquiry inquiry : inquiriesEnvelope.inquiries) {
 
-            // pokud inquiry jiz v DB je, pak ho zmergujeme
-            // data ze serveru maji prioritu pri mergovani, jedine co se zachovava je STATE
-            // pokud ze serveru prijde NEW, pak nechame NEW, pokud neco jineho, pak nastavime OPEN, tzn. ze pokud je
-            // na tabletu stav COMPLETE, vrati se do stavu OPEN
-            List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "serverId=" + inquiry.serverId);
-            if (list.size() > 0) {
+                // pokud inquiry jiz v DB je, pak ho zmergujeme
+                // data ze serveru maji prioritu pri mergovani, jedine co se zachovava je STATE
+                // pokud ze serveru prijde NEW, pak nechame NEW, pokud neco jineho, pak nastavime OPEN, tzn. ze pokud je
+                // na tabletu stav COMPLETE, vrati se do stavu OPEN
+                List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "serverId=" + inquiry.serverId);
 
-                Inquiry existingInquiry = list.get(0);
-                existingInquiry.mergeWith(inquiry);
-                continue;
+                if (list.size() > 0) {
+
+                    Inquiry existingInquiry = list.get(0);
+                    existingInquiry.mergeWith(inquiry);
+                    saveCustomParam(inquiry);
+                    continue;
+                }
+                newInquiryCounter++;
+                inquiry.attachments = "";
+                inquiry.state = Inquiry.State.NEW;
+                inquiry.save();
+                saveCustomParam(inquiry);
             }
-            newInquiryCounter++;
-            inquiry.attachments = "";
-            inquiry.state = Inquiry.State.NEW;
-            inquiry.save();
+            GenericModel.setTxSuccesfull();
+        } finally {
+            GenericModel.endTx();
         }
         if (callback != null) {
 
@@ -127,29 +153,31 @@ public class DownloadService {
         return newInquiryCounter;
     }
 
-    /**
-     * Iterate over all the files in all templates and checking it against file storage, if the file exists.
-     *
-     * @return true, if everything is ok, otherwise false.
-     */
-    public boolean testDataConsistency() throws IOException {
-
-        for (Template template : Template.getAllObjects(Template.class)) {
-            File parentFolder = Helper.getTemplateFolderAsFile(template);
-            for (String filename : readFromByteArray(template.fileNamesAsByteArray)) {
-                File file = new File(parentFolder, filename);
-                if (!file.exists()) {
-                    return false;
+    private void saveCustomParam(Inquiry inquiry) {
+        Map<String, String> custom = inquiry.custom;
+        if (custom != null) {
+            for (String key : custom.keySet()) {
+                String value = custom.get(key);
+                // if this custom param exist yet
+                if (CustomParam.getCountByQuery(CustomParam.class,
+                        "inquiryId=" + inquiry.id +
+                                " and key='" + key + "'" +
+                                " and value='" + value + "'") == 0) {
+                    // save new one
+                    CustomParam customParam = new CustomParam();
+                    customParam.inquiryId = inquiry.id;
+                    customParam.key = key;
+                    customParam.value = value;
+                    customParam.save();
                 }
             }
         }
-        return true;
     }
 
     /**
-     * Stahne ze serveru JSON obsahujici data sablon a deserializuje na objektovou strukturu
+     * Download JSON from server. It contains all the templates data. Convert it to objects.
      *
-     * @return pole sablon
+     * @return templates envelope instance.
      */
     private TemplatesEnvelope downloadTemplatesJson() throws IOException {
 
@@ -167,7 +195,7 @@ public class DownloadService {
      * @param templates
      * @return
      */
-    private Template[] getOnlyNewTemplates(Template[] templates) {
+    /*private Template[] getOnlyNewTemplates(Template[] templates) {
 
         List<Template> templatesInDb = Template.getAllObjects(Template.class);
         List<Template> templatesToDelete = new ArrayList<Template>(templatesInDb);
@@ -180,6 +208,10 @@ public class DownloadService {
             for (Template templateInDb : templatesInDb) {
                 if (templateInDb.ident.equals(template.ident)) {
 
+                    // check, if any file is missing
+                    testDataConsistency(template);
+
+                    // if major version changed skip
                     // versions are same, so skip saving
                     if (template.version == templateInDb.version) {
                         skip = true;
@@ -194,6 +226,87 @@ public class DownloadService {
         }
         Template.removeTemplates(templatesToDelete);
         return list.toArray(new Template[list.size()]);
+    }*/
+
+    private Template[] processDownloadedTemplates(Template[] templates) {
+
+        List<Template> templatesFromServer = Arrays.asList(templates);
+
+        // find all the local templates, which are not sent from server, but exists locally
+        Template.findAndDeleteMissing(templatesFromServer);
+
+        // remove all the server templates, which are already saved in db
+        // and check if all files are on sd card
+        List<Template> templatesInDb = Template.getAllObjects(Template.class);
+        for (Template templateInDb : templatesInDb) {
+            templatesFromServer.remove(templateInDb);
+            testDataConsistency(templateInDb);
+        }
+        return templatesFromServer.toArray(new Template[templatesFromServer.size()]);
+    }
+
+    private void updateDocumentWithNewerTemplate(Template template, Document document) {
+        document.version = template.version;
+        document.save();
+    }
+
+    /**
+     * Iterate over all the files in template and check it against file storage, if the file doesn't exist,
+     * it downloads it again.
+     */
+    private void testDataConsistency(Template template) {
+
+        File parentFolder = Helper.getTemplateFolderAsFile(template);
+        boolean anyMissing = false;
+        for (String filename : template.files) {
+            File file = new File(parentFolder, filename);
+            if (!file.exists()) {
+                anyMissing = true;
+                Ln.w("File %s in template %s is missing, downloading it again", filename, template.getIdentForFolderName());
+                try {
+                    downloadFile(template, filename, null);
+                } catch (IOException e) {
+                    Ln.e(e);
+                }
+            }
+        }
+        if (!anyMissing) {
+            Ln.i("All files in template %s are Ok", template.ident);
+        }
+    }
+
+    private void checkAndDeleteOldTemplatesFromFileSystem() {
+        Ln.i("Checking for old templates to delete");
+        List<Template> templatesInDb = Template.getAllObjects(Template.class);
+        for (File file : Helper.getTemplatesFolders()) {
+            if (!file.isDirectory()) {
+                continue;
+            }
+            boolean isNeeded = false;
+            for (Template template : templatesInDb) {
+                if (template.getIdentForFolderName().equals(file.getName())) {
+                    isNeeded = true;
+                    break;
+                }
+            }
+            if (!isNeeded) {
+                deleteOldTemplateFolder(file);
+                Ln.i("Folder %s was deleted", file.getName());
+            }
+        }
+    }
+
+    private void deleteOldTemplateFolder(File folder) {
+        deleteRecursive(folder);
+    }
+
+    void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteRecursive(child);
+            }
+        }
+        fileOrDirectory.delete();
     }
 
     /**
@@ -222,7 +335,7 @@ public class DownloadService {
 
         GenericModel.beginTx();
         try {
-            convertFileNamesToByteArray(template);
+            //convertFileNamesToByteArray(template);
             template.save();
             for (TemplatePage page : template.pages) {
 
@@ -233,8 +346,6 @@ public class DownloadService {
                 saveTags(page);
             }
             GenericModel.setTxSuccesfull();
-        } catch (IOException e) {
-            Ln.e(e);
         } finally {
             GenericModel.endTx();
         }
@@ -242,6 +353,7 @@ public class DownloadService {
 
     /**
      * Save all the versions of one page like a normal page with parentId property set.
+     *
      * @param parentPage The parent {@link eu.janmuller.application.salesmenapp.model.db.TemplatePage}
      */
     private void saveVersionsAsPage(TemplatePage parentPage) {
@@ -251,7 +363,7 @@ public class DownloadService {
         }
         // save pages on 2nd level to db
         for (TemplatePage version : parentPage.versions) {
-            version.parentId = (Long)parentPage.id.getId();
+            version.parentId = (Long) parentPage.id.getId();
             version.templateId = parentPage.templateId;
             version.save();
             saveTags(version);
@@ -260,6 +372,7 @@ public class DownloadService {
 
     /**
      * Save all the tags from {@link eu.janmuller.application.salesmenapp.model.db.TemplatePage}
+     *
      * @param page The page.
      */
     private void saveTags(TemplatePage page) {
@@ -275,11 +388,11 @@ public class DownloadService {
      *
      * @param template The template.
      */
-    private void convertFileNamesToByteArray(Template template) throws IOException {
+    /*private void convertFileNamesToByteArray(Template template) throws IOException {
 
         List<String> list = Arrays.asList(template.files);
         template.fileNamesAsByteArray = writeToByteArray(list);
-    }
+    }*/
 
     /**
      * Stahne vsechny soubory ke konkretni sablone a ulozi je do folderu v telefonu
@@ -311,7 +424,8 @@ public class DownloadService {
      * @param progressCallback callback informujici o progressu
      * @throws IOException
      */
-    private void downloadFile(Template template, String fileName, DownloadData.IProgressCallback progressCallback) throws IOException {
+    private void downloadFile(Template template, String fileName, DownloadData.IProgressCallback progressCallback)
+            throws IOException {
 
         URL url = new URL(template.baseUrl + fileName);
         File parentFolder = Helper.getTemplateFolderAsFile(template);
@@ -331,7 +445,9 @@ public class DownloadService {
 
             fileOutput.write(buffer, 0, bufferLength);
             downloadedSize += bufferLength;
-            progressCallback.onProgressUpdate(fileName, downloadedSize, totalSize);
+            if (progressCallback != null) {
+                progressCallback.onProgressUpdate(fileName, downloadedSize, totalSize);
+            }
         }
 
         // pokud se jedna o HTML soubor, pak na jeho konec pridame fragment JS kodu pro zmenu
@@ -358,7 +474,7 @@ public class DownloadService {
      *
      * @param list The list.
      */
-    private byte[] writeToByteArray(List<String> list) throws IOException {
+    /*private byte[] writeToByteArray(List<String> list) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(baos);
@@ -366,7 +482,7 @@ public class DownloadService {
             out.writeUTF(element);
         }
         return baos.toByteArray();
-    }
+    }*/
 
     /**
      * Read from byte array.
@@ -375,7 +491,7 @@ public class DownloadService {
      * @return List of strings.
      * @throws IOException
      */
-    private List<String> readFromByteArray(byte[] bytes) throws IOException {
+    /*private List<String> readFromByteArray(byte[] bytes) throws IOException {
 
         List<String> list = new ArrayList<String>();
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
@@ -385,5 +501,5 @@ public class DownloadService {
             list.add(element);
         }
         return list;
-    }
+    }*/
 }

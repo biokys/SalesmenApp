@@ -8,6 +8,7 @@ import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -107,6 +108,10 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     public String mail;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("MailAF")
+    public String mailAf;
+
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Contacts")
     public String contact;
 
@@ -115,6 +120,9 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
 
     @GenericModel.DataType(type = DataTypeEnum.ENUM)
     public State state;
+
+    @SerializedName("Custom")
+    public Map<String, String> custom;
 
     public String attachments;
 
@@ -130,10 +138,8 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
 
         List<Inquiry> list = Inquiry.getByQuery(Inquiry.class, "serverId='" + serverId + "'");
         if (list.size() > 0) {
-
             return list.get(0);
         }
-
         return null;
     }
 
@@ -160,7 +166,6 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
                 continue;
             }
             if (inquiry.state == State.NEW) {
-
                 inquiry.attachments = "-";
                 continue;
             }
@@ -168,14 +173,11 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
             List<Document> documents = Document.getByQuery(Document.class, "show=1 and inquiryId=" + inquiry.id.getId());
             int loop = 0;
             for (Document document : documents) {
-
                 attachments += document.shortName;
                 if (++loop < documents.size()) {
-
                     attachments += ", ";
                 }
             }
-
             inquiry.attachments = attachments;
         }
 
@@ -186,10 +188,8 @@ final public class Inquiry extends BaseDateModel<Inquiry> {
     public void delete() throws DaoConstraintException {
 
         for (Document document : Document.getByQuery(Document.class, "inquiryId=" + id.getId())) {
-
             document.delete();
         }
-
         super.delete();
     }
 

@@ -3,9 +3,9 @@ package eu.janmuller.application.salesmenapp.model.db;
 import com.google.gson.annotations.SerializedName;
 import eu.janmuller.android.dao.api.BaseDateModel;
 import eu.janmuller.android.dao.api.GenericModel;
-import eu.janmuller.android.dao.exceptions.DaoConstraintException;
 import roboguice.util.Ln;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,9 +50,9 @@ public class Template extends BaseDateModel<Template> {
     /**
      * Version number consists of major number and minor number, eg. 2.4
      */
-    @GenericModel.DataType(type = DataTypeEnum.FLOAT)
-    @SerializedName("Version")
-    public float version;
+    @GenericModel.DataType(type = DataTypeEnum.TEXT)
+    @SerializedName("Ver")
+    public String version;
 
     @GenericModel.DataType(type = DataTypeEnum.TEXT)
     @SerializedName("Published")
@@ -89,8 +89,8 @@ public class Template extends BaseDateModel<Template> {
     @SerializedName("Files")
     public String[] files;
 
-    @GenericModel.DataType(type = DataTypeEnum.BLOB)
-    public byte[] fileNamesAsByteArray;
+    //@GenericModel.DataType(type = DataTypeEnum.BLOB)
+    //public byte[] fileNamesAsByteArray;
 
     @SerializedName("Pages")
     public TemplatePage[] pages;
@@ -110,7 +110,6 @@ public class Template extends BaseDateModel<Template> {
      */
     public Template(Template template) {
 
-        this.version = template.version;
         this.ident = template.ident;
         this.published = template.published;
         this.baseUrl = template.baseUrl;
@@ -120,6 +119,7 @@ public class Template extends BaseDateModel<Template> {
         this.landscape = template.landscape;
         this.shortName = template.shortName;
         this.type = template.type;
+        this.version = template.version;
     }
 
     public void deleteCompleteTemplate() {
@@ -144,31 +144,60 @@ public class Template extends BaseDateModel<Template> {
         }
     }
 
+    public int getMajorVersion() {
+        return Integer.decode(version.split("\\.")[0]);
+    }
+
+    public int getMinorVersion() {
+        return Integer.decode(version.split("\\.")[1]);
+    }
+
+    /**
+     * Compares given templates against locally stored templates. All the local templates with major version which is
+     * not listed are returned.
+     * @param serverTemplates The templates from server
+     */
+    public static void findAndDeleteMissing(List<Template> serverTemplates) {
+        List<Template> templatesInDb = Template.getAllObjects(Template.class);
+        List<Template> templatesToDelete = new ArrayList<Template>(templatesInDb);
+        //for (Template templateInDb : templatesInDb) {
+            for (Template serverTemplate : serverTemplates) {
+                templatesToDelete.remove(serverTemplate);
+                /*if (templateInDb.getMajorVersion() == serverTemplate.getMajorVersion()) {
+                    templatesToDelete.remove(templateInDb);
+                }*/
+            }
+        //}
+        removeTemplates(templatesToDelete);
+    }
+
     public List<TemplatePage> getTemplatePagesByTemplate() {
 
         return TemplatePage.getByQuery(TemplatePage.class, "templateId=" + this.id.getId());
     }
 
+    public String getIdentForFolderName() {
+        return ident + "_" + version;
+    }
+
     @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         Template template = (Template) o;
 
-        if (Float.compare(template.version, version) != 0) return false;
-        if (!ident.equals(template.ident)) return false;
+        if (getIdentForFolderName() != null
+                ? !getIdentForFolderName().equals(template.getIdentForFolderName())
+                : template.getIdentForFolderName() != null)
+            return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-
-        int result = ident.hashCode();
-        result = 31 * result + (version != +0.0f ? Float.floatToIntBits(version) : 0);
-        return result;
+        return getIdentForFolderName() != null ? getIdentForFolderName().hashCode() : 0;
     }
 
     @Override
