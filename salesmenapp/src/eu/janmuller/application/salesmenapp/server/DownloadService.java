@@ -230,29 +230,40 @@ public class DownloadService {
 
     private Template[] processDownloadedTemplates(Template[] templates) {
 
-        List<Template> templatesFromServer = Arrays.asList(templates);
+        List<Template> templatesFromServer = new ArrayList<Template>(Arrays.asList(templates));
 
         // find all the local templates, which are not sent from server, but exists locally
         Template.findAndDeleteMissing(templatesFromServer);
 
         // remove all the server templates, which are already saved in db
-        // and check if all files are on sd card
         List<Template> templatesInDb = Template.getAllObjects(Template.class);
         for (Template templateInDb : templatesInDb) {
             templatesFromServer.remove(templateInDb);
-            testDataConsistency(templateInDb);
+        }
+        // check if all files are on sd card and download missing
+        for (Template template : templates) {
+            if (templatesInDb.contains(template)) {
+                testDataConsistency(template);
+            }
         }
         return templatesFromServer.toArray(new Template[templatesFromServer.size()]);
     }
 
     private void updateDocumentWithNewerTemplate(Template template, Document document) {
+
         document.version = template.version;
+        document.name = template.name;
+        document.baseUrl = template.baseUrl;
+        document.dataSize = template.dataSize;
+        document.landscape = template.landscape;
+        document.type = template.type;
+        document.shortName = template.shortName;
         document.save();
     }
 
     /**
      * Iterate over all the files in template and check it against file storage, if the file doesn't exist,
-     * it downloads it again.
+     * downloads it again.
      */
     private void testDataConsistency(Template template) {
 
@@ -278,6 +289,7 @@ public class DownloadService {
     private void checkAndDeleteOldTemplatesFromFileSystem() {
         Ln.i("Checking for old templates to delete");
         List<Template> templatesInDb = Template.getAllObjects(Template.class);
+        List<Document> docuemntsInDb = Document.getAllObjects(Document.class);
         for (File file : Helper.getTemplatesFolders()) {
             if (!file.isDirectory()) {
                 continue;
@@ -285,6 +297,13 @@ public class DownloadService {
             boolean isNeeded = false;
             for (Template template : templatesInDb) {
                 if (template.getIdentForFolderName().equals(file.getName())) {
+                    isNeeded = true;
+                    break;
+                }
+            }
+
+            for (Document document : docuemntsInDb) {
+                if (document.getIdentForFolderName().equals(file.getName())) {
                     isNeeded = true;
                     break;
                 }

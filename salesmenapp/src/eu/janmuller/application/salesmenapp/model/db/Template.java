@@ -139,7 +139,7 @@ public class Template extends BaseDateModel<Template> {
      */
     public static void removeTemplates(List<Template> templates) {
         for (Template template : templates) {
-            Ln.i("Removing old template id %s", template.ident);
+            Ln.i("Removing old template id %s", template.getIdentForFolderName());
             template.deleteCompleteTemplate();
         }
     }
