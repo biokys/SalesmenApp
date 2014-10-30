@@ -255,6 +255,9 @@ public class ViewActivity extends BaseActivity {
 
         mStaticContainer.setVisibility(View.GONE);
         boolean setPositionToStart = !mPageViewMode;
+        if (!mPageViewMode) {
+            mCurrentNumber = 0;
+        }
         mPageViewMode = true;
 
         PageContainer pageContainer = mVerticalDocumentPager.getCurrentPageContainer();

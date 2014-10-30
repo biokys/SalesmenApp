@@ -284,7 +284,11 @@ public class ServerService {
 
             SendDataObject.Document sendDocument = new SendDataObject.Document();
             sendDocument.ident = document.ident;
-            sendDocument.version = document.version;
+            try {
+                sendDocument.version = Double.valueOf(document.version);
+            } catch (NumberFormatException e) {
+                sendDocument.version = -1;
+            }
             List<DocumentPage> documentPages = document.getDocumentPagesByDocument(true);
             List<SendDataObject.Document.Page> pages = new ArrayList<SendDataObject.Document.Page>();
             for (DocumentPage documentPage : documentPages) {
@@ -356,7 +360,7 @@ public class ServerService {
             public String ident;
 
             @SerializedName("version")
-            public String version;
+            public double version;
 
             @SerializedName("pages")
             public Page[] pages;
