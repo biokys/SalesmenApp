@@ -19,6 +19,7 @@ import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
 import eu.janmuller.application.salesmenapp.adapter.DocumentAdapter;
 import eu.janmuller.application.salesmenapp.adapter.ISidebarShowAble;
+import eu.janmuller.application.salesmenapp.component.viewpager.MyViewPager;
 import eu.janmuller.application.salesmenapp.component.viewpager.VerticalDocumentPager;
 import eu.janmuller.application.salesmenapp.model.db.*;
 import it.sephiroth.android.library.widget.HListView;
@@ -466,8 +467,16 @@ public class ViewActivity extends BaseActivity {
 
         if (pageContainer != null) {
 
-            ViewActivityHelper.getAndSaveTags(pageContainer.getWebView(), pageContainer.getDocumentPage());
-            ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
+            MyViewPager viewPager = pageContainer.getViewPager();
+            if (viewPager != null) {
+                WebView currentWebView = viewPager.getCurrentWebView();
+                List<DocumentPage> versions = pageContainer.getDocumentPage().versions;
+                ViewActivityHelper.getAndSaveTags(currentWebView, versions.get(viewPager.getCurrentItem()));
+                ViewActivityHelper.setEditHtmlCellsVisibility(currentWebView, false);
+            } else {
+                ViewActivityHelper.getAndSaveTags(pageContainer.getWebView(), pageContainer.getDocumentPage());
+                ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
+            }
         }
     }
 
