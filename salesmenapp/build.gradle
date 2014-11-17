@@ -54,8 +54,8 @@ android {
     	applicationId "eu.janmuller.application.salesmenapp"
         minSdkVersion 16
         targetSdkVersion 20
-        versionCode 108
-        versionName "1.9.4"
+        versionCode 109
+        versionName "1.9.5"
     }
 
 

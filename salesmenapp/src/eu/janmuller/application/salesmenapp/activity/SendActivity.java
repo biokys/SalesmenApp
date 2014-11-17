@@ -97,6 +97,7 @@ public class SendActivity extends BaseActivity {
                 hideAll();
             }
         });
+        hideAll();
     }
 
     private void hideAll() {
