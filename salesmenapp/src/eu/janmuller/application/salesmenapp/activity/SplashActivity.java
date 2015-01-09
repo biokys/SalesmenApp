@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.google.inject.Inject;
 import eu.janmuller.application.salesmenapp.Helper;
 import eu.janmuller.application.salesmenapp.R;
+import eu.janmuller.application.salesmenapp.model.db.Template;
 import eu.janmuller.application.salesmenapp.server.ConnectionException;
 import eu.janmuller.application.salesmenapp.server.DownloadData;
 import eu.janmuller.application.salesmenapp.server.ServerService;
@@ -209,8 +210,12 @@ public class SplashActivity extends RoboSplashActivity {
             @Override
             public void onTemplatesDownloadPostponed() {
 
-                Toast.makeText(SplashActivity.this, getString(R.string.no_downloaded_templates), Toast.LENGTH_SHORT).show();
-                finish();
+                if (Template.getAllObjects(Template.class).size() == 0) {
+                    Toast.makeText(SplashActivity.this, getString(R.string.no_downloaded_templates), Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    startInquiryActivity();
+                }
             }
 
             @Override
