@@ -221,6 +221,9 @@ public class ViewActivity extends BaseActivity {
      */
     private void setPage(int position) {
 
+        if (mEditMode) {
+            saveActualPage(mVerticalDocumentPager.getCurrentPageContainer());
+        }
         mCurrentNumber = position;
         ISidebarShowAble item = mDocumentAdapter.getItem(position);
         if (mPageViewMode) {
