@@ -52,6 +52,10 @@ public class MyViewPager extends ViewPager {
         return mPagerAdapter.getWebView(getCurrentItem());
     }
 
+    public SparseArray<WebView> getAllWebViews() {
+        return mPagerAdapter.mWebViewSparseArray;
+    }
+
     private class MyPagerAdapter extends PagerAdapter {
 
         List<DocumentPage> mVersions;

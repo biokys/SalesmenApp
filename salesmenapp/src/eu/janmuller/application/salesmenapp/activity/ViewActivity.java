@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -290,7 +291,7 @@ public class ViewActivity extends BaseActivity {
         mDocumentAdapter.addAll(filteredPages);
         int[] versionPage = null;
         if (mCurrentVersionPageNumber != -1) {
-            versionPage = new int[] {mCurrentNumber, mCurrentVersionPageNumber};
+            versionPage = new int[]{mCurrentNumber, mCurrentVersionPageNumber};
         }
         mVerticalDocumentPager.setData(document, (List<DocumentPage>) filteredPages, versionPage);
 
@@ -472,10 +473,12 @@ public class ViewActivity extends BaseActivity {
 
             MyViewPager viewPager = pageContainer.getViewPager();
             if (viewPager != null) {
-                WebView currentWebView = viewPager.getCurrentWebView();
-                List<DocumentPage> versions = pageContainer.getDocumentPage().versions;
-                ViewActivityHelper.getAndSaveTags(currentWebView, versions.get(viewPager.getCurrentItem()));
-                ViewActivityHelper.setEditHtmlCellsVisibility(currentWebView, false);
+                SparseArray<WebView> allWebViews = viewPager.getAllWebViews();
+                for (int i = 0; i < allWebViews.size(); i++) {
+                    WebView currentWebView = allWebViews.get(i);
+                    ViewActivityHelper.getAndSaveTags(currentWebView, pageContainer.getDocumentPage().versions.get(i));
+                    ViewActivityHelper.setEditHtmlCellsVisibility(currentWebView, false);
+                }
             } else {
                 ViewActivityHelper.getAndSaveTags(pageContainer.getWebView(), pageContainer.getDocumentPage());
                 ViewActivityHelper.setEditHtmlCellsVisibility(pageContainer.getWebView(), false);
